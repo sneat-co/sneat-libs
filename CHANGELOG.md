@@ -1,3 +1,14 @@
+## 0.1.4 (2026-03-03)
+
+### 🩹 Fixes
+
+- **build:** use partial compilation mode for publishable libs ([9cfee0f](https://github.com/sneat-co/sneat-libs/commit/9cfee0f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Sonnet 4.6
+
 ## 0.1.3 (2026-03-03)
 
 ### 🩹 Fixes
