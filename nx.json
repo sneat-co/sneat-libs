@@ -47,6 +47,11 @@
   },
   "release": {
     "projects": ["*"],
+    "git": {
+      "commit": true,
+      "tag": true,
+      "push": true
+    },
     "version": {
       "conventionalCommits": true,
       "fallbackCurrentVersionResolver": "disk"
