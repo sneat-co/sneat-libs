@@ -1,3 +1,15 @@
+## 0.1.3 (2026-03-03)
+
+### 🩹 Fixes
+
+- **release:** pull --rebase before push to avoid race with concurrent commits ([6abd4d4](https://github.com/sneat-co/sneat-libs/commit/6abd4d4))
+- **release:** publish from dist/, add scss assets to components ([4c2bf19](https://github.com/sneat-co/sneat-libs/commit/4c2bf19))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Sonnet 4.6
+
 ## 0.1.2 (2026-03-03)
 
 ### 🩹 Fixes
