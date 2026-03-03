@@ -54,8 +54,17 @@
     },
     "version": {
       "conventionalCommits": true,
-      "fallbackCurrentVersionResolver": "disk"
+      "fallbackCurrentVersionResolver": "disk",
+      "generatorOptions": {
+        "packageRoot": "dist/{projectRoot}"
+      }
     },
-    "changelog": { "workspaceChangelog": true }
+    "changelog": { "workspaceChangelog": true },
+    "publish": {
+      "executor": "@nx/js:npm-publish",
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    }
   }
 }
