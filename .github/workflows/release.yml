@@ -17,7 +17,13 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx run-many -t build --all
-      - run: pnpm nx release --yes
+      - name: Release (first-release if no version tags exist yet)
+        run: |
+          if git tag --list "v*" | grep -q .; then
+            pnpm nx release --yes
+          else
+            pnpm nx release --yes --first-release
+          fi
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
