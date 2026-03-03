@@ -1,0 +1,16 @@
+{
+  "name": "@sneat/api",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=21.0.0",
+    "@angular/core": ">=21.0.0",
+    "firebase": "*",
+    "@angular/fire": ">=20"
+  },
+  "dependencies": {
+    "tslib": "2.8.1"
+  }
+}

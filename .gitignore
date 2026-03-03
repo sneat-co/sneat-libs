@@ -1,0 +1,8 @@
+node_modules
+dist
+tmp
+.angular
+coverage
+*.js.map
+.nx/cache
+.nx/workspace-data
