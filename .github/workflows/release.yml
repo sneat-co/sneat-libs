@@ -28,12 +28,8 @@ jobs:
         run: |
           git config --global user.email "ci@sneat.co"
           git config --global user.name "Sneat CI"
-      - name: Bump versions, changelog, commit and push tags
-        run: pnpm nx release --skip-publish
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish packages to npm
-        run: pnpm nx release publish --yes --excludeTaskDependencies
+      - name: Release
+        run: pnpm nx release --yes
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
