@@ -33,6 +33,13 @@
     "@nx/eslint:lint": {
       "cache": true,
       "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+    },
+    "nx-release-publish": {
+      "executor": "@nx/js:release-publish",
+      "dependsOn": ["build"],
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
     }
   },
   "namedInputs": {
@@ -61,7 +68,8 @@
     },
     "changelog": { "workspaceChangelog": true },
     "publish": {
-      "executor": "@nx/js:npm-publish",
+      "executor": "@nx/js:release-publish",
+      "dependsOn": ["build"],
       "options": {
         "packageRoot": "dist/{projectRoot}"
       }
