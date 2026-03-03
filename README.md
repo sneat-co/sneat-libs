@@ -156,3 +156,4 @@ BREAKING CHANGE: SneatApiService has been renamed to ApiService"
 The `NPM_TOKEN` secret must be set in the repository settings
 (`Settings → Secrets and variables → Actions → NPM_TOKEN`) with a token that has
 **Automation** publish rights to the `@sneat` npm organisation.
+
