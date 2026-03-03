@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -17,6 +20,10 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx run-many -t build --all
+      - name: Configure git identity for release commit
+        run: |
+          git config --global user.email "ci@sneat.co"
+          git config --global user.name "Sneat CI"
       - name: Release (first-release if no version tags exist yet)
         run: |
           if git tag --list "v*" | grep -q .; then
