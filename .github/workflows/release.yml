@@ -29,7 +29,7 @@ jobs:
           git config --global user.email "ci@sneat.co"
           git config --global user.name "Sneat CI"
       - name: Release
-        run: pnpm nx release --yes
+        run: pnpm nx release --yes --git-push
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
