@@ -28,14 +28,8 @@ jobs:
         run: |
           git config --global user.email "ci@sneat.co"
           git config --global user.name "Sneat CI"
-      - name: Bump versions and generate changelog
-        run: |
-          pnpm nx release version --yes
-          pnpm nx release changelog --yes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push release commit and tags
-        run: git push --follow-tags origin main
+      - name: Bump versions, changelog, commit and push tags
+        run: pnpm nx release --yes --skip-publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish packages to npm
