@@ -52,6 +52,8 @@
     "@nx/vite": "22.5.3",
     "@nx/vitest": "22.5.3",
     "@nx/workspace": "22.5.3",
+    "happy-dom": "^20.5.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "ng-packagr": "21.2.0",
     "nx": "22.5.3",
     "typescript": "5.9.3",
