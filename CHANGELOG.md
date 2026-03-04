@@ -1,3 +1,14 @@
+## 0.1.6 (2026-03-04)
+
+### 🩹 Fixes
+
+- e2e verify fixed CI release pipeline publishes correct dist ([1fb0575](https://github.com/sneat-co/sneat-libs/commit/1fb0575))
+- **ci:** remove pre-build step that caused stale cache during release ([7c4267c](https://github.com/sneat-co/sneat-libs/commit/7c4267c))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.1.5 (2026-03-04)
 
 ### 🩹 Fixes
