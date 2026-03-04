@@ -1,0 +1,34 @@
+{
+  "name": "ext-schedulus-core",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/extensions/schedulus/core/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/libs/extensions/schedulus/core"],
+      "options": {
+        "project": "libs/extensions/schedulus/core/ng-package.json",
+        "tsConfig": "libs/extensions/schedulus/core/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/extensions/schedulus/core/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/extensions/schedulus/core"],
+      "options": {
+        "tsConfig": "libs/extensions/schedulus/core/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

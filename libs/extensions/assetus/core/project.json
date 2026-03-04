@@ -1,0 +1,34 @@
+{
+  "name": "ext-assetus-core",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/extensions/assetus/core/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/libs/extensions/assetus/core"],
+      "options": {
+        "project": "libs/extensions/assetus/core/ng-package.json",
+        "tsConfig": "libs/extensions/assetus/core/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/extensions/assetus/core/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/extensions/assetus/core"],
+      "options": {
+        "tsConfig": "libs/extensions/assetus/core/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

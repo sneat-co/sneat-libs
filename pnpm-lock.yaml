@@ -128,6 +128,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.0.18
         version: 4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))
+      date-fns:
+        specifier: 4.1.0
+        version: 4.1.0
       eslint:
         specifier: 9.39.3
         version: 9.39.3(jiti@2.6.1)
@@ -177,6 +180,12 @@ importers:
         specifier: 2.8.1
         version: 2.8.1
 
+  libs/app:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
   libs/auth/core:
     dependencies:
       tslib:
@@ -207,6 +216,18 @@ importers:
         specifier: 2.8.1
         version: 2.8.1
 
+  libs/contactus/services:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/contactus/shared:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
   libs/core:
     dependencies:
       tslib:
@@ -231,6 +252,24 @@ importers:
         specifier: 2.8.1
         version: 2.8.1
 
+  libs/extensions/assetus/components:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/extensions/assetus/core:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/extensions/schedulus/core:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
   libs/grid:
     dependencies:
       tslib:
@@ -238,6 +277,12 @@ importers:
         version: 2.8.1
 
   libs/logging:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/space/components:
     dependencies:
       tslib:
         specifier: 2.8.1
@@ -4292,6 +4337,9 @@ packages:
   csso@5.0.5:
     resolution: {integrity: sha512-0LrrStPOdJj+SPCCrGhzryycLjwcgUSHBtxNA8aIDxf0GLsRh1cKYhB00Gd1lDOS4yGH69+SNn13+TWbVHETFQ==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0, npm: '>=7.0.0'}
+
+  date-fns@4.1.0:
+    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
 
   date-format@4.0.14:
     resolution: {integrity: sha512-39BOQLs9ZjKh0/patS9nrT8wc3ioX3/eA/zgbKNopnF2wCqJEoxywwwElATYvRsXdnOxA/OQeQoFZ3rFjVajhg==}
@@ -12088,6 +12136,8 @@ snapshots:
   csso@5.0.5:
     dependencies:
       css-tree: 2.2.1
+
+  date-fns@4.1.0: {}
 
   date-format@4.0.14: {}
 
