@@ -1,3 +1,14 @@
+## 0.2.0 (2026-03-04)
+
+### 🚀 Features
+
+- add 7 new @sneat/* libs (assetus, schedulus, contactus-services, app, space-components, contactus-shared) ([ea491d9](https://github.com/sneat-co/sneat-libs/commit/ea491d9))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Sonnet 4.6
+
 ## 0.1.6 (2026-03-04)
 
 ### 🩹 Fixes
