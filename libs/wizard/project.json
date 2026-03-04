@@ -1,0 +1,28 @@
+{
+  "name": "wizard",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/wizard/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/libs/wizard"],
+      "options": {
+        "project": "libs/wizard/ng-package.json",
+        "tsConfig": "libs/wizard/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": { "tsConfig": "libs/wizard/tsconfig.lib.prod.json" },
+        "development": {}
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/wizard"],
+      "options": { "tsConfig": "libs/wizard/tsconfig.spec.json" }
+    },
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}
