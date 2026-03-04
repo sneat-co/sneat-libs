@@ -1,3 +1,14 @@
+## 0.3.0 (2026-03-04)
+
+### 🚀 Features
+
+- add wizard, contactus-internal, ext-schedulus-shared, ext-schedulus-main libs ([47d6e46](https://github.com/sneat-co/sneat-libs/commit/47d6e46))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Sonnet 4.6
+
 ## 0.2.0 (2026-03-04)
 
 ### 🚀 Features
