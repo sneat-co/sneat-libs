@@ -27,7 +27,6 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - run: pnpm nx run-many -t build --all
       - name: Configure git identity for release commit
         run: |
           git config --global user.email "ci@sneat.co"
