@@ -1,3 +1,14 @@
+## 0.1.5 (2026-03-04)
+
+### 🩹 Fixes
+
+- trigger e2e publish verification ([4c13df9](https://github.com/sneat-co/sneat-libs/commit/4c13df9))
+- trigger e2e publish verification ([8236ae4](https://github.com/sneat-co/sneat-libs/commit/8236ae4))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.1.4 (2026-03-03)
 
 ### 🩹 Fixes
