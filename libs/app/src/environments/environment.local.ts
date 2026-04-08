@@ -1,5 +1,5 @@
 import { IEnvironmentConfig } from '@sneat/core';
-import { baseEnvironmentConfig } from './environment.base';
+import { emulatorEnvironmentConfig } from './environment.base';
 /*
  * For easier debugging in development mode, you can import the following file
  * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
@@ -10,5 +10,5 @@ import { baseEnvironmentConfig } from './environment.base';
 // import 'zone.js/dist/zone-error';
 
 export const environmentConfig: IEnvironmentConfig = {
-  ...baseEnvironmentConfig,
+  ...emulatorEnvironmentConfig,
 };

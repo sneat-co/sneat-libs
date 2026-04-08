@@ -1,1 +1,1 @@
-export { baseEnvironmentConfig } from './environment.base';
+export { emulatorEnvironmentConfig } from './environment.base';

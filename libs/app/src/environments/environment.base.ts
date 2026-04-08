@@ -44,7 +44,7 @@ const firebaseConfig: IFirebaseConfig = {
   measurementId: 'G-PROVIDE_IF_NEEDED',
 };
 
-export const baseEnvironmentConfig: IEnvironmentConfig = {
+export const emulatorEnvironmentConfig: IEnvironmentConfig = {
   production: false,
   useNgrok,
   agents: {},
