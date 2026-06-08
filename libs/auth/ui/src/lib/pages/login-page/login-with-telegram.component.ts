@@ -4,6 +4,10 @@ import {
   ITelegramAuthData,
   SneatAuthWithTelegramService,
 } from './sneat-auth-with-telegram.service';
+import {
+  TelegramLoginConfig,
+  resolveTelegramBotID,
+} from './telegram-login-config';
 
 let authWithTelegramService: SneatAuthWithTelegramService;
 
@@ -27,6 +31,9 @@ export class LoginWithTelegramComponent implements OnInit {
   private readonly el = inject(ElementRef);
   private readonly document = inject<Document>(DOCUMENT);
   readonly authWithTelegram = inject(SneatAuthWithTelegramService);
+  private readonly telegramLoginConfig = inject(TelegramLoginConfig, {
+    optional: true,
+  });
 
   // TODO: Article about Telegram login
   constructor() {
@@ -37,9 +44,10 @@ export class LoginWithTelegramComponent implements OnInit {
 
   @Input() public isUserAuthenticated = false;
 
-  @Input() public botID: string = location.hostname.startsWith('local')
-    ? 'AlextDevBot'
-    : 'SneatBot';
+  @Input() public botID: string = resolveTelegramBotID(
+    this.telegramLoginConfig,
+    location.hostname,
+  );
 
   @Input() public size: 'small' | 'medium' | 'large' = 'large';
   @Input() public requestAccess: 'write' | 'read' = 'write';
