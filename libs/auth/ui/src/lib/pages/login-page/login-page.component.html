@@ -120,19 +120,25 @@
           </ion-list>
         </ion-col>
       </ion-row>
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-list lines="none">
+            <ion-item
+              (click)="loginWith('github.com')"
+              tappable
+              [disabled]="!!signingWith()"
+            >
+              @if (signingWith() === "github.com") {
+                <ion-spinner slot="start" color="tertiary" name="lines-small" />
+              } @else {
+                <ion-icon slot="start" color="tertiary" name="logo-github" />
+              }
+              <ion-label color="tertiary">Login with GitHub</ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-col>
+      </ion-row>
     </ion-grid>
-    <!--						<ion-item-->
-    <!--							(click)="loginWith('github.com')"-->
-    <!--							tappable-->
-    <!--							[disabled]="!!signingWith()"-->
-    <!--						>-->
-    <!--							@if (signingWith() === "github.com") {-->
-    <!--								<ion-spinner slot="start" color="tertiary" name="lines-small" />-->
-    <!--							} @else {-->
-    <!--								<ion-icon slot="start" color="tertiary" name="logo-github" />-->
-    <!--							}-->
-    <!--							<ion-label color="tertiary">Login with GitHub</ion-label>-->
-    <!--						</ion-item>-->
   </ion-card>
 
   <p style="text-align: center; font-size: smaller">
