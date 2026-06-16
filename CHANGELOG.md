@@ -1,3 +1,14 @@
+## 0.5.1 (2026-06-16)
+
+### 🩹 Fixes
+
+- **auth-ui:** restore current space after login ([47fe63a](https://github.com/sneat-co/sneat-libs/commit/47fe63a))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.4.0 (2026-04-08)
 
 This was a version bump only, there were no code changes.
