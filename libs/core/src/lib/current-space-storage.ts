@@ -18,6 +18,15 @@ export function writeCurrentSpace(space: ISpaceRef): void {
   }
 }
 
+/** Clears the persisted current space (e.g. when the user leaves all spaces). */
+export function clearCurrentSpace(): void {
+  try {
+    localStorage.removeItem(CURRENT_SPACE_STORAGE_KEY);
+  } catch {
+    // Ignore storage errors (e.g. disabled storage in private mode).
+  }
+}
+
 /** Reads the persisted current space, or undefined when none/invalid. */
 export function readCurrentSpace(): ISpaceRef | undefined {
   try {
