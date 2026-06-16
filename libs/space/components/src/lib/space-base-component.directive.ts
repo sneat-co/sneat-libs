@@ -8,7 +8,13 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { NavController } from '@ionic/angular/standalone';
-import { equalSpaceRefs, ILogger, ISpaceRef, SpaceType } from '@sneat/core';
+import {
+  equalSpaceRefs,
+  ILogger,
+  ISpaceRef,
+  SpaceType,
+  writeCurrentSpace,
+} from '@sneat/core';
 
 type NavigationOptions = NonNullable<
   Parameters<NavController['navigateRoot']>[1]
@@ -392,6 +398,11 @@ export abstract class SpaceBaseComponent
           ? { id: spaceRef.id, type: spaceRef.type || prev?.type }
           : { id: spaceRef.id };
     });
+    const currentSpaceRef = this.$spaceRef();
+    if (currentSpaceRef) {
+      // Persist so the login page can restore it after sign-in. No-op unless id+type are known.
+      writeCurrentSpace(currentSpaceRef);
+    }
   }
 
   private setSpaceContext(spaceContext?: ISpaceContext): void {

@@ -35,6 +35,7 @@ import { SneatUserService } from '@sneat/auth-core';
 import {
   AnalyticsService,
   APP_INFO,
+  currentSpacePath,
   IAnalyticsService,
   IAppInfo,
 } from '@sneat/core';
@@ -129,7 +130,8 @@ export class LoginPageComponent extends SneatBaseComponent {
           } else {
             return;
           }
-          const redirectTo = this.redirectTo || '/'; // TODO: default one should be app specific.
+          // Fall back to the persisted current space so it is restored after login.
+          const redirectTo = this.redirectTo || currentSpacePath() || '/';
           this.navController
             .navigateRoot(redirectTo)
             .catch(
