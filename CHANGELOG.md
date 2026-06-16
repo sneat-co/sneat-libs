@@ -1,3 +1,14 @@
+## 0.5.2 (2026-06-16)
+
+### 🩹 Fixes
+
+- **app:** forget current space when an authenticated user leaves spaces ([f09a3c2](https://github.com/sneat-co/sneat-libs/commit/f09a3c2))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.5.1 (2026-06-16)
 
 ### 🩹 Fixes
