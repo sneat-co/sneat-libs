@@ -65,6 +65,27 @@ We build with our own tooling:
 
 ---
 
+## Naming conventions
+
+Package names under the `@sneat` scope follow these conventions:
+
+- **Extensions** use the **singular** prefix `@sneat/extension-<name>` — e.g.
+  `@sneat/extension-listus`. An extension is a self-contained feature module
+  (often with its own routes) that can be embedded in the sneat-app super-app
+  and/or shipped as its own standalone mini-app.
+
+  > The plural form `@sneat/extensions-*` is **deprecated** — it was an early
+  > typo. New and migrated extensions MUST use the singular `extension-`.
+  > (`listus` was migrated to `@sneat/extension-listus`; `schedulus`,
+  > `contactus`, etc. are to follow.)
+
+- **Domain models** use `@sneat/<domain>-models`, **services** use
+  `@sneat/<domain>-services`, **components** use `@sneat/<domain>-components`
+  (e.g. `@sneat/space-models`, `@sneat/space-services`,
+  `@sneat/space-components`).
+
+---
+
 ## Development
 
 ### Prerequisites
