@@ -7,6 +7,7 @@ import {
 import {
   AnalyticsService,
   EnumAsUnionOfKeys,
+  EnvConfigToken,
   IAnalyticsService,
 } from '@sneat/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
@@ -31,6 +32,7 @@ import {
   signInWithEmailLink,
   signInWithCustomToken,
   signInWithPopup,
+  signInWithRedirect,
   linkWithPopup,
   unlink,
 } from 'firebase/auth';
@@ -69,6 +71,10 @@ export class SneatAuthStateService {
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
   readonly fbAuth = inject(Auth);
+
+  // Web OAuth sign-in strategy from the app's environment config (default popup).
+  private readonly signInMethod =
+    inject(EnvConfigToken, { optional: true })?.signInMethod ?? 'popup';
 
   private readonly id = newRandomId({ len: 5 });
 
@@ -244,8 +250,14 @@ export class SneatAuthStateService {
 
   private async signInWithWebSDK(
     authProviderID: AuthProviderID,
-  ): Promise<UserCredential> {
+  ): Promise<UserCredential | undefined> {
     const authProvider = getAuthProvider(authProviderID);
+    if (this.signInMethod === 'redirect') {
+      // Full-page redirect; this navigates away and never resolves. The sign-in
+      // is completed on return by BaseAppComponent's getRedirectResult() call.
+      await signInWithRedirect(this.fbAuth, authProvider);
+      return undefined;
+    }
     const userCredential = await signInWithPopup(this.fbAuth, authProvider);
     return Promise.resolve(userCredential);
   }

@@ -44,6 +44,12 @@ export interface IEnvironmentConfig {
   agents: Record<string, string>;
   firebaseConfig: IFirebaseConfig;
   firebaseBaseUrl?: string;
+  // Web OAuth sign-in strategy. Defaults to 'popup'. Use 'redirect' for apps
+  // served at their own same-origin authDomain where signInWithPopup is
+  // unreliable under current Chrome COOP behavior (the popup closes but its
+  // result never reaches the opener). Redirect completion is handled at startup
+  // by BaseAppComponent's getRedirectResult() call.
+  signInMethod?: 'popup' | 'redirect';
 }
 
 export const FirebaseConfigToken = new InjectionToken<IFirebaseConfig>(

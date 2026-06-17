@@ -14,7 +14,7 @@ import {
 } from '@sneat/logging';
 import { RANDOM_ID_OPTIONS } from '@sneat/random';
 import { AppComponentService } from './app-component.service';
-import { IEnvironmentConfig } from '@sneat/core';
+import { EnvConfigToken, IEnvironmentConfig } from '@sneat/core';
 import { getAngularFireProviders } from './init-firebase';
 
 // import { getAngularFireImports } from './init-firebase';
@@ -38,6 +38,7 @@ export function getStandardSneatProviders(
     provideIonicAngular(),
     provideAnimationsAsync(),
     { provide: LOGGER_FACTORY, useValue: loggerFactory },
+    { provide: EnvConfigToken, useValue: environmentConfig },
     {
       provide: RouteReuseStrategy,
       useClass: IonicRouteStrategy,
