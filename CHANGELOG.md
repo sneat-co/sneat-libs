@@ -1,3 +1,14 @@
+## 0.6.0 (2026-06-17)
+
+### 🚀 Features
+
+- **auth-ui:** show "already signed in as X" panel on login page ([7ee7979](https://github.com/sneat-co/sneat-libs/commit/7ee7979))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.5.4 (2026-06-17)
 
 ### 🚀 Features
