@@ -7,6 +7,7 @@ import {
   TelegramAuthService,
 } from '@sneat/auth-core';
 import { AnalyticsService, clearCurrentSpace, TopMenuService } from '@sneat/core';
+import { getRedirectResult } from 'firebase/auth';
 import { filter } from 'rxjs';
 
 export class BaseAppComponent {
@@ -22,6 +23,14 @@ export class BaseAppComponent {
 
   constructor() {
     this.telegramAuthService.authenticateIfTelegramWebApp();
+    // Complete any pending signInWithRedirect when the app boots. The
+    // authStateService's onIdTokenChanged listener then propagates the
+    // signed-in user. Resolves to null (harmless) when sign-in used a popup or
+    // there is no pending redirect. Lives here so every app that extends
+    // BaseAppComponent gets redirect-based sign-in for free.
+    getRedirectResult(this.authStateService.fbAuth).catch((err) =>
+      console.error('getRedirectResult failed', err),
+    );
     this.authStateService.authState.subscribe((s) => {
       this.authStatus = s.status;
     });
