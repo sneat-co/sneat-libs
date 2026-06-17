@@ -1,3 +1,14 @@
+## 0.7.0 (2026-06-17)
+
+### 🚀 Features
+
+- **app,space:** declarative TitleStrategy + consolidate spaces card onto list ([78260d3](https://github.com/sneat-co/sneat-libs/commit/78260d3))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.6.1 (2026-06-17)
 
 ### 🩹 Fixes
