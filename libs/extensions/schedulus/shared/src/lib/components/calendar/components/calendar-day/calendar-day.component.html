@@ -17,9 +17,9 @@
       }
     </ion-item>
   } @else {
-    @if (slotsHiddenByFilter) {
+    @if (slotsHiddenByFilter()) {
       <ion-item-divider color="light">
-        <ion-label>{{ slotsHiddenByFilter }} hidden by filter.</ion-label>
+        <ion-label>{{ slotsHiddenByFilter() }} hidden by filter.</ion-label>
         <ion-buttons slot="end">
           <ion-button (click)="resetFilter($event)">
             <ion-icon color="medium" name="close-outline" slot="end" />
@@ -28,7 +28,7 @@
         </ion-buttons>
       </ion-item-divider>
     }
-    @for (slot of slots; track slot.slot.id) {
+    @for (slot of slots(); track slot.slot.id) {
       <sneat-day-slot-item
         [$space]="$space()"
         [dateID]="weekday.day?.dateID"

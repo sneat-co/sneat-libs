@@ -1,6 +1,7 @@
 <div class="ion-padding-horizontal">
   <ion-segment
-    [(ngModel)]="tab"
+    [ngModel]="tab()"
+    (ngModelChange)="tab.set($event)"
     color="dark"
     (ionChange)="onTabChanged($event)"
   >
@@ -10,25 +11,25 @@
   </ion-segment>
 </div>
 
-@switch (tab) {
+@switch (tab()) {
   @case ("upcoming") {
     <sneat-single-happenings-list
       [$space]="$space()"
-      [happenings]="upcomingSingles"
+      [happenings]="upcomingSingles()"
       [$contactusSpace]="$contactusSpace()"
     />
   }
   @case ("past") {
     <sneat-single-happenings-list
       [$space]="$space()"
-      [happenings]="pastSingles"
+      [happenings]="pastSingles()"
       [$contactusSpace]="$contactusSpace()"
     />
   }
   @case ("recent") {
     <sneat-single-happenings-list
       [$space]="$space()"
-      [happenings]="recentSingles"
+      [happenings]="recentSingles()"
       [$contactusSpace]="$contactusSpace()"
     />
   }
