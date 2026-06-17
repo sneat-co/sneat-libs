@@ -1,10 +1,12 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, computed, signal, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import {
   NavController,
   IonBackButton,
+  IonButton,
   IonButtons,
   IonCard,
   IonCardContent,
@@ -60,6 +62,7 @@ type Action = 'join' | 'refuse'; // TODO: inject provider for action description
     EmailLoginFormComponent,
     IonHeader,
     IonToolbar,
+    IonButton,
     IonButtons,
     IonBackButton,
     IonTitle,
@@ -109,6 +112,21 @@ export class LoginPageComponent extends SneatBaseComponent {
 
   protected readonly appTitle: string;
 
+  // Surfaces the Firebase auth state on the login page itself: if the user is
+  // already signed in (e.g. the app failed to navigate them onward) we show a
+  // "you are already signed in as X" panel instead of the sign-in form, so an
+  // authenticated-but-stuck state is obvious rather than looking like sign-in
+  // is broken.
+  protected readonly isAuthenticated = computed(
+    () => this.authStatus() === 'authenticated',
+  );
+  private readonly authStatus = toSignal(this.authStateService.authStatus);
+  private readonly authUser = toSignal(this.authStateService.authUser);
+  protected readonly signedInAs = computed(() => {
+    const u = this.authUser();
+    return u?.displayName || u?.email || u?.uid || '';
+  });
+
   constructor() {
     super();
     const appInfo = this.appInfo;
@@ -146,6 +164,21 @@ export class LoginPageComponent extends SneatBaseComponent {
 
   protected onEmailFormStatusChanged(signingWith?: EmailFormSigningWith): void {
     this.signingWith.set(signingWith as AuthProviderID);
+  }
+
+  // Proceed into the app from the "already signed in" panel.
+  protected continueToApp(): void {
+    const redirectTo = this.redirectTo || currentSpacePath() || '/';
+    this.navController
+      .navigateRoot(redirectTo)
+      .catch(this.errorLogger.logErrorHandler('Failed to navigate to ' + redirectTo));
+  }
+
+  // Sign out so the sign-in form is shown again (e.g. to log in as someone else).
+  protected reLogin(): void {
+    this.authStateService
+      .signOut()
+      .catch(this.errorLogger.logErrorHandler('Failed to sign out for re-login'));
   }
 
   protected async loginWith(provider: AuthProviderID) {

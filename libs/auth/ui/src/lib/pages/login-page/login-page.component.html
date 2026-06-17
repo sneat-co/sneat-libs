@@ -23,10 +23,32 @@
     </ion-text>
   </p>
 
-  <sneat-email-login-form
-    (signingWithChange)="onEmailFormStatusChanged()"
-    (loggedIn)="onLoggedIn($event)"
-  />
+  @if (isAuthenticated()) {
+    <ion-card color="success">
+      <ion-card-content>
+        <p>
+          @if (signedInAs()) {
+            You are already signed in as <strong>{{ signedInAs() }}</strong>.
+          } @else {
+            You are already signed in.
+          }
+        </p>
+        <ion-button expand="block" (click)="continueToApp()">Continue</ion-button>
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="medium"
+          (click)="reLogin()"
+        >
+          Re-login as someone else
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  } @else {
+    <sneat-email-login-form
+      (signingWithChange)="onEmailFormStatusChanged()"
+      (loggedIn)="onLoggedIn($event)"
+    />
 
   <ion-card>
     <ion-item-divider color="light">
@@ -140,6 +162,7 @@
       </ion-row>
     </ion-grid>
   </ion-card>
+  }
 
   <p style="text-align: center; font-size: smaller">
     <ion-text color="medium">
