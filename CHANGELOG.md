@@ -1,3 +1,14 @@
+## 0.6.1 (2026-06-17)
+
+### 🩹 Fixes
+
+- **space-components:** make SpacesCardComponent signal-based so it repaints on record load ([eb9af75](https://github.com/sneat-co/sneat-libs/commit/eb9af75))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.6.0 (2026-06-17)
 
 ### 🚀 Features
