@@ -1,3 +1,14 @@
+## 0.5.3 (2026-06-17)
+
+### 🩹 Fixes
+
+- **app:** complete pending signInWithRedirect at startup ([eed04ba](https://github.com/sneat-co/sneat-libs/commit/eed04ba))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.5.2 (2026-06-16)
 
 ### 🩹 Fixes
