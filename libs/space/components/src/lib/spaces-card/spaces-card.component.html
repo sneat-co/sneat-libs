@@ -4,7 +4,7 @@
       <ion-card-title color="medium">Spaces</ion-card-title>
     </ion-label>
     <ion-buttons slot="end" (click)="startAddingSpace()">
-      @if (!showAdd) {
+      @if (!showAdd()) {
         <ion-button color="primary">
           <ion-icon name="add" slot="start" />
           <ion-label>Add</ion-label>
@@ -12,7 +12,7 @@
       }
     </ion-buttons>
   </ion-item>
-  @if (spaces) {
+  @if (spaces(); as spaces) {
     <ion-list>
       @for (space of spaces; track space.id) {
         <ion-item-sliding>
@@ -43,7 +43,7 @@
         <ion-spinner name="" slot="start" color="medium" />
         <ion-buttons slot="start">
           <ion-button disabled="disabled" style="text-transform: none"
-            >{{ loadingState }}...
+            >{{ loadingState() }}...
           </ion-button>
         </ion-buttons>
         <ion-skeleton-text animated />
@@ -51,22 +51,23 @@
     </ion-list>
   }
 
-  @if (showAdd) {
-    <ion-item [disabled]="adding">
+  @if (showAdd()) {
+    <ion-item [disabled]="adding()">
       <ion-input
         (keyup.enter)="addSpace()"
         #addTeamInput
-        [(ngModel)]="spaceName"
-        (keyup.escape)="showAdd = false"
+        [ngModel]="spaceName()"
+        (ngModelChange)="spaceName.set($event)"
+        (keyup.escape)="showAdd.set(false)"
         placeholder="New team name"
       />
       <ion-buttons slot="end">
         <ion-button color="primary" fill="solid" (click)="addSpace()">
           <ion-label>Create</ion-label>
         </ion-button>
-        @if (!!spaces?.length) {
-          <ion-button (click)="showAdd = false" color="medium" title="Cancel">
-            @if (adding) {
+        @if (!!spaces()?.length) {
+          <ion-button (click)="cancelAdd()" color="medium" title="Cancel">
+            @if (adding()) {
               <ion-spinner />
             } @else {
               <ion-icon name="close-outline" />
@@ -76,7 +77,7 @@
       </ion-buttons>
     </ion-item>
   }
-  @if (showAdd) {
+  @if (showAdd()) {
     <ion-card-content>
       <p>Enter team name and click "Create" button to add a new team.</p>
     </ion-card-content>

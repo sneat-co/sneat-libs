@@ -1,4 +1,13 @@
-import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   IonButton,
@@ -24,13 +33,12 @@ import { IIdAndBrief } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ICreateSpaceRequest, ISpaceContext } from '@sneat/space-models';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
-import { ISneatUserState, SneatUserService } from '@sneat/auth-core';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { SneatUserService } from '@sneat/auth-core';
 
 @Component({
   selector: 'sneat-spaces-card',
   templateUrl: './spaces-card.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     IonInput,
@@ -50,7 +58,7 @@ import { takeUntil } from 'rxjs/operators';
     IonCardContent,
   ],
 })
-export class SpacesCardComponent implements OnInit, OnDestroy {
+export class SpacesCardComponent {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly navService = inject(SpaceNavService);
   private readonly userService = inject(SneatUserService);
@@ -59,25 +67,39 @@ export class SpacesCardComponent implements OnInit, OnDestroy {
     inject<IAnalyticsService>(AnalyticsService);
   private readonly toastController = inject(ToastController);
 
-  @ViewChild(IonInput, { static: false }) addSpaceInput?: IonInput; // TODO: IonInput;
+  protected readonly addSpaceInput = viewChild<IonInput>('addTeamInput');
 
-  public spaces?: IIdAndBrief<IUserSpaceBrief>[];
-  public loadingState: 'Authenticating' | 'Loading' = 'Authenticating';
-  public spaceName = '';
-  public adding = false;
-  public showAdd = false; //
-  private readonly destroyed = new Subject<void>();
-  private subscriptions: Subscription[] = [];
+  private readonly userState = toSignal(this.userService.userState);
 
-  public ngOnDestroy(): void {
-    // console.log('SpacesCardComponent.ngOnDestroy()');
-    this.destroyed.next();
-    this.destroyed.complete();
-    this.unsubscribe('ngOnDestroy');
-  }
+  // undefined => loading (not yet known)
+  public readonly spaces = computed<
+    IIdAndBrief<IUserSpaceBrief>[] | undefined
+  >(() => {
+    const record = this.userState()?.record;
+    if (!record) {
+      return undefined;
+    }
+    return Object.entries(record.spaces ?? {})
+      .map(([id, brief]) => ({ id, brief }))
+      .sort((a, b) => (a.brief.title > b.brief.title ? 1 : -1));
+  });
 
-  public ngOnInit(): void {
-    this.watchUserRecord();
+  public readonly loadingState = computed<'Authenticating' | 'Loading'>(() =>
+    this.userState()?.status === 'authenticated' ? 'Loading' : 'Authenticating',
+  );
+
+  public readonly showAdd = signal(false);
+  public readonly spaceName = signal('');
+  public readonly adding = signal(false);
+
+  public constructor() {
+    // Auto-open the add form when the user has no spaces.
+    effect(() => {
+      const spaces = this.spaces();
+      if (spaces && spaces.length === 0 && !this.showAdd()) {
+        this.startAddingSpace();
+      }
+    });
   }
 
   public goSpace(space: ISpaceContext) {
@@ -86,9 +108,13 @@ export class SpacesCardComponent implements OnInit, OnDestroy {
       .catch(this.errorLogger.logError);
   }
 
+  public cancelAdd(): void {
+    this.showAdd.set(false);
+  }
+
   public addSpace() {
     this.analyticsService.logEvent('addSpace');
-    const title = this.spaceName.trim();
+    const title = this.spaceName().trim();
     if (!title) {
       this.toastController
         .create({
@@ -111,7 +137,7 @@ export class SpacesCardComponent implements OnInit, OnDestroy {
         );
       return;
     }
-    if (this.spaces?.find((t) => t.brief.title === title)) {
+    if (this.spaces()?.find((t) => t.brief.title === title)) {
       this.toastController
         .create({
           message: 'You already have a team with the same name',
@@ -138,39 +164,31 @@ export class SpacesCardComponent implements OnInit, OnDestroy {
       // memberType: TeamMemberType.creator,
       title,
     };
-    this.adding = true;
+    this.adding.set(true);
     this.spaceService.createSpace(request).subscribe({
       next: (space) => {
         this.analyticsService.logEvent('spaceCreated', { space: space.id });
-        const userTeamBrief2: IUserSpaceBrief = {
-          userContactID: 'TODO: populate userContactID',
-          title: space?.dbo?.title || space.id,
-          roles: ['creator'],
-          // memberType: request.memberType,
-          type: space?.dbo?.type || 'unknown',
-        };
-        if (userTeamBrief2 && !this.spaces?.find((t) => t.id === space.id)) {
-          this.spaces?.push({ id: space.id, brief: userTeamBrief2 });
-        }
-        this.adding = false;
-        this.spaceName = '';
+        this.adding.set(false);
+        this.spaceName.set('');
+        // The Firestore user record update recomputes `spaces`; just navigate.
         this.goSpace(space);
       },
       error: (err) => {
         this.errorLogger.logError(err, 'Failed to create new team record');
-        this.adding = false;
+        this.adding.set(false);
       },
     });
   }
 
   public startAddingSpace(): void {
-    this.showAdd = true;
+    this.showAdd.set(true);
     setTimeout(() => {
-      if (!this.addSpaceInput) {
+      const addSpaceInput = this.addSpaceInput();
+      if (!addSpaceInput) {
         this.errorLogger.logError('addTeamInput is not set');
         return;
       }
-      this.addSpaceInput
+      addSpaceInput
         .setFocus()
         .catch((err) =>
           this.errorLogger.logError(
@@ -203,55 +221,4 @@ export class SpacesCardComponent implements OnInit, OnDestroy {
         ),
     });
   }
-
-  private watchUserRecord(): void {
-    this.userService.userState.pipe(takeUntil(this.destroyed)).subscribe({
-      next: (userState) => {
-        // console.log('SpacesCardComponent => user state changed:', userState);
-        if (userState.status === 'authenticating') {
-          if (this.loadingState === 'Authenticating') {
-            this.loadingState = 'Loading';
-          }
-        }
-        const uid = userState.user?.uid;
-        this.spaces = undefined;
-        if (!uid) {
-          this.unsubscribe('user signed out');
-          return;
-        }
-        this.subscriptions.push(
-          this.userService.userState.subscribe({
-            next: this.setUser,
-            error: (err) =>
-              this.errorLogger.logError(err, 'Failed to get user record'),
-          }),
-        );
-      },
-      error: (err) => this.errorLogger.logError(err, 'Failed to get user ID'),
-    });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private unsubscribe(_reason?: string): void {
-    // console.log(`SpacesCardComponent.unsubscribe(reason: ${reason})`);
-    this.subscriptions.forEach((s) => s.unsubscribe());
-    this.subscriptions = [];
-  }
-
-  private setUser = (userState: ISneatUserState): void => {
-    // console.log('SpacesCardComponent => user:', userState);
-    const user = userState.record;
-    if (user) {
-      this.spaces = Object.entries(user?.spaces ? user.spaces : {}).map(
-        ([id, team]) => ({ id, brief: team }),
-      );
-      this.spaces.sort((a, b) => (a.brief.title > b.brief.title ? 1 : -1));
-      this.showAdd = !this.spaces?.length;
-      if (this.showAdd) {
-        this.startAddingSpace();
-      }
-    } else {
-      this.spaces = undefined;
-    }
-  };
 }
