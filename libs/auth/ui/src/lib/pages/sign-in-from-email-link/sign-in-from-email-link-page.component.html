@@ -5,7 +5,7 @@
 </ion-header>
 <ion-content>
   <ion-card>
-    @if (!emailFromStorage) {
+    @if (!emailFromStorage()) {
       <p>
         Welcome to our app! For your safety please re-type your email address to
         sign-in.
@@ -16,15 +16,15 @@
       <ion-input
         label="Email"
         [required]="true"
-        [readonly]="isSigning"
-        [value]="email"
-        [disabled]="emailFromStorage || isSigning"
+        [readonly]="isSigning()"
+        [value]="email()"
+        [disabled]="emailFromStorage() || isSigning()"
       />
     </ion-item>
 
-    <ion-button [disabled]="isSigning" (click)="signIn()">
+    <ion-button [disabled]="isSigning()" (click)="signIn()">
       <ion-label>
-        @if (isSigning) {
+        @if (isSigning()) {
           Signing in...
         } @else {
           Sign in

@@ -71,7 +71,7 @@
         </ion-label>
         <ion-buttons slot="end">
           <ion-button
-            [disabled]="disconnecting"
+            [disabled]="disconnecting()"
             color="warning"
             fill="solid"
             (click)="disconnect('telegram')"

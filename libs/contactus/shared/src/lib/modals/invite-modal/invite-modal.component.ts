@@ -5,6 +5,7 @@ import {
   Pipe,
   PipeTransform,
   inject,
+  signal,
 } from '@angular/core';
 import {
   FormControl,
@@ -91,11 +92,11 @@ export class InviteModalComponent {
   @Input({ required: true }) space?: ISpaceContext;
   @Input() member?: IContactWithBriefAndSpace;
 
-  tab: InviteChannel = 'email';
-  link?: string;
-  error?: string;
+  readonly tab = signal<InviteChannel>('email');
+  readonly link = signal<string | undefined>(undefined);
+  readonly error = signal<string | undefined>(undefined);
 
-  protected creatingInvite = false;
+  protected readonly creatingInvite = signal(false);
 
   readonly email = new FormControl<string>('', [
     Validators.required,
@@ -135,7 +136,7 @@ export class InviteModalComponent {
     protocol: 'sms' | 'mailto',
     address: string,
   ): void {
-    this.creatingInvite = true;
+    this.creatingInvite.set(true);
     switch (protocol) {
       case 'sms':
         this.smsForm.disable();
@@ -151,7 +152,7 @@ export class InviteModalComponent {
         const url =
           protocol +
           `:${address}?subject=You+are+invited+to+join+${this.space?.type}&body=${body}`;
-        this.creatingInvite = false;
+        this.creatingInvite.set(false);
         switch (protocol) {
           case 'sms':
             this.smsForm.enable();
@@ -163,7 +164,7 @@ export class InviteModalComponent {
         window.open(url);
       },
       error: (err) => {
-        this.creatingInvite = false;
+        this.creatingInvite.set(false);
         switch (protocol) {
           case 'sms':
             this.smsForm.enable();
@@ -197,7 +198,7 @@ export class InviteModalComponent {
       this.errorLogger.logError('can not send invite without member context');
       return;
     }
-    switch (this.tab) {
+    switch (this.tab()) {
       case 'email':
         this.emailForm.markAllAsTouched();
         break;
@@ -206,18 +207,18 @@ export class InviteModalComponent {
         break;
     }
 
-    if (this.tab === 'email' && !this.email.value) {
-      this.error = 'Email address is required';
+    if (this.tab() === 'email' && !this.email.value) {
+      this.error.set('Email address is required');
       return;
     }
-    if (this.tab === 'sms' && !this.phone.value) {
-      this.error = 'Phone number is required';
+    if (this.tab() === 'sms' && !this.phone.value) {
+      this.error.set('Phone number is required');
       return;
     }
-    const address = this.tab === 'email' ? this.email.value : this.phone.value;
+    const address = this.tab() === 'email' ? this.email.value : this.phone.value;
 
     this.createInvite({
-      channel: this.tab,
+      channel: this.tab(),
       address: address || '',
       send: true,
     }).subscribe({
@@ -258,18 +259,18 @@ export class InviteModalComponent {
   }
 
   async copyLinkToClipboard() {
-    if (!this.link) {
+    if (!this.link()) {
       return;
     }
-    await navigator.clipboard.writeText(this.link);
+    await navigator.clipboard.writeText(this.link()!);
     await this.showToast('Invite link has been copied to your clipboard');
   }
 
   async copyLinkWithInviteTextToClipboard() {
-    if (!this.link) {
+    if (!this.link()) {
       return;
     }
-    await navigator.clipboard.writeText(this.link);
+    await navigator.clipboard.writeText(this.link()!);
     await this.showToast(
       'Invite text with a link has been copied to your clipboard',
     );
@@ -289,7 +290,7 @@ export class InviteModalComponent {
   }
 
   onTabChanged(): void {
-    if (this.tab === 'link' && !this.link) {
+    if (this.tab() === 'link' && !this.link()) {
       this.generateLink();
     }
   }
@@ -320,7 +321,7 @@ export class InviteModalComponent {
         const protocol = location.host.startsWith('localhost:')
           ? 'http'
           : 'https';
-        this.link = `${protocol}://${host}/join/${this.space?.brief?.type}?id=${id}#pin=${pin}`;
+        this.link.set(`${protocol}://${host}/join/${this.space?.brief?.type}?id=${id}#pin=${pin}`);
       },
       error: this.errorLogger.logErrorHandler(
         'failed to generate an invite link',

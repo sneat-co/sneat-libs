@@ -4,6 +4,7 @@ import {
   input,
   Input,
   OnChanges,
+  signal,
   inject,
 } from '@angular/core';
 import {
@@ -55,9 +56,11 @@ export class SingleHappeningsListComponent
     IContactusSpaceDboAndID | undefined
   >();
 
-  private filter?: ICalendarFilter;
+  private readonly filter = signal<ICalendarFilter | undefined>(undefined);
 
-  protected happeningsMatchingFilter?: IHappeningContext[];
+  protected readonly happeningsMatchingFilter = signal<
+    IHappeningContext[] | undefined
+  >(undefined);
 
   constructor() {
     super();
@@ -66,7 +69,7 @@ export class SingleHappeningsListComponent
     filterService.filter
       .pipe(takeUntil(this.destroyed$))
       .subscribe((filter) => {
-        this.filter = filter;
+        this.filter.set(filter);
         this.applyFilter();
       });
   }
@@ -76,7 +79,7 @@ export class SingleHappeningsListComponent
   protected get numberOfHidden(): number {
     return (
       (this.happenings?.length || 0) -
-      (this.happeningsMatchingFilter?.length || 0)
+      (this.happeningsMatchingFilter()?.length || 0)
     );
   }
 
@@ -87,9 +90,9 @@ export class SingleHappeningsListComponent
 
   private applyFilter(): void {
     // console.log('applyFilter()', this.filter, this.happenings);
-    const f = this.filter;
-    this.happeningsMatchingFilter = this.happenings?.filter((h) =>
-      isMatchingScheduleFilter(h, f),
+    const f = this.filter();
+    this.happeningsMatchingFilter.set(
+      this.happenings?.filter((h) => isMatchingScheduleFilter(h, f)),
     );
   }
 

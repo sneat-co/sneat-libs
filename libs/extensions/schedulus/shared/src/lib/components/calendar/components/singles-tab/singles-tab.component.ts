@@ -1,6 +1,5 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   input,
@@ -8,6 +7,7 @@ import {
   OnChanges,
   OnDestroy,
   Output,
+  signal,
   SimpleChanges,
   inject,
 } from '@angular/core';
@@ -39,18 +39,23 @@ export class SinglesTabComponent
   implements OnChanges, OnDestroy
 {
   private readonly happeningService = inject(HappeningService);
-  private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   private upcomingSinglesSubscription?: Subscription;
-  protected upcomingSingles?: IHappeningContext[];
+  protected readonly upcomingSingles = signal<IHappeningContext[] | undefined>(
+    undefined,
+  );
 
   private pastSinglesSubscription?: Subscription;
-  protected pastSingles?: IHappeningContext[];
+  protected readonly pastSingles = signal<IHappeningContext[] | undefined>(
+    undefined,
+  );
 
   private recentSinglesSubscription?: Subscription;
-  protected recentSingles?: IHappeningContext[];
+  protected readonly recentSingles = signal<IHappeningContext[] | undefined>(
+    undefined,
+  );
 
-  public tab: 'upcoming' | 'past' | 'recent' = 'upcoming';
+  public readonly tab = signal<'upcoming' | 'past' | 'recent'>('upcoming');
 
   @Output() readonly slotClicked = new EventEmitter<ISlotUIEvent>();
 
@@ -69,7 +74,7 @@ export class SinglesTabComponent
     const spaceChange = changes['$space'];
     if (spaceChange) {
       if (this.$spaceID() !== spaceChange.previousValue?.id) {
-        switch (this.tab) {
+        switch (this.tab()) {
           case 'upcoming':
             this.watchUpcomingSingles();
             break;
@@ -83,7 +88,7 @@ export class SinglesTabComponent
 
   protected onTabChanged(event: Event): void {
     event.stopPropagation();
-    switch (this.tab) {
+    switch (this.tab()) {
       case 'upcoming':
         if (!this.upcomingSinglesSubscription) {
           this.watchUpcomingSingles();
@@ -110,7 +115,7 @@ export class SinglesTabComponent
     this.upcomingSinglesSubscription = this.watchSingles(
       this.happeningService.watchUpcomingSingles(space),
       this.upcomingSinglesSubscription,
-      (singles) => (this.upcomingSingles = singles),
+      (singles) => this.upcomingSingles.set(singles),
     );
   }
 
@@ -122,7 +127,7 @@ export class SinglesTabComponent
     this.pastSinglesSubscription = this.watchSingles(
       this.happeningService.watchPastSingles(space),
       this.pastSinglesSubscription,
-      (singles) => (this.pastSingles = singles),
+      (singles) => this.pastSingles.set(singles),
     );
   }
 
@@ -134,7 +139,7 @@ export class SinglesTabComponent
     this.recentSinglesSubscription = this.watchSingles(
       this.happeningService.watchRecentlyCreatedSingles(space),
       this.recentSinglesSubscription,
-      (singles) => (this.recentSingles = singles),
+      (singles) => this.recentSingles.set(singles),
     );
   }
 
@@ -151,7 +156,6 @@ export class SinglesTabComponent
     return singles$.pipe(this.takeUntilDestroyed()).subscribe({
       next: (singles) => {
         processSingles(singles);
-        this.changeDetectorRef.detectChanges();
       },
       error: this.errorLogger.logErrorHandler('Failed to load past happenings'),
     });

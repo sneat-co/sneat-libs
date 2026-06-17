@@ -1,9 +1,11 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Output,
-  ViewChild,
   inject,
+  signal,
+  viewChild,
 } from '@angular/core';
 // import { getApp } from '@angular/fire/app';
 // import { getAuth } from '@angular/fire/auth';
@@ -52,6 +54,7 @@ import {
 @Component({
   selector: 'sneat-email-login-form',
   templateUrl: 'email-login-form.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     IonCard,
@@ -80,35 +83,38 @@ export class EmailLoginFormComponent {
   private readonly sneatApiService = inject(SneatApiService);
   private readonly userRecordService = inject(UserRecordService);
 
-  protected sign: 'in' | 'up' = 'up'; // TODO: document here what 'in' & 'up' means
-  protected email = '';
-  protected password = '';
-  protected firstName = '';
-  protected lastName = '';
-  protected spaceTitle = '';
-  protected wrongPassword = false;
+  protected readonly sign = signal<'in' | 'up'>('up'); // TODO: document here what 'in' & 'up' means
+  protected readonly email = signal('');
+  protected readonly password = signal('');
+  protected readonly firstName = signal('');
+  protected readonly lastName = signal('');
+  protected readonly spaceTitle = signal('');
+  protected readonly wrongPassword = signal(false);
 
-  protected signingWith?: EmailFormSigningWith;
+  protected readonly signingWith = signal<EmailFormSigningWith | undefined>(
+    undefined,
+  );
 
   @Output() readonly signingWithChange = new EventEmitter<
     EmailFormSigningWith | undefined
   >();
   @Output() readonly loggedIn = new EventEmitter<UserCredential>();
 
-  @ViewChild('emailInput', { static: true }) emailInput?: IonInput;
-  @ViewChild('spaceTitleInput', { static: false }) spaceTitleInput?: IonInput;
+  protected readonly emailInput = viewChild<IonInput>('emailInput');
+  protected readonly spaceTitleInput = viewChild<IonInput>('spaceTitleInput');
 
   public readonly setFocusToInput = createSetFocusToInput(this.errorLogger);
 
   constructor() {
-    this.email = localStorage.getItem('emailForSignIn') || '';
-    if (this.email) {
-      this.sign = 'in';
+    const email = localStorage.getItem('emailForSignIn') || '';
+    this.email.set(email);
+    if (email) {
+      this.sign.set('in');
     }
   }
 
   public get validEmail(): boolean {
-    const email = this.email,
+    const email = this.email(),
       i = email?.indexOf('@');
     return i > 0 && i < email.length - 1;
   }
@@ -118,15 +124,15 @@ export class EmailLoginFormComponent {
   }
 
   public async signUp(): Promise<void> {
-    if (!this.firstName) {
+    if (!this.firstName()) {
       // this.toaster.showToast('Full name is required');
       return;
     }
     // this.signingWith = 'email';
-    this.email = this.email.trim();
-    const email = this.email;
-    const firstName = this.firstName.trim();
-    const lastName = this.lastName.trim();
+    const email = this.email().trim();
+    this.email.set(email);
+    const firstName = this.firstName().trim();
+    const lastName = this.lastName().trim();
     if (!email) {
       alert('Email is a required field');
       return;
@@ -139,8 +145,8 @@ export class EmailLoginFormComponent {
       alert('Last name is a required field');
       return;
     }
-    this.spaceTitle = this.spaceTitle.trim();
-    const spaceTitle = this.spaceTitle;
+    const spaceTitle = this.spaceTitle().trim();
+    this.spaceTitle.set(spaceTitle);
     if (this.appInfo.requiredSpaceType && !spaceTitle) {
       alert('Company title is a required field');
       this.setFocusToSpaceTitle();
@@ -202,7 +208,7 @@ export class EmailLoginFormComponent {
   }
 
   public keyupEnter(): void {
-    switch (this.sign) {
+    switch (this.sign()) {
       case 'in':
         this.signIn();
         break;
@@ -214,12 +220,12 @@ export class EmailLoginFormComponent {
 
   public signIn(): void {
     this.setSigningWith('email');
-    this.email = this.email.trim();
-    this.wrongPassword = false;
+    this.email.set(this.email().trim());
+    this.wrongPassword.set(false);
     this.saveEmailForReuse();
     // const auth = getAuth(getApp());
     const auth = this.getFirebaseAuth();
-    signInWithEmailAndPassword(auth, this.email, this.password)
+    signInWithEmailAndPassword(auth, this.email(), this.password())
       .then((userCredential) => {
         this.onLoggedIn(userCredential); // TODO: add analytics event
       })
@@ -229,20 +235,20 @@ export class EmailLoginFormComponent {
   }
 
   private saveEmailForReuse(): void {
-    localStorage.setItem('emailForSignIn', this.email);
+    localStorage.setItem('emailForSignIn', this.email());
   }
 
   public sendSignInLink(): void {
     this.setSigningWith('emailLink');
-    this.email = this.email.trim();
+    this.email.set(this.email().trim());
     this.saveEmailForReuse();
-    sendSignInLinkToEmail(this.afAuth, this.email, {
+    sendSignInLinkToEmail(this.afAuth, this.email(), {
       // url: 'https://dailyscrum.app/pwa/sign-in',
       url: document.baseURI + 'sign-in-from-email-link',
       handleCodeInApp: true,
     })
       .then(() => {
-        this.showToast(`Sign-in link has been sent to email: ${this.email}`);
+        this.showToast(`Sign-in link has been sent to email: ${this.email()}`);
         this.setSigningWith(undefined);
       })
       .catch(
@@ -277,11 +283,11 @@ export class EmailLoginFormComponent {
 
   public resetPassword(): void {
     this.setSigningWith('resetPassword');
-    sendPasswordResetEmail(this.afAuth, this.email)
+    sendPasswordResetEmail(this.afAuth, this.email())
       .then(() => {
         this.setSigningWith(undefined);
         this.showToast(
-          `Password reset link has been sent to email: ${this.email}`,
+          `Password reset link has been sent to email: ${this.email()}`,
         );
       })
       .catch(
@@ -325,7 +331,7 @@ export class EmailLoginFormComponent {
       this.analyticsService.logEvent(eventName, eventParams);
     }
     if ((err as FirebaseError).code === 'auth/wrong-password') {
-      this.wrongPassword = true;
+      this.wrongPassword.set(true);
       return;
     }
     this.errorLogger.logError(err, m, {
@@ -334,7 +340,7 @@ export class EmailLoginFormComponent {
   }
 
   private setSigningWith(signingWith?: EmailFormSigningWith): void {
-    this.signingWith = signingWith;
+    this.signingWith.set(signingWith);
     this.signingWithChange.emit(signingWith);
   }
 

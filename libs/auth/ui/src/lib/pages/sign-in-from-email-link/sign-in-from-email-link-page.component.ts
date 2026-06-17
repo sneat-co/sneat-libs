@@ -1,4 +1,9 @@
-import { Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   IonButton,
   IonCard,
@@ -18,6 +23,7 @@ import { ErrorLogger, IErrorLogger } from '@sneat/core';
 @Component({
   selector: 'sneat-sign-in-from-email-link-page',
   templateUrl: 'sign-in-from-email-link-page.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonHeader,
     IonToolbar,
@@ -36,21 +42,22 @@ export class SignInFromEmailLinkPageComponent {
   private readonly authStateService = inject(SneatAuthStateService);
   private readonly navController = inject(NavController);
 
-  email: string;
-  emailFromStorage = false;
-  isSigning = false;
+  protected readonly email = signal('');
+  protected readonly emailFromStorage = signal(false);
+  protected readonly isSigning = signal(false);
 
   constructor() {
-    this.email = localStorage.getItem('emailForSignIn') || '';
-    this.emailFromStorage = !!this.email;
-    if (this.email) {
+    const email = localStorage.getItem('emailForSignIn') || '';
+    this.email.set(email);
+    this.emailFromStorage.set(!!email);
+    if (email) {
       this.signIn();
     }
   }
 
   public signIn(): void {
-    this.isSigning = true;
-    this.authStateService.signInWithEmailLink(this.email).subscribe({
+    this.isSigning.set(true);
+    this.authStateService.signInWithEmailLink(this.email()).subscribe({
       next: () => {
         this.navController
           .navigateRoot('/')
@@ -61,8 +68,8 @@ export class SignInFromEmailLinkPageComponent {
           );
       },
       error: (err) => {
-        this.isSigning = false;
-        this.emailFromStorage = false;
+        this.isSigning.set(false);
+        this.emailFromStorage.set(false);
         this.errorLogger.logError(err, 'Failed to sign in with email link');
       },
     });

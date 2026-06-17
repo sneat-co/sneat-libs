@@ -1,6 +1,5 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   input,
   Input,
@@ -63,7 +62,6 @@ export class CalendarDayComponent
   implements OnChanges, OnDestroy
 {
   private readonly filterService = inject(CalendarFilterService);
-  private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly scheduleNavService = inject(ScheduleNavService);
 
   private slotsSubscription?: Subscription;
@@ -80,9 +78,9 @@ export class CalendarDayComponent
   protected readonly $isToday = signal<boolean>(false);
   protected readonly $isTomorrow = signal<boolean>(false);
 
-  public allSlots?: ISlotUIContext[];
-  public slots?: ISlotUIContext[];
-  public slotsHiddenByFilter?: number;
+  public readonly allSlots = signal<ISlotUIContext[] | undefined>(undefined);
+  public readonly slots = signal<ISlotUIContext[] | undefined>(undefined);
+  public readonly slotsHiddenByFilter = signal<number | undefined>(undefined);
 
   public constructor() {
     super();
@@ -113,28 +111,18 @@ export class CalendarDayComponent
   }
 
   private applyFilter(): void {
-    if (this.allSlots?.length) {
-      this.slots = this.allSlots
+    const allSlots = this.allSlots();
+    if (allSlots?.length) {
+      const slots = allSlots
         .filter((slot) => isSlotVisible(slot, this.filter))
         .toSorted(sortSlotItems);
-      this.slotsHiddenByFilter = this.allSlots.length - this.slots.length;
-      // console.log(
-      // 	this.logPrefix() + '.applyFilter() =>',
-      // 	'slotsHiddenByFilter:',
-      // 	this.slotsHiddenByFilter,
-      // 	'filter:',
-      // 	this.filter,
-      // 	'slots before filter:',
-      // 	this.allSlots,
-      // 	'slots after filter:',
-      // 	this.slots,
-      // );
+      this.slots.set(slots);
+      this.slotsHiddenByFilter.set(allSlots.length - slots.length);
     } else {
       // console.log(this.logPrefix() + '.applyFilter() for empty slots');
-      this.slots = this.allSlots;
-      this.slotsHiddenByFilter = 0;
+      this.slots.set(allSlots);
+      this.slotsHiddenByFilter.set(0);
     }
-    this.changeDetectorRef.markForCheck();
   }
 
   private subscribeForSlots(): void {
@@ -145,13 +133,13 @@ export class CalendarDayComponent
         .pipe(this.takeUntilDestroyed())
         .subscribe(this.processSlots);
     } else {
-      this.slots = undefined;
-      this.slotsHiddenByFilter = undefined;
+      this.slots.set(undefined);
+      this.slotsHiddenByFilter.set(undefined);
     }
   }
 
   private readonly processSlots = (slots?: ISlotUIContext[]) => {
-    this.allSlots = slots;
+    this.allSlots.set(slots);
     this.applyFilter();
   };
 

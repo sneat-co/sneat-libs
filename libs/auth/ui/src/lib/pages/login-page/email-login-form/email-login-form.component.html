@@ -1,7 +1,7 @@
 <div class="ion-padding-horizontal"></div>
 <ion-card>
   <ion-item-divider color="light" class="ion-no-padding">
-    <ion-segment [(ngModel)]="sign" (ionChange)="signChanged()">
+    <ion-segment [ngModel]="sign()" (ngModelChange)="sign.set($event)" (ionChange)="signChanged()">
       <ion-segment-button value="up">
         <ion-icon name="person-add" class="ion-margin-end"></ion-icon>
         <ion-label>Sign up</ion-label>
@@ -23,8 +23,8 @@
         <ion-icon name="mail-outline" />
       </ion-label>
       <ion-input
-        [disabled]="!!signingWith"
-        [(ngModel)]="email"
+        [disabled]="!!signingWith()"
+        [ngModel]="email()" (ngModelChange)="email.set($event)"
         email
         type="email"
         name="email"
@@ -34,7 +34,7 @@
         (keyup.enter)="keyupEnter()"
       />
     </ion-item>
-    @switch (sign) {
+    @switch (sign()) {
       @case ("up") {
         <ion-item>
           <ion-label class="ion-margin-end">
@@ -43,20 +43,20 @@
           <ion-input
             name="first_name"
             placeholder="First name"
-            [(ngModel)]="firstName"
+            [ngModel]="firstName()" (ngModelChange)="firstName.set($event)"
             type="text"
             required
             (keyup.enter)="keyupEnter()"
-            [disabled]="!!signingWith"
+            [disabled]="!!signingWith()"
           />
           <ion-input
             name="last_name"
             placeholder="Last name"
-            [(ngModel)]="lastName"
+            [ngModel]="lastName()" (ngModelChange)="lastName.set($event)"
             type="text"
             required
             (keyup.enter)="keyupEnter()"
-            [disabled]="!!signingWith"
+            [disabled]="!!signingWith()"
           />
         </ion-item>
         @if (appInfo.requiredSpaceType === "company") {
@@ -66,7 +66,7 @@
               #teamTitleInput
               placeholder="required"
               required
-              [(ngModel)]="spaceTitle"
+              [ngModel]="spaceTitle()" (ngModelChange)="spaceTitle.set($event)"
             />
           </ion-item>
         }
@@ -77,12 +77,12 @@
             <ion-icon name="key-outline" />
           </ion-label>
           <ion-input
-            [(ngModel)]="password"
+            [ngModel]="password()" (ngModelChange)="password.set($event)"
             placeholder="Password"
             type="password"
             required
             (keyup.enter)="keyupEnter()"
-            [disabled]="!!signingWith"
+            [disabled]="!!signingWith()"
           />
           <ion-buttons slot="end">
             <ion-button
@@ -95,7 +95,7 @@
             </ion-button>
           </ion-buttons>
         </ion-item>
-        @if (wrongPassword) {
+        @if (wrongPassword()) {
           <ion-item>
             <ion-label color="danger">Wrong password</ion-label>
           </ion-item>
@@ -104,14 +104,14 @@
     }
   </ion-card-content>
   <ion-card-content>
-    @switch (sign) {
+    @switch (sign()) {
       @case ("up") {
         <ion-button
-          [disabled]="!!signingWith || !validEmail || (!firstName && !lastName)"
+          [disabled]="!!signingWith() || !validEmail || (!firstName() && !lastName())"
           (click)="signUp()"
         >
           <ion-icon name="enter-outline" slot="start" />
-          @if (signingWith === "email") {
+          @if (signingWith() === "email") {
             <ion-label>Signing up...</ion-label>
             <ion-spinner
               class="ion-margin-start"
@@ -125,11 +125,11 @@
       }
       @case ("in") {
         <ion-button
-          [disabled]="!!signingWith || !validEmail || !password"
+          [disabled]="!!signingWith() || !validEmail || !password()"
           (click)="signIn()"
         >
           <ion-icon name="enter-outline" slot="start" />
-          @if (signingWith === "email") {
+          @if (signingWith() === "email") {
             <ion-label>Signing in...</ion-label>
             <ion-spinner
               class="ion-margin-start"
@@ -151,7 +151,7 @@
         </ion-button>
         <ion-button
           size="small"
-          [disabled]="!validEmail || signingWith"
+          [disabled]="!validEmail || signingWith()"
           (click)="sendSignInLink()"
           fill="outline"
           color="tertiary"

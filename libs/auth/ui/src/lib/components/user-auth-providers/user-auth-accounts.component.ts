@@ -85,7 +85,9 @@ export class UserAuthAccountsComponent extends SneatBaseComponent {
     return a?.replace(prefix, '') || '';
   }
 
-  protected disconnecting?: 'telegram' | 'viber' | 'whatsapp';
+  protected readonly disconnecting = signal<
+    'telegram' | 'viber' | 'whatsapp' | undefined
+  >(undefined);
 
   protected disconnect(provider: 'telegram'): void {
     if (
@@ -95,12 +97,12 @@ export class UserAuthAccountsComponent extends SneatBaseComponent {
     ) {
       return;
     }
-    this.disconnecting = provider;
+    this.disconnecting.set(provider);
     this.sneatApiService
       .delete('auth/disconnect?provider=' + provider)
       .subscribe({
         next: () => {
-          this.disconnecting = undefined;
+          this.disconnecting.set(undefined);
           alert('Disconnected!');
         },
         error: this.errorLogger.logErrorHandler('Failed to disconnect'),
