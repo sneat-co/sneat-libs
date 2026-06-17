@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { EnvironmentProviders, Provider } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { RouteReuseStrategy } from '@angular/router';
+import { RouteReuseStrategy, TitleStrategy } from '@angular/router';
 import { IonicRouteStrategy } from '@ionic/angular/standalone';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { DefaultSneatAppApiBaseUrl, SneatApiBaseUrl } from '@sneat/api';
@@ -16,6 +16,7 @@ import { RANDOM_ID_OPTIONS } from '@sneat/random';
 import { AppComponentService } from './app-component.service';
 import { EnvConfigToken, IEnvironmentConfig } from '@sneat/core';
 import { getAngularFireProviders } from './init-firebase';
+import { SneatTitleStrategy } from './sneat-title.strategy';
 
 // import { getAngularFireImports } from './init-firebase';
 
@@ -42,6 +43,12 @@ export function getStandardSneatProviders(
     {
       provide: RouteReuseStrategy,
       useClass: IonicRouteStrategy,
+    },
+    {
+      // Owns document.title for every app: composes the route's data.title
+      // with APP_INFO.appTitle, and lets pages override via PageTitleService.
+      provide: TitleStrategy,
+      useClass: SneatTitleStrategy,
     },
     {
       provide: SneatApiBaseUrl,

@@ -25,5 +25,16 @@
     @if (!space.id && !space.brief) {
       <ion-spinner name="lines-small" />
     }
+    @if (allowLeave && space.id) {
+      <ion-buttons slot="end">
+        <ion-button
+          color="medium"
+          title="Leave"
+          (click)="leaveSpace(space, $event)"
+        >
+          <ion-icon name="close-outline" slot="icon-only" />
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-item>
 }

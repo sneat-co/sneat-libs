@@ -1,21 +1,23 @@
 import { inject } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import {
   AuthStatus,
   SneatAuthStateService,
   TelegramAuthService,
 } from '@sneat/auth-core';
-import { AnalyticsService, clearCurrentSpace, TopMenuService } from '@sneat/core';
+import {
+  AnalyticsService,
+  clearCurrentSpace,
+  TopMenuService,
+} from '@sneat/core';
 import { getRedirectResult } from 'firebase/auth';
 import { filter } from 'rxjs';
+import { getRouteTitle } from './route-title';
 
 export class BaseAppComponent {
   private readonly telegramAuthService = inject(TelegramAuthService);
   private readonly router = inject(Router);
-  private readonly activatedRoute = inject(ActivatedRoute);
   private readonly analyticsService = inject(AnalyticsService);
-  private readonly titleService = inject(Title);
   private readonly authStateService = inject(SneatAuthStateService);
   protected readonly topMenuService = inject(TopMenuService); // used in templates
 
@@ -37,23 +39,13 @@ export class BaseAppComponent {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        let route = this.activatedRoute.firstChild;
-        while (route?.firstChild) {
-          route = route.firstChild;
-        }
-        let title = route?.snapshot.data['title'];
-        if (title) {
-          const spaceType = route?.snapshot?.paramMap?.get('spaceType');
-          if (spaceType) {
-            title = `${capitalizeFirstLetter(spaceType)} ${title}`;
-          }
-        }
+        // The document title itself is owned by SneatTitleStrategy; here we only
+        // reuse the same derived page title for the analytics pageview event.
+        const title = getRouteTitle(this.router.routerState.snapshot);
         this.analyticsService.logEvent('$pageview', {
           page_path: event.urlAfterRedirects,
           title,
         });
-        title = title ? `${title} @ Sneat.App` : 'Sneat.App'; // Default title
-        this.titleService.setTitle(title);
 
         this.forgetCurrentSpaceIfLeftSpaces(event.urlAfterRedirects);
       });
@@ -77,8 +69,4 @@ export class BaseAppComponent {
     }
     clearCurrentSpace();
   }
-}
-
-function capitalizeFirstLetter(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
 }

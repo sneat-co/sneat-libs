@@ -18,9 +18,6 @@ import {
   IonIcon,
   IonInput,
   IonItem,
-  IonItemOption,
-  IonItemOptions,
-  IonItemSliding,
   IonLabel,
   IonList,
   IonSkeletonText,
@@ -34,6 +31,7 @@ import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ICreateSpaceRequest, ISpaceContext } from '@sneat/space-models';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
+import { SpacesListComponent } from '../spaces-list';
 
 // Signal-based + OnPush so the card repaints reactively when the user record
 // loads, instead of mutating fields inside an rxjs subscription and relying on
@@ -56,12 +54,10 @@ import { SneatUserService } from '@sneat/auth-core';
     IonButton,
     IonIcon,
     IonList,
-    IonItemSliding,
-    IonItemOptions,
-    IonItemOption,
     IonSpinner,
     IonSkeletonText,
     IonCardContent,
+    SpacesListComponent,
   ],
 })
 export class SpacesCardComponent {
@@ -90,6 +86,22 @@ export class SpacesCardComponent {
       .sort((a, b) => (a.brief.title > b.brief.title ? 1 : -1));
   });
 
+  // Adapts the user's spaces to the shape SpacesListComponent renders, so the
+  // card reuses that component (icon + title decode + navigation) instead of
+  // duplicating the row markup.
+  protected readonly spaceContexts = computed<ISpaceContext[] | undefined>(
+    () =>
+      this.spaces()?.map(({ id, brief }) => ({
+        id,
+        type: brief.type,
+        brief: { title: brief.title, type: brief.type, roles: brief.roles },
+      })),
+  );
+
+  protected get currentUserID(): string {
+    return this.userService.currentUserID ?? '';
+  }
+
   protected readonly loadingState = computed(() =>
     this.userState()?.status === 'authenticated' ? 'Loading' : 'Authenticating',
   );
@@ -108,7 +120,7 @@ export class SpacesCardComponent {
     });
   }
 
-  protected goSpace(space: ISpaceContext): void {
+  private navigateToSpace(space: ISpaceContext): void {
     this.navService
       .navigateToSpace(space, 'forward')
       .catch(this.errorLogger.logError);
@@ -136,7 +148,7 @@ export class SpacesCardComponent {
         this.adding.set(false);
         this.spaceName.set('');
         // The user record updates via Firestore, which recomputes `spaces`.
-        this.goSpace(space);
+        this.navigateToSpace(space);
       },
       error: (err) => {
         this.errorLogger.logError(err, 'Failed to create new team record');
@@ -182,31 +194,5 @@ export class SpacesCardComponent {
 
   protected cancelAdd(): void {
     this.showAdd.set(false);
-  }
-
-  protected leaveSpace(
-    space: IIdAndBrief<IUserSpaceBrief>,
-    event?: Event,
-  ): void {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if (!confirm(`Are you sure you want to leave team ${space.brief.title}?`)) {
-      return;
-    }
-    const userID = this.userService.currentUserID;
-    if (!userID) {
-      this.errorLogger.logError('Failed to get current user ID');
-      return;
-    }
-    this.spaceService.leaveSpace({ spaceID: space.id }).subscribe({
-      next: () => console.log('left space'),
-      error: (err: unknown) =>
-        this.errorLogger.logError(
-          err,
-          `Failed to leave a space: ${space.brief.title}`,
-        ),
-    });
   }
 }

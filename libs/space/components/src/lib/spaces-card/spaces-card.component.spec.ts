@@ -7,6 +7,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ISneatUserState, SneatUserService } from '@sneat/auth-core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
+import { UserRequiredFieldsService } from '@sneat/auth-ui';
 import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService } from '@sneat/core';
 import { BehaviorSubject } from 'rxjs';
@@ -31,6 +32,8 @@ describe('SpacesCardComponent', () => {
       providers: [
         { provide: SpaceService, useValue: {} },
         { provide: SpaceNavService, useValue: {} },
+        // The card now embeds the real SpacesListComponent, which injects this.
+        { provide: UserRequiredFieldsService, useValue: { open: vi.fn() } },
         {
           provide: SneatUserService,
           useValue: { userState: userState$, currentUserID: undefined },

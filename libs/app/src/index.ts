@@ -10,3 +10,6 @@ export * from './lib/contact-extensions';
 export * from './lib/get-standard-sneat-providers';
 export * from './lib/app-specific-providers';
 export * from './lib/capacitator-http.service';
+export * from './lib/page-title.service';
+export * from './lib/sneat-title.strategy';
+export * from './lib/route-title';

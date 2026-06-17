@@ -10,6 +10,8 @@ import {
 import { RouterLink } from '@angular/router';
 import {
   IonBadge,
+  IonButton,
+  IonButtons,
   IonIcon,
   IonItem,
   IonLabel,
@@ -34,6 +36,8 @@ import { first } from 'rxjs';
     IonLabel,
     IonBadge,
     IonSpinner,
+    IonButtons,
+    IonButton,
   ],
   providers: [
     {
@@ -55,9 +59,13 @@ export class SpacesListComponent extends SneatBaseComponent {
   @Input({ required: true }) userID?: string;
   @Input({ required: true }) spaces?: ISpaceContext[];
   @Input() pathPrefix = '/space';
+  // Opt-in: render a per-row "leave" button. Off by default so existing
+  // consumers (spaces menu, for-space-type-card) are unchanged.
+  @Input() allowLeave = false;
 
   // Outputs
   @Output() readonly beforeNavigateToSpace = new EventEmitter<ISpaceContext>();
+  @Output() readonly leftSpace = new EventEmitter<ISpaceContext>();
 
   protected goSpace(event: Event, space: ISpaceContext): boolean {
     event.stopPropagation();
@@ -122,6 +130,31 @@ export class SpacesListComponent extends SneatBaseComponent {
         },
         error: this.errorLogger.logErrorHandler(
           'failed to create a new family team',
+        ),
+      });
+  }
+
+  // Only reachable when [allowLeave]="true". Stops the row's navigate handler,
+  // confirms, then leaves the space; the user record update removes the row.
+  protected leaveSpace(space: ISpaceContext, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (!space.id) {
+      return;
+    }
+    const title = space.brief?.title || space.id;
+    if (!confirm(`Are you sure you want to leave "${title}"?`)) {
+      return;
+    }
+    this.spaceService
+      .leaveSpace({ spaceID: space.id })
+      .pipe(this.takeUntilDestroyed())
+      .subscribe({
+        next: () => this.leftSpace.emit(space),
+        error: this.errorLogger.logErrorHandler(
+          `Failed to leave space: ${title}`,
         ),
       });
   }
