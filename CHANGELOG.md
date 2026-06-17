@@ -1,3 +1,14 @@
+## 0.5.4 (2026-06-17)
+
+### 🚀 Features
+
+- **auth:** add signInMethod (popup|redirect) to environment config ([e5af38a](https://github.com/sneat-co/sneat-libs/commit/e5af38a))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.5.3 (2026-06-17)
 
 ### 🩹 Fixes
