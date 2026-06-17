@@ -43,7 +43,7 @@
 
 <ion-content>
   @if (parentRole) {
-    @if (!selectedParent) {
+    @if (!selectedParent()) {
       <ion-card-header>
         <ion-card-subtitle>
           Step 1 of 2: Select {{ parentRole }}
@@ -51,7 +51,7 @@
       </ion-card-header>
     }
     <ion-card>
-      @if (!selectedParent) {
+      @if (!selectedParent()) {
         <ion-segment
           [value]="$parentTab()"
           (ionChange)="onParentTabChanged($event)"
@@ -65,10 +65,12 @@
       @switch ($parentTab()) {
         @case ("existing") {
           <sneat-select-from-list
-            [label]="(selectedParent ? parentRole : '') | titlecase"
-            [items]="parentItems"
-            [(ngModel)]="parentContactID"
-            (ngModelChange)="onParentContactIDChanged($event)"
+            [label]="(selectedParent() ? parentRole : '') | titlecase"
+            [items]="parentItems()"
+            [ngModel]="parentContactID()"
+            (ngModelChange)="
+              parentContactID.set($event); onParentContactIDChanged($event)
+            "
             [isFilterable]="true"
             labelPlacement="start"
           />
@@ -86,7 +88,7 @@
         }
       }
     </ion-card>
-    @if (selectedParent) {
+    @if (selectedParent()) {
       <ion-card-header>
         <ion-card-subtitle
           >Step 2 of 2: Select {{ contactRoleID }}
@@ -95,8 +97,8 @@
     }
   }
 
-  @if (!parentRole || selectedParent) {
-    @if (parentRole && selectedParent) {
+  @if (!parentRole || selectedParent()) {
+    @if (parentRole && selectedParent()) {
       <ion-segment
         [value]="$contactTab()"
         (ionChange)="onContactTabChanged($event)"
@@ -110,7 +112,7 @@
     @switch ($contactTab()) {
       @case ("existing") {
         @if ($contacts(); as contacts) {
-          @if (selectedParent && !contacts.length) {
+          @if (selectedParent() && !contacts.length) {
             <ion-text color="medium" class="ion-padding">
               <p>No locations for selected contact</p>
             </ion-text>

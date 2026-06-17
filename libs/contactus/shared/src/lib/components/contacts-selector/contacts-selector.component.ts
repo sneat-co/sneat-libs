@@ -221,7 +221,9 @@ export class ContactsSelectorComponent
 
   private allContacts?: IContactWithBriefAndSpace[];
   //
-  protected parentContacts?: readonly IContactWithBriefAndSpace[];
+  protected readonly parentContacts = signal<
+    readonly IContactWithBriefAndSpace[] | undefined
+  >(undefined);
 
   protected readonly $contacts = signal<
     readonly IContactWithCheck[] | undefined
@@ -234,15 +236,17 @@ export class ContactsSelectorComponent
     () => this.$selectedContacts()?.length || 0,
   );
 
-  protected selectedParent?: IContactWithBriefAndSpace;
+  protected readonly selectedParent = signal<
+    IContactWithBriefAndSpace | undefined
+  >(undefined);
   protected selectedContact?: IContactWithCheck;
 
-  protected parentContactID?: string;
+  protected readonly parentContactID = signal<string | undefined>(undefined);
 
   // private readonly items$ = new Subject<readonly IContactWithSpace[]>();
   // public readonly items = this.items$.asObservable();
 
-  protected parentItems?: ISelectItem[];
+  protected readonly parentItems = signal<ISelectItem[] | undefined>(undefined);
 
   protected contactItems?: ISelectItem[];
 
@@ -336,18 +340,19 @@ export class ContactsSelectorComponent
         );
       };
     const allContactBriefs = this.allContacts;
-    this.parentContacts =
+    const parentContacts =
       this.parentType || this.parentRole
         ? allContactBriefs?.filter(
             filterByTypeRoleAndParentID(this.parentType, this.parentRole),
           ) || []
         : undefined;
+    this.parentContacts.set(parentContacts);
     this.$contacts.set(
       allContactBriefs?.filter(
         filterByTypeRoleAndParentID(
           this.contactType,
           this.contactRoleID,
-          this.parentContactID,
+          this.parentContactID(),
         ),
       ),
     );
@@ -357,16 +362,14 @@ export class ContactsSelectorComponent
     this.contactItems = this.$contacts()
       ?.filter(removeExcluded(this.excludeContactIDs))
       .map(this.getChildItem);
-    this.parentItems = this.parentContacts
-      ?.filter(removeExcluded(this.excludeParentIDs))
-      .map(this.getChildItem);
+    this.parentItems.set(
+      parentContacts
+        ?.filter(removeExcluded(this.excludeParentIDs))
+        .map(this.getChildItem),
+    );
 
     if (this.parentType || this.parentRole) {
-      if (
-        !this.parentContactID &&
-        this.parentContacts &&
-        !this.parentContacts.length
-      ) {
+      if (!this.parentContactID() && parentContacts && !parentContacts.length) {
         this.$parentTab.set('new');
       }
     }
@@ -408,7 +411,9 @@ export class ContactsSelectorComponent
   protected onParentContactIDChanged(contactID: string): void {
     // 'ContactsSelectorComponent.onParentContactSelected()',
     // contactID,
-    const parentContact = this.parentContacts?.find((c) => c.id === contactID);
+    const parentContact = this.parentContacts()?.find(
+      (c) => c.id === contactID,
+    );
     this.onParentContactChanged(parentContact);
   }
 
@@ -417,7 +422,11 @@ export class ContactsSelectorComponent
       ...contact,
       brief: contact.dbo,
     };
-    this.parentItems?.push(this.getParentItem(parentContact));
+    this.parentItems.update((items) =>
+      items
+        ? [...items, this.getParentItem(parentContact)]
+        : [this.getParentItem(parentContact)],
+    );
     this.onParentContactChanged(parentContact);
   }
 
@@ -440,8 +449,8 @@ export class ContactsSelectorComponent
 
   private onParentContactChanged(contact?: IContactWithBriefAndSpace): void {
     this.$parentTab.set('existing');
-    this.selectedParent = contact || undefined;
-    this.parentContactID = contact?.id;
+    this.selectedParent.set(contact || undefined);
+    this.parentContactID.set(contact?.id);
     this.setContacts();
     this.parentChanged.next();
   }

@@ -15,14 +15,14 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-segment [(ngModel)]="tab" (ionChange)="onTabChanged()">
+  <ion-segment [ngModel]="tab()" (ngModelChange)="tab.set($event)" (ionChange)="onTabChanged()">
     <ion-segment-button value="email">By Email</ion-segment-button>
     <ion-segment-button value="sms">By SMS</ion-segment-button>
     <ion-segment-button value="link">Get link</ion-segment-button>
   </ion-segment>
   <form>
     <ion-item>
-      @if (tab === "email") {
+      @if (tab() === "email") {
         <ion-input
           placeholder="email@address"
           label="To"
@@ -31,7 +31,7 @@
           [formControl]="email"
         />
       }
-      @if (tab === "sms") {
+      @if (tab() === "sms") {
         <ion-input
           label="Invite link"
           labelPlacement="stacked"
@@ -39,16 +39,16 @@
           [formControl]="phone"
         />
       }
-      @if (tab === "link") {
+      @if (tab() === "link") {
         <ion-input
           label="Invite link"
           labelPlacement="stacked"
           readonly="readonly"
-          [disabled]="!link"
-          [value]="link ?? 'Generating...'"
-          [color]="link ? 'primary' : 'medium'"
+          [disabled]="!link()"
+          [value]="link() ?? 'Generating...'"
+          [color]="link() ? 'primary' : 'medium'"
         />
-        @if (link) {
+        @if (link()) {
           <ion-buttons slot="end">
             <ion-button color="medium" (click)="copyLinkToClipboard()">
               <ion-icon name="copy-outline" />
@@ -67,7 +67,7 @@
         labelPlacement="stacked"
       />
     </ion-item>
-    @switch (tab) {
+    @switch (tab()) {
       @case ("email") {
         <ion-card-content>
           <p>
@@ -112,7 +112,7 @@
           >
             <ion-icon name="phone-portrait-outline" slot="start" />
             <ion-label>Compose SMS</ion-label>
-            @if (creatingInvite) {
+            @if (creatingInvite()) {
               <ion-spinner
                 name="lines-small"
                 color="medium"
@@ -133,7 +133,7 @@
           <ion-button
             fill="outline"
             (click)="copyLinkWithInviteTextToClipboard()"
-            [disabled]="creatingInvite || !link"
+            [disabled]="creatingInvite() || !link()"
           >
             <ion-icon slot="start" name="copy-outline" />
             <ion-label style="text-transform: none"
@@ -144,9 +144,9 @@
       }
     }
 
-    @if (error) {
+    @if (error()) {
       <ion-card-content>
-        <ion-text class="ion-margin" color="danger">{{ error }}</ion-text>
+        <ion-text class="ion-margin" color="danger">{{ error() }}</ion-text>
       </ion-card-content>
     }
   </form>
