@@ -36,13 +36,23 @@ export const fooAppEnvironmentConfig: IEnvironmentConfig =
       projectId: 'sneat-eur3-1',
       appId: '...',
       apiKey: '...',
-      authDomain: 'foo-app.web.app', // or the custom domain once wired
+      // authDomain omitted on purpose — see below.
       messagingSenderId: '588648831063',
       measurementId: '...',
     },
     signInMethod: 'redirect',
   });
 ```
+
+**Omit `authDomain`.** `appEnvironmentConfig` defaults it to the current origin
+(`location.hostname`), so the OAuth redirect is always same-origin / first-party
+— whatever domain the app is served from (custom domain, `*.web.app`, or a
+preview channel). Hardcoding a different `authDomain` than the serving domain
+(e.g. `listus-app.web.app` while the app is at `listus.app`) causes a
+cross-domain redirect that browsers flag as a look-alike ("the site looks fake")
+and breaks first-party auth storage. Set `authDomain` explicitly **only** to
+force a specific domain (Capacitor, a shared SSO domain). Make sure the serving
+domain is a Firebase Auth **authorized domain**.
 
 `appEnvironmentConfig` decides **at runtime from `location.hostname`**: the
 Firebase emulator on `localhost`/`127.0.0.1`, the production config everywhere
