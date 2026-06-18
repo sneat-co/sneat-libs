@@ -17,7 +17,11 @@ export interface IFirebaseConfig {
   measurementId?: string;
   messagingSenderId?: string;
   apiKey: string;
-  authDomain: string;
+  // Optional: when omitted, appEnvironmentConfig() defaults it to the current
+  // origin (location.hostname) so the OAuth redirect stays same-origin /
+  // first-party. Set it explicitly only to force a specific auth domain (e.g.
+  // Capacitor, or a shared SSO domain).
+  authDomain?: string;
   databaseURL?: string;
   storageBucket?: string;
 }

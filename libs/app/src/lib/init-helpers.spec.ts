@@ -36,6 +36,28 @@ describe('appEnvironmentConfig (fail-safe env selection)', () => {
     );
   });
 
+  it('defaults authDomain to the current origin when omitted', () => {
+    setHostname('listus.app');
+    const noAuthDomain = {
+      ...PROD,
+      firebaseConfig: { ...PROD.firebaseConfig, authDomain: undefined },
+    } as IEnvironmentConfig;
+    expect(appEnvironmentConfig(noAuthDomain).firebaseConfig.authDomain).toBe(
+      'listus.app',
+    );
+  });
+
+  it('keeps an explicitly-set authDomain (override)', () => {
+    setHostname('listus.app');
+    const explicit = {
+      ...PROD,
+      firebaseConfig: { ...PROD.firebaseConfig, authDomain: 'sso.example.com' },
+    } as IEnvironmentConfig;
+    expect(appEnvironmentConfig(explicit).firebaseConfig.authDomain).toBe(
+      'sso.example.com',
+    );
+  });
+
   it('uses the emulator only on localhost', () => {
     setHostname('localhost');
     const cfg = appEnvironmentConfig(PROD);

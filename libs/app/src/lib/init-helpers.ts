@@ -27,9 +27,21 @@ export function isLocalhost(): boolean {
 export function appEnvironmentConfig(
   prod: IEnvironmentConfig,
 ): IEnvironmentConfig {
-  return isLocalhost()
-    ? appSpecificConfig(emulatorEnvironmentConfig)
-    : prod;
+  if (isLocalhost()) {
+    return appSpecificConfig(emulatorEnvironmentConfig);
+  }
+  // Default authDomain to the current origin so the OAuth redirect stays
+  // same-origin / first-party. Serving an app at one domain (e.g. listus.app)
+  // while authenticating against another (listus-app.web.app) triggers a
+  // cross-domain redirect that browsers flag as a look-alike and that breaks
+  // first-party auth storage. Apps override by setting firebaseConfig.authDomain.
+  const authDomain =
+    prod.firebaseConfig.authDomain ||
+    (typeof location !== 'undefined' ? location.hostname : undefined);
+  return {
+    ...prod,
+    firebaseConfig: { ...prod.firebaseConfig, authDomain },
+  };
 }
 
 function firebaseApiKey(useEmulators: boolean, apiKey: string): string {
