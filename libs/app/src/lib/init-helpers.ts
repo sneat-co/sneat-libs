@@ -1,4 +1,36 @@
 import { IEnvironmentConfig } from '@sneat/core';
+import { emulatorEnvironmentConfig } from '../environments/environment.base';
+
+// True only when the app is actually running on a developer machine. Used to
+// decide, at RUNTIME, whether to use the Firebase emulator — see
+// appEnvironmentConfig() below.
+export function isLocalhost(): boolean {
+  return (
+    typeof location !== 'undefined' &&
+    ['localhost', '127.0.0.1', '[::1]', '0.0.0.0'].includes(location.hostname)
+  );
+}
+
+// Fail-safe environment selection. Use the Firebase emulator ONLY when running
+// on localhost; every deployed domain gets the production config passed in.
+//
+// Because the emulator-vs-production decision is made at runtime from the
+// hostname — NOT from a build-time `fileReplacements` swap — a mis-built or
+// mis-deployed bundle can never ship the emulator config to production. This
+// structurally eliminates the recurring "127.0.0.1 refused to connect" class of
+// bug: forgetting `--configuration production`, a stale `dist/`, an nx cache
+// hit, or deploying a dev build can no longer point real users at the emulator.
+//
+// Apps should define a single environment.ts:
+//   export const fooEnvironmentConfig = appEnvironmentConfig({ ...prod config });
+// and drop environment.prod.ts + the production fileReplacements entirely.
+export function appEnvironmentConfig(
+  prod: IEnvironmentConfig,
+): IEnvironmentConfig {
+  return isLocalhost()
+    ? appSpecificConfig(emulatorEnvironmentConfig)
+    : prod;
+}
 
 function firebaseApiKey(useEmulators: boolean, apiKey: string): string {
   return useEmulators ? 'emulator-does-not-need-api-key' : apiKey;

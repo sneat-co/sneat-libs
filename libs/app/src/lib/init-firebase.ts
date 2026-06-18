@@ -17,6 +17,27 @@ import {
 } from '@angular/fire/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { isLocalhost } from './init-helpers';
+
+// Defense in depth: a production bundle should never carry emulator config
+// (use appEnvironmentConfig()), but if one slips through, refuse to point real
+// users at 127.0.0.1 — that just yields "refused to connect". Warn loudly so a
+// post-deploy smoke test (and the console) surfaces the misconfiguration.
+function emulatorAllowed(hasEmulator: boolean): boolean {
+  if (!hasEmulator) {
+    return false;
+  }
+  if (isLocalhost()) {
+    return true;
+  }
+  console.error(
+    '[init-firebase] Emulator config present on a non-localhost host ' +
+      `("${typeof location !== 'undefined' ? location.hostname : '?'}") — ` +
+      'ignoring it. This is a build/deploy misconfiguration: a production ' +
+      'build shipped the emulator environment.',
+  );
+  return false;
+}
 
 export function provideFireApp(firebaseConfig: IFirebaseConfig) {
   return provideFirebaseApp(() => initFirebase(firebaseConfig));
@@ -32,7 +53,7 @@ export function getAngularFireProviders(
       const fbApp = injector.get(FirebaseApp);
       const firestore = getFirestore(fbApp);
       const { emulator } = firebaseConfig;
-      if (emulator) {
+      if (emulator && emulatorAllowed(!!emulator)) {
         connectFirestoreEmulator(
           firestore,
           emulator.firestoreHost || '127.0.0.1',
@@ -58,7 +79,7 @@ export function getAngularFireProviders(
         auth = getAuth(fbApp);
       }
       const { emulator } = firebaseConfig;
-      if (emulator?.authPort) {
+      if (emulator?.authPort && emulatorAllowed(!!emulator)) {
         // alert('Using firebase auth emulator');
         const authUrl = `${emulator.authPort === 443 ? 'https' : 'http'}://${emulator.authHost || '127.0.0.1'}:${emulator.authPort}`;
         // console.log('authUrl: ', authUrl);
