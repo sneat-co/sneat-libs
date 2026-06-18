@@ -1,3 +1,14 @@
+## 0.9.0 (2026-06-18)
+
+### 🚀 Features
+
+- **app,core:** default authDomain to current origin (same-origin auth) ([6c81dfc](https://github.com/sneat-co/sneat-libs/commit/6c81dfc))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.8.0 (2026-06-18)
 
 ### 🚀 Features
