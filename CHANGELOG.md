@@ -1,3 +1,14 @@
+## 0.9.1 (2026-06-18)
+
+### 🩹 Fixes
+
+- **auth-ui:** provide UserRequiredFieldsService in root (NG0201 on landing pages) ([b90a11c](https://github.com/sneat-co/sneat-libs/commit/b90a11c))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.9.0 (2026-06-18)
 
 ### 🚀 Features
