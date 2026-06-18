@@ -2,7 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { UserRequiredFieldsModalComponent } from './user-required-fields-modal.component';
 
-@Injectable()
+// providedIn:'root' so every consumer resolves it without a local provider.
+// SpacesListComponent injects it, and that component is embedded in
+// SpacesCardComponent (used on app landing pages) — without root provision,
+// rendering the card on a route that doesn't provide it throws NG0201.
+@Injectable({ providedIn: 'root' })
 export class UserRequiredFieldsService {
   private readonly modalController = inject(ModalController);
 
