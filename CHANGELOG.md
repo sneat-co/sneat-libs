@@ -1,3 +1,14 @@
+## 0.8.0 (2026-06-18)
+
+### 🚀 Features
+
+- **app:** fail-safe runtime env selection to prevent emulator-in-prod ([196bed4](https://github.com/sneat-co/sneat-libs/commit/196bed4))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.7.0 (2026-06-17)
 
 ### 🚀 Features
