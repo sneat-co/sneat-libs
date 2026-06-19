@@ -1,3 +1,14 @@
+## 0.11.0 (2026-06-19)
+
+### 🚀 Features
+
+- **space-components:** add Eventus item to space menu ([ea0093f](https://github.com/sneat-co/sneat-libs/commit/ea0093f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.10.0 (2026-06-19)
 
 ### 🚀 Features
