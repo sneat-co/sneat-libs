@@ -2,6 +2,7 @@ import { inject, provideAppInitializer, ErrorHandler } from '@angular/core';
 import { TraceService, init, createErrorHandler } from '@sentry/angular';
 import { Router } from '@angular/router';
 import { BrowserOptions } from '@sentry/browser';
+import { ChunkLoadErrorHandler } from './chunk-load-error.handler';
 
 export const provideSentryAppInitializer = (options: BrowserOptions) => {
   initSentry(options);
@@ -24,9 +25,13 @@ const sentryAppInitializerProviders = [
     deps: [Router],
   },
   {
+    // Recover from stale lazy-chunk loads after a deploy, delegating all other
+    // errors to Sentry's handler (see ChunkLoadErrorHandler doc).
     provide: ErrorHandler,
-    useValue: createErrorHandler({
-      showDialog: true,
-    }),
+    useValue: new ChunkLoadErrorHandler(
+      createErrorHandler({
+        showDialog: true,
+      }),
+    ),
   },
 ];
