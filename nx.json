@@ -54,6 +54,7 @@
   },
   "release": {
     "projects": ["*"],
+    "projectsRelationship": "independent",
     "git": {
       "commit": true,
       "tag": true,
