@@ -8,6 +8,7 @@ import { DefaultSneatAppApiBaseUrl, SneatApiBaseUrl } from '@sneat/api';
 import { TelegramAuthService } from '@sneat/auth-core';
 import { LOGGER_FACTORY, loggerFactory, TopMenuService } from '@sneat/core';
 import {
+  provideChunkLoadErrorRecovery,
   provideErrorLogger,
   provideSentryAppInitializer,
   provideSneatAnalytics,
@@ -36,6 +37,10 @@ export function getStandardSneatProviders(
   const providers = [
     provideHttpClient(),
     provideErrorLogger(),
+    // Auto-reload once on a stale lazy-chunk load after a deploy. Baseline for
+    // apps without Sentry; Sentry's own (chunk-aware) handler overrides it when
+    // configured (pushed later below).
+    provideChunkLoadErrorRecovery(),
     provideIonicAngular(),
     provideAnimationsAsync(),
     { provide: LOGGER_FACTORY, useValue: loggerFactory },
