@@ -4,6 +4,7 @@ import { ErrorLogger } from '@sneat/core';
 import { ContactService } from '@sneat/contactus-services';
 
 import { BasicContactFormComponent } from './basic-contact-form.component';
+import { of } from 'rxjs';
 
 describe('BasicContactFormComponent', () => {
   let component: BasicContactFormComponent;
@@ -38,5 +39,44 @@ describe('BasicContactFormComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+  const stop = () => ({ stopPropagation: vi.fn() }) as unknown as Event;
+  const svc = () =>
+    TestBed.inject(ContactService) as unknown as {
+      createContact: ReturnType<typeof vi.fn>;
+    };
+
+  it('does nothing without a space', () => {
+    component.contactType = 'company';
+    c().createContact(stop());
+    expect(svc().createContact).not.toHaveBeenCalled();
+  });
+
+  it('does nothing without a contact type', () => {
+    component.space = { id: 's1' };
+    c().createContact(stop());
+    expect(svc().createContact).not.toHaveBeenCalled();
+  });
+
+  it('creates the contact and emits when valid', () => {
+    svc().createContact.mockReturnValue(of({ id: 'c1' }));
+    component.space = { id: 's1' };
+    component.contactType = 'company';
+    component.title = 'Acme';
+    const emit = vi.spyOn(component.contactCreated, 'emit');
+    c().createContact(stop());
+    expect(svc().createContact).toHaveBeenCalledWith(
+      { id: 's1' },
+      expect.objectContaining({
+        spaceID: 's1',
+        type: 'company',
+        basic: { title: 'Acme' },
+      }),
+    );
+    expect(emit).toHaveBeenCalledWith({ id: 'c1' });
+    expect(component.isCreated).toBe(true);
   });
 });
