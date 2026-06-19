@@ -80,6 +80,17 @@
   </ion-item>
   <ion-item
     tappable
+    [routerLink]="spacePageUrl('eventus')"
+    routerDirection="root"
+    [disabled]="$disabled()"
+    [class.currentPage]="$currentPage() === 'eventus'"
+    (click)="goSpacePage($event, 'eventus')"
+  >
+    <ion-icon name="balloon-outline" slot="start" />
+    <ion-label>Eventus</ion-label>
+  </ion-item>
+  <ion-item
+    tappable
     [routerLink]="spacePageUrl('contacts')"
     routerDirection="root"
     [disabled]="$disabled()"
