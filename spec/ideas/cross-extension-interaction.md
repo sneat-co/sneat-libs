@@ -1,0 +1,91 @@
+---
+format: https://specscore.md/idea-specification
+status: Draft
+---
+
+# Idea: Cross-extension interaction without circular dependencies
+
+**Status:** Draft
+**Date:** 2026-06-19
+**Owner:** alexander.trakhimenok
+**Promotes To:** —
+**Supersedes:** —
+**Related Ideas:** —
+
+## Problem Statement
+
+How might we let one extension invoke another's behaviour (e.g. open a contact-picker dialog and get a result) without the two extensions importing each other, creating circular dependencies or the prebuilt-bundle peer-resolution wall?
+
+## Context
+
+Triggering observation: during the legacy-assetus frontend retirement (tracking `sneat-co/assetus#4`), `contactus` (a library in `sneat-libs`) imported the **runtime** `AssetService` / `AssetusCoreServicesModule` from the published `@sneat/extension-assetus`. That broke `sneat-libs` CI:
+
+```
+Error: Cannot find package '.../@sneat/space-models/index.js'
+  imported from '.../@sneat/extension-assetus/fesm2022/sneat-extension-assetus.mjs'
+```
+
+Two distinct problems were exposed by that single import:
+
+1. **Circular dependency.** `@sneat/extension-assetus` peer-depends on `@sneat/contactus-services`, while `contactus` reached back into assetus — the assetus↔contactus cycle the retirement plan's §5-B explicitly warned to avoid.
+2. **Prebuilt-bundle peer-resolution wall.** A published Angular library ships a prebuilt `fesm2022/*.mjs` whose peer imports (`import '@sneat/space-models'`, …) must resolve to *installed* packages. In `sneat-libs` those peers are workspace **source** libs, not installed packages, so the bundle can't load at runtime/test. (The super-app `sneat-apps` is fine — it installs all `@sneat/*` as real packages.)
+
+The retirement was unblocked with a tactical fix (documented in `sneat-co/assetus#9`): make `contactus` import `IAssetContext` as a **type only** (erased at compile time → bundle never loads) and re-implement the asset-watch with an in-repo service. That works, but it is a workaround for a missing, reusable pattern. This idea proposes the durable design so the next cross-extension call (open a dialog, fetch data, react to an event) has a sanctioned path.
+
+Prior art: classic ports-and-adapters / dependency-inversion, Angular `InjectionToken` providers, and nx module-boundary tags.
+
+## Recommended Direction
+
+Adopt one guiding rule: **extensions never depend *sideways* on each other's implementations; each extension exposes a small public *contract*, and other extensions call it only through that contract — which lives in a lib light enough to depend on safely.** Dependencies point at *contracts*, never at *implementations*, turning the graph into a DAG.
+
+**Recommended decomposition — two libs per extension (`*-contract` + `*-impl`):**
+
+1. **Split every extension into a public `*-contract` lib and a private `*-impl` lib.**
+   - **`*-contract`** (the public API surface other extensions may depend on): pure TypeScript interfaces, DTO/model types, enums, and the Angular `InjectionToken`s for any behaviour the extension offers — **no** components, **no** service implementations, nothing that drags heavy `@sneat/*` runtime peers. Because it is runtime-light, any other extension can depend on it safely (type-only for the shapes; the token for runtime calls) with **no** prebuilt-bundle peer-resolution wall.
+   - **`*-impl`** (private): the services, components, dialogs and pages. No other extension may import it — only the extension itself and the app (at bootstrap) consume it.
+   - Cross-extension references therefore touch only the callee's `*-contract`. Example: `assetus-impl` depends on `contactus-contract` (for `IContactSelector` + `CONTACT_SELECTOR`), **never** on `contactus-impl`. The contract libs form their own DAG; there are no `impl → impl` edges, so no cycles and no fesm wall. (This is the user's "core contactus vs extended contactus" / "two libs per extension" instinct; `contactus` already partly has `-core`/`-services`/`-shared`/`-internal` tiers that can collapse into this contract/impl split. A finer 3-tier `*-core`/`*-services`/`*-ui` layering is a valid elaboration for a large extension — the load-bearing rule is simply *public contract vs private impl*.)
+2. **Dependency-inversion for runtime calls — the token lives in the provider's own `*-contract`.** The provider extension owns and publishes the `InjectionToken` + interface for what it offers (e.g. `contactus-contract` exports `CONTACT_SELECTOR` + `IContactSelector`). The provider's `*-impl` supplies the concrete implementation, wired by the app at bootstrap; the caller injects the interface and calls `selectContact()` without importing any provider implementation. No cycle, no fesm wall (the heavy dialog is lazy-loaded by the app, where peers resolve).
+3. **Enforce the rule mechanically with nx module-boundary tags** — tag projects `scope:extension-contract` vs `scope:extension-impl`; an extension's `*-impl` may depend on any `*-contract` (its own or another's), but a *runtime* import of another extension's `*-impl` is a lint error. This turns tribal knowledge into a CI gate.
+
+A typed **extension bus** (mediator in a shared low-level lib) and **route-based invocation** are complementary tools layered on top for many-to-many events and full-page hops respectively — added only when a real need appears.
+
+## Alternatives Considered
+
+- **Single shared contracts lib** (`@sneat/extensions-contracts`) holding *all* cross-extension interfaces/tokens, instead of one `*-contract` per extension: fewer libs, and no extension depends on another at all (everyone depends *down* on the one lib). But ownership blurs — who owns `IContactSelector` when it lives outside contactus? — and the lib tends to grow into a God-lib that everyone must touch and that ripples on every change. Demoted from the original recommendation: kept only as the home for *genuinely cross-cutting* primitives (a base space-item context type, the optional bus), not for an extension's own capabilities.
+- **Typed event bus only** (`bus.request('contactus.selectContact', …)`): maximum decoupling and great for events, but weaker compile-time safety (string message names) and harder to navigate. Lost as the *default* — better as a complement for many-to-many/event cases than for known, typed, value-returning calls.
+- **Routing-only contract** (navigate to the other extension's page): zero code coupling, but awkward for inline dialogs that must return a value. Kept for page-level flows, not as the general answer.
+- **Make the prebuilt bundle's peers resolvable inside `sneat-libs`** (build + map the 8 peer libs for tests): brittle, fights the source-mapped workspace model, and doesn't address the questionable foundational-lib→app-extension dependency. Rejected.
+- **Merge everything into one workspace** to dodge published-bundle resolution: throws away the independent-extension/publishing model. Rejected.
+
+## MVP Scope
+
+Prove the pattern end-to-end on the one real case we just touched: add a `contactus-contract` lib exporting a `CONTACT_SELECTOR` injection token + `IContactSelector` interface, have `contactus`'s impl provide the concrete picker, and refactor the assetus↔contactus link so `assetus` calls it through the token (replacing the tactical in-repo workaround). One capability, one provider's contract, one consumer, wired by the app — enough to validate that the cycle and the fesm wall both disappear and that DI + tests stay clean. The contract/impl split of the other extensions and the nx lint rule follow once the pattern is proven.
+
+## Not Doing (and Why)
+
+- A runtime plugin-discovery/registry framework — start with explicit DI tokens
+- Rewriting existing extensions in one pass — adopt incrementally, contactus↔assetus first
+- A typed extension bus and route-contract conventions — deferred until a real many-to-many / page-hop case needs them; the MVP is the token pattern only
+
+## Key Assumptions to Validate
+
+| Tier | Assumption | How to validate |
+|------|------------|-----------------|
+| Must-be-true | A `*-contract` lib can hold an extension's interfaces/tokens without depending on any extension *impl* (no new cycle). | Build `contactus-contract`; confirm its only deps are types and Angular DI primitives, and that it imports no `*-impl`. |
+| Must-be-true | An extension injecting a token never loads the provider's prebuilt bundle, so the fesm peer-resolution wall and the cycle both vanish. | Refactor assetus↔contactus to the token; confirm `sneat-libs` CI green with zero runtime cross-extension impl imports. |
+| Should-be-true | The app layer (sneat-apps and each app) can wire providers once at bootstrap without per-feature plumbing, preserving current behaviour. | Wire `CONTACT_SELECTOR` in sneat-apps; verify the contact-picker flow works identically. |
+| Should-be-true | nx module-boundary tags can express "an `*-impl` may depend on any `*-contract`, but never on another extension's `*-impl`". | Prototype the tag rule; confirm it flags a deliberate violating import and passes the compliant one. |
+| Might-be-true | Most cross-extension traffic is hub-shaped (everything ↔ contactus), so a handful of tokens covers the bulk. | Inventory current/expected cross-extension calls. |
+
+## SpecScore Integration
+
+- **New Features this would create:** TBD at design time — likely (a) the per-extension `*-contract`/`*-impl` split + token convention, (b) a small shared lib for genuinely cross-cutting primitives, (c) nx module-boundary enforcement (`scope:extension-contract` vs `scope:extension-impl`), (d) optional extension bus.
+- **Existing Features affected:** the assetus↔contactus integration (currently the tactical type-only workaround).
+- **Dependencies:** relates to `sneat-co/assetus#9` (type-only guideline) and `sneat-co/assetus#4` (retirement).
+
+## Open Questions
+
+- Which interaction shapes do we actually have today: (a) open-a-dialog-and-get-a-value, (b) cross-extension data fetch, (c) fire-and-forget events/reactions, (d) navigate-to-another-extension's-page? The mix decides how much of tokens vs bus vs routing we build.
+- Is cross-extension traffic mostly a hub (everything ↔ contactus) or a denser web? A hub is much simpler to model with a few tokens.
+- Does `contactus` move to its own dedicated repo (like assetus) or stay in `sneat-libs`? Doesn't change the pattern, but changes whether `*-contract`/`*-impl` become published packages vs in-repo libs.
+- For *genuinely cross-cutting* primitives (not an extension's own capability — e.g. a base space-item context type, or the optional bus), do they live in a small new shared lib or in an existing low-level one (e.g. `space-models`)?
