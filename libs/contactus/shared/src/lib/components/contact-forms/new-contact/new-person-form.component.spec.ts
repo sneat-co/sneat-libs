@@ -8,15 +8,18 @@ import {
   ContactRoleService,
   ContactService,
 } from '@sneat/contactus-services';
-import { AssetService } from '@sneat/extension-assetus';
+import { of } from 'rxjs';
+import { AssetService } from '../../../services/asset.service';
 
 import { NewPersonFormComponent } from './new-person-form.component';
 
 describe('NewPersonFormComponent', () => {
   let component: NewPersonFormComponent;
   let fixture: ComponentFixture<NewPersonFormComponent>;
+  let assetServiceMock: { watchAssetByID: ReturnType<typeof vi.fn> };
 
   beforeEach(waitForAsync(async () => {
+    assetServiceMock = { watchAssetByID: vi.fn(() => of(undefined)) };
     await TestBed.configureTestingModule({
       imports: [NewPersonFormComponent],
       providers: [
@@ -44,12 +47,15 @@ describe('NewPersonFormComponent', () => {
           provide: ContactRoleService,
           useValue: { getContactRoleByID: vi.fn() },
         },
-        { provide: AssetService, useValue: { watchAssetByID: vi.fn() } },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
       .overrideComponent(NewPersonFormComponent, {
-        set: { imports: [], template: '' },
+        set: {
+          imports: [],
+          template: '',
+          providers: [{ provide: AssetService, useValue: assetServiceMock }],
+        },
       })
       .compileComponents();
   }));
@@ -68,5 +74,30 @@ describe('NewPersonFormComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('watches the asset by id and stores the emitted asset context', () => {
+    const space = { id: 'test-space' };
+    const asset = {
+      id: 'asset1',
+      space,
+      brief: { name: 'My car' },
+      dbo: { name: 'My car' },
+    };
+    assetServiceMock.watchAssetByID.mockReturnValue(of(asset));
+
+    fixture.componentRef.setInput('$assetID', 'asset1');
+    fixture.detectChanges();
+
+    expect(assetServiceMock.watchAssetByID).toHaveBeenCalledWith(
+      space,
+      'asset1',
+    );
+    expect(component.$asset()).toEqual(asset);
+  });
+
+  it('does not watch when no asset id is set', () => {
+    expect(assetServiceMock.watchAssetByID).not.toHaveBeenCalled();
+    expect(component.$asset()).toBeUndefined();
   });
 });

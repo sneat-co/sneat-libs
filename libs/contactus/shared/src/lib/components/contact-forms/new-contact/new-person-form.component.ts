@@ -33,11 +33,8 @@ import { PersonWizardComponent } from '../pesson-wizard';
 import { IContactAddEventArgs } from '../../contact-events';
 import { ContactRoleFormComponent } from '../role-form';
 import { IIdAndDbo, IIdAndOptionalDbo } from '@sneat/core';
-import {
-  AssetService,
-  AssetusCoreServicesModule,
-  IAssetContext,
-} from '@sneat/extension-assetus';
+import type { IAssetContext } from '@sneat/extension-assetus';
+import { AssetService } from '../../../services/asset.service';
 import { first, Observable, Subject, takeUntil } from 'rxjs';
 import { NewContactFormBaseComponent } from './new-contact-form-base.component';
 import { ClassName } from '@sneat/ui';
@@ -59,9 +56,11 @@ export type NewContactFormCommand = 'create' | 'reset';
     ContactRoleFormComponent,
     PersonWizardComponent,
     IonButton,
-    AssetusCoreServicesModule,
   ],
-  providers: [{ provide: ClassName, useValue: 'NewContactFormComponent' }],
+  providers: [
+    AssetService,
+    { provide: ClassName, useValue: 'NewContactFormComponent' },
+  ],
   selector: 'sneat-new-person-form',
   templateUrl: './new-person-form.component.html',
 })
