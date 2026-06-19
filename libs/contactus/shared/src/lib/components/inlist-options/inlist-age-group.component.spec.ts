@@ -4,6 +4,7 @@ import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { SpaceNavService } from '@sneat/space-services';
 import { ContactService } from '@sneat/contactus-services';
+import { of } from 'rxjs';
 
 import { InlistAgeGroupComponent } from './inlist-age-group.component';
 
@@ -43,5 +44,29 @@ describe('InlistAgeGroupComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+  const optionEvent = (id: string) => ({
+    uiEvent: { preventDefault: vi.fn(), stopPropagation: vi.fn() },
+    option: { id, title: id },
+  });
+
+  it('onAgeGroupSelected updates the contact age group', () => {
+    const svc = TestBed.inject(ContactService) as unknown as {
+      updateContact: ReturnType<typeof vi.fn>;
+    };
+    svc.updateContact.mockReturnValue(of(undefined));
+    component.contactID = 'c1';
+    c().onAgeGroupSelected(optionEvent('adult'));
+    expect(svc.updateContact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spaceID: 'test-space',
+        contactID: 'c1',
+        ageGroup: 'adult',
+      }),
+    );
+    expect(c().selectedOption).toEqual({ id: 'adult', title: 'adult' });
   });
 });

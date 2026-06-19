@@ -53,4 +53,85 @@ describe('RelationshipFormComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+  const stop = () =>
+    ({ stopPropagation: vi.fn(), preventDefault: vi.fn() }) as unknown as Event;
+
+  it('onRelationshipChanged emits an add change', () => {
+    const emit = vi.spyOn(component.relatedAsChange, 'emit');
+    c().onRelationshipChanged('parent');
+    expect(emit).toHaveBeenCalledWith({ add: { rolesToItem: ['parent'] } });
+  });
+
+  it('openAddRelationship alerts not implemented', () => {
+    const alertSpy = vi.fn();
+    vi.stubGlobal('alert', alertSpy);
+    c().openAddRelationship(stop());
+    expect(alertSpy).toHaveBeenCalled();
+  });
+
+  describe('$rolesOfItemRelatedToTarget', () => {
+    it('is undefined without related data', () => {
+      expect(c().$rolesOfItemRelatedToTarget()).toBeUndefined();
+    });
+
+    it('maps rolesToItem entries into a list', () => {
+      const key = {
+        spaceID: 's1',
+        module: 'contactus',
+        collection: 'contacts',
+        itemID: 'u1',
+      };
+      fixture.componentRef.setInput('$relatedTo', {
+        key,
+        related: {
+          contactus: {
+            contacts: { u1: { rolesToItem: { parent: { created: {} } } } },
+          },
+        },
+      });
+      fixture.detectChanges();
+      const roles = c().$rolesOfItemRelatedToTarget();
+      expect(roles.map((r: { id: string }) => r.id)).toEqual(['parent']);
+      expect(c().$relationshipsCount()).toBe(1);
+      expect(c().$hasRelationships()).toBe(true);
+    });
+  });
+
+  it('removeRelationship throws without an itemRef', () => {
+    expect(() => c().removeRelationship(stop(), 'parent')).toThrow(
+      'itemRef is not set',
+    );
+  });
+
+  it('removeRelationship updates related when refs are set', () => {
+    const updateRelated = (
+      TestBed.inject(SpaceService) as unknown as {
+        updateRelated: ReturnType<typeof vi.fn>;
+      }
+    ).updateRelated;
+    updateRelated.mockReturnValue(of(undefined));
+    fixture.componentRef.setInput('$itemRef', {
+      spaceID: 's1',
+      module: 'contactus',
+      collection: 'contacts',
+      itemID: 'c1',
+    });
+    fixture.componentRef.setInput('$relatedTo', {
+      key: {
+        spaceID: 's1',
+        module: 'contactus',
+        collection: 'contacts',
+        itemID: 'u1',
+      },
+      related: {},
+    });
+    fixture.detectChanges();
+    const emit = vi.spyOn(component.relatedAsChange, 'emit');
+    c().removeRelationship(stop(), 'parent');
+    expect(updateRelated).toHaveBeenCalled();
+    expect(emit).toHaveBeenCalledWith({ remove: { rolesToItem: ['parent'] } });
+  });
 });
