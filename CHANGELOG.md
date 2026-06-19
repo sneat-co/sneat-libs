@@ -1,3 +1,14 @@
+## 0.10.0 (2026-06-19)
+
+### 🚀 Features
+
+- **core:** add 'eventus' to SneatApp union ([67fb9c8](https://github.com/sneat-co/sneat-libs/commit/67fb9c8))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.9.1 (2026-06-18)
 
 ### 🩹 Fixes
