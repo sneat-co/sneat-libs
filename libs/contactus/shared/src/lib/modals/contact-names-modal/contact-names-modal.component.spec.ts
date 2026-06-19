@@ -4,6 +4,7 @@ import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { ModalController } from '@ionic/angular/standalone';
 import { ContactService } from '@sneat/contactus-services';
+import { of } from 'rxjs';
 
 import { ContactNamesModalComponent } from './contact-names-modal.component';
 
@@ -48,5 +49,48 @@ describe('ContactNamesModalComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+  const svc = () =>
+    TestBed.inject(ContactService) as unknown as {
+      updateContact: ReturnType<typeof vi.fn>;
+    };
+
+  it('onNamesChanged stores the names', () => {
+    c().onNamesChanged({ firstName: 'John' });
+    expect(component.names).toEqual({ firstName: 'John' });
+  });
+
+  describe('saveChanges', () => {
+    it('aborts without a contact id', () => {
+      component.contactID = undefined;
+      component.spaceID = 's1';
+      c().saveChanges();
+      expect(svc().updateContact).not.toHaveBeenCalled();
+    });
+
+    it('aborts without a space id', () => {
+      component.contactID = 'c1';
+      component.spaceID = undefined;
+      c().saveChanges();
+      expect(svc().updateContact).not.toHaveBeenCalled();
+    });
+
+    it('updates the contact names when valid', () => {
+      svc().updateContact.mockReturnValue(of(undefined));
+      component.contactID = 'c1';
+      component.spaceID = 's1';
+      component.names = { firstName: 'John' };
+      c().saveChanges();
+      expect(svc().updateContact).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contactID: 'c1',
+          spaceID: 's1',
+          names: { firstName: 'John' },
+        }),
+      );
+    });
   });
 });
