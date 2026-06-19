@@ -41,6 +41,7 @@
     "@nx/workspace": "22.5.3",
     "@sentry/angular": "10.41.0",
     "@sentry/browser": "10.41.0",
+    "@sneat/extension-assetus": "0.0.1",
     "@sneat/random": "0.0.4",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.18",

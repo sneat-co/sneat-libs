@@ -29,4 +29,31 @@ describe('AgeGroupFormComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+
+  it('shows the pet option and pet-aware label by default', () => {
+    fixture.componentRef.setInput('hidePetOption', false);
+    fixture.detectChanges();
+    expect(c().$ageGroupLabel()).toBe('Adult/child or pet?');
+    expect(c().$ageGroupOptions().map((o: { id: string }) => o.id)).toContain(
+      'pet',
+    );
+  });
+
+  it('hides the pet option and adjusts the label when hidePetOption is set', () => {
+    fixture.componentRef.setInput('hidePetOption', true);
+    fixture.detectChanges();
+    expect(c().$ageGroupLabel()).toBe('Adult or child?');
+    expect(
+      c().$ageGroupOptions().map((o: { id: string }) => o.id),
+    ).not.toContain('pet');
+  });
+
+  it('onAgeGroupChanged emits the selected age group', () => {
+    const emit = vi.spyOn(component.ageGroupChange, 'emit');
+    c().onAgeGroupChanged('adult');
+    expect(emit).toHaveBeenCalledWith('adult');
+  });
 });

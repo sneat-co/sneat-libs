@@ -216,4 +216,91 @@ describe('NamesFormComponent', () => {
       expect(result?.['fullName']).toContain('at least one of the following must be provided');
     });
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+
+  describe('ngOnChanges', () => {
+    it('populates form controls from the name input', () => {
+      component.name = {
+        firstName: 'John',
+        lastName: 'Doe',
+        middleName: 'M',
+        nickName: 'JD',
+        fullName: 'John M Doe',
+      };
+      component.ngOnChanges({ name: {} as never });
+      expect(component.firstName.value).toBe('John');
+      expect(component.lastName.value).toBe('Doe');
+      expect(component.nickName.value).toBe('JD');
+      expect(component.fullName.value).toBe('John M Doe');
+    });
+
+    it('disables and re-enables the form via the disabled input', () => {
+      component.disabled = true;
+      component.ngOnChanges({ disabled: {} as never });
+      expect(component.namesForm.disabled).toBe(true);
+      component.disabled = false;
+      component.ngOnChanges({ disabled: {} as never });
+      expect(component.namesForm.enabled).toBe(true);
+    });
+
+    it('adds a required validator when a field is marked required', () => {
+      component.fields = { firstName: { required: true } };
+      component.ngOnChanges({ fields: {} as never });
+      component.firstName.setValue('');
+      expect(component.firstName.valid).toBe(false);
+      component.firstName.setValue('John');
+      expect(component.firstName.valid).toBe(true);
+    });
+  });
+
+  describe('onNameChanged / setName', () => {
+    it('regenerates the full name and emits the names', () => {
+      const emit = vi.spyOn(component.namesChanged, 'emit');
+      component.firstName.setValue('John');
+      component.lastName.setValue('Doe');
+      c().onNameChanged();
+      expect(component.fullName.value).toBe('John Doe');
+      expect(emit).toHaveBeenCalledWith(
+        expect.objectContaining({ firstName: 'John', lastName: 'Doe' }),
+      );
+    });
+  });
+
+  describe('onFullNameChanged', () => {
+    it('marks the full name as manually changed when it diverges', () => {
+      component.firstName.setValue('John');
+      component.lastName.setValue('Doe');
+      component.fullName.setValue('Custom Name');
+      c().onFullNameChanged();
+      // Once flagged, a subsequent onNameChanged must not overwrite fullName.
+      c().onNameChanged();
+      expect(component.fullName.value).toBe('Custom Name');
+    });
+  });
+
+  describe('navigation outputs', () => {
+    it('nameKeyupEnter emits keyupEnter for a valid form', () => {
+      const emit = vi.spyOn(component.keyupEnter, 'emit');
+      component.fullName.setValue('John Doe');
+      const event = new Event('keyup');
+      c().nameKeyupEnter(event);
+      expect(emit).toHaveBeenCalledWith(event);
+    });
+
+    it('onNext emits next', () => {
+      const emit = vi.spyOn(component.next, 'emit');
+      const event = new Event('click');
+      c().onNext(event);
+      expect(emit).toHaveBeenCalledWith(event);
+    });
+
+    it('canGoNext reflects whether a name is set', () => {
+      component.name = {};
+      expect(c().canGoNext).toBe(false);
+      component.name = { firstName: 'John' };
+      expect(c().canGoNext).toBe(true);
+    });
+  });
 });

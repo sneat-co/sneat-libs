@@ -34,4 +34,29 @@ describe('PhonesFormComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+  const ce = (value: string) =>
+    ({ stopPropagation: vi.fn(), detail: { value } }) as unknown as Event;
+
+  it('typeChanged updates the phone type at the index', () => {
+    component.phones = [{ type: 'personal', number: '123' }];
+    c().typeChanged(ce('mobile'), 0);
+    expect(component.phones[0]).toEqual({ type: 'mobile', number: '123' });
+  });
+
+  it('numberChanged updates the phone number at the index', () => {
+    component.phones = [{ type: 'personal', number: '' }];
+    c().numberChanged(ce('555'), 0);
+    expect(component.phones[0]).toEqual({ type: 'personal', number: '555' });
+  });
+
+  it('resets to empty phones when phones become falsy', () => {
+    component.phones = undefined;
+    component.ngOnChanges({
+      phones: { currentValue: undefined } as never,
+    });
+    expect(component.phones?.length).toBe(2);
+  });
 });
