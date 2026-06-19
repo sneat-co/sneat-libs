@@ -23,7 +23,7 @@ import {
   NewHappeningParams,
   ScheduleNavService,
   ScheduleNavServiceModule,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import {
   SpaceBaseComponent,
   SpaceComponentBaseParams,
@@ -33,7 +33,7 @@ import { IMemberContext } from '@sneat/contactus-core';
 import {
   CalendarComponent,
   CalendarTab,
-} from '@sneat/extensions-calendarius-shared';
+} from '@sneat/extension-calendarius-shared';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 

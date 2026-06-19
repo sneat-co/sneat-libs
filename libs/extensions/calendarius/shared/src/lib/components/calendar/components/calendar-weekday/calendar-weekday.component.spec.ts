@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { CalendarFilterService } from '../../../calendar-filter.service';
-import { ScheduleNavService } from '@sneat/mod-calendarius-core';
+import { ScheduleNavService } from '@sneat/extension-calendarius-core';
 
 import { CalendarWeekdayComponent } from './calendar-weekday.component';
 

@@ -49,7 +49,7 @@ import {
   IHappeningSlotWithID,
   mergeValuesWithIDs,
   WeekdayCode2,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
 import { takeUntil } from 'rxjs';
 import { HappeningTitleModalComponent } from '../../modals/happening-title-modal/happening-title-modal.component';

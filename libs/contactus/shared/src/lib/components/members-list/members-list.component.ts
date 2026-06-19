@@ -29,7 +29,7 @@ import { listAddRemoveAnimation, SpaceTypeFamily } from '@sneat/core';
 import {
   ScheduleNavService,
   ScheduleNavServiceModule,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ContactService, ContactusNavService } from '@sneat/contactus-services';
 import {

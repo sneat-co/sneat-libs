@@ -8,7 +8,7 @@ import {
   ICalendariusSpaceContext,
   ISlotUIContext,
   RecurringSlots,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import {
   ISpaceItemNavContext,
   ISpaceItemWithOptionalDbo,

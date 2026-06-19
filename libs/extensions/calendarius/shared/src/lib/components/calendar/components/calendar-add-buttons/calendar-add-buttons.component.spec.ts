@@ -12,7 +12,7 @@ import {
   AnalyticsService,
   NgModulePreloaderService,
 } from '@sneat/core';
-import { ScheduleNavService } from '@sneat/mod-calendarius-core';
+import { ScheduleNavService } from '@sneat/extension-calendarius-core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
 import { ClassName } from '@sneat/ui';

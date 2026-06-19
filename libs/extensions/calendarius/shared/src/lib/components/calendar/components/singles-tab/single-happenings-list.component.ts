@@ -16,7 +16,7 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { IContactusSpaceDboAndID } from '@sneat/contactus-core';
-import { IHappeningContext } from '@sneat/mod-calendarius-core';
+import { IHappeningContext } from '@sneat/extension-calendarius-core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { takeUntil } from 'rxjs';

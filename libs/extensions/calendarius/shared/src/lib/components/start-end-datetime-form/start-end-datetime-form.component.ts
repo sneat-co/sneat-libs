@@ -41,8 +41,8 @@ import {
   isValidDateString,
   SneatSelectAllOnFocusDirective,
 } from '@sneat/core';
-import { emptyTiming, HappeningType, ITiming } from '@sneat/mod-calendarius-core';
-import { dateToTimeOnlyStr } from '@sneat/mod-calendarius-core';
+import { emptyTiming, HappeningType, ITiming } from '@sneat/extension-calendarius-core';
+import { dateToTimeOnlyStr } from '@sneat/extension-calendarius-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { isTomorrow } from '../calendar-core';
 import { StartEndDatesRangeFormComponent } from '../start-end-dates-range-form/start-end-dates-range-form.component';

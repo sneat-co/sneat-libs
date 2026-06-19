@@ -17,7 +17,7 @@ import {
   IHappeningContext,
   IHappeningSlotWithID,
   WdToWeekdayPipe,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { HappeningSlotModalService } from '../happening-slot-form/happening-slot-modal.service';
 
 @Component({

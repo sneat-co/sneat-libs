@@ -14,7 +14,7 @@ import { takeUntil, filter } from 'rxjs';
 import { CalendarDayService } from '../../services/calendar-day.service';
 import { CalendariusSpaceService } from '../../services/calendarius-space.service';
 import { HappeningService } from '../../services/happening.service';
-import { IHappeningWithUiState } from '@sneat/mod-calendarius-core';
+import { IHappeningWithUiState } from '@sneat/extension-calendarius-core';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { CalendarDataProvider } from '../../services/calendar-data-provider';
 import { isToday } from '../calendar-core';

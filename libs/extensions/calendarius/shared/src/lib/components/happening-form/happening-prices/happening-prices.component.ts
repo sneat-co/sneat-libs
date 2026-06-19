@@ -26,7 +26,7 @@ import {
   IHappeningBrief,
   IHappeningContext,
   IHappeningPrice,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import {
   HappeningService,
   IHappeningPricesRequest,

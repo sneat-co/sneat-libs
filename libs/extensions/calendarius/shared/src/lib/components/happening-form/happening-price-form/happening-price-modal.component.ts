@@ -30,7 +30,7 @@ import {
   IHappeningContext,
   IHappeningPrice,
   TermUnit,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { ClassName, SneatBaseModalComponent } from '@sneat/ui';
 import {
   HappeningService,

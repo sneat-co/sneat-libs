@@ -6,7 +6,7 @@ import { computed, signal } from '@angular/core';
 // 	ValidationErrors,
 // 	ValidatorFn,
 // } from '@angular/forms';
-import { WeekdayCode2 } from '@sneat/mod-calendarius-core';
+import { WeekdayCode2 } from '@sneat/extension-calendarius-core';
 import { SneatBaseComponent } from '@sneat/ui';
 
 // const weekdayRequired: ValidatorFn = (

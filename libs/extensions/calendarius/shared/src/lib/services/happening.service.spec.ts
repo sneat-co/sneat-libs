@@ -5,7 +5,7 @@ import { ErrorLogger } from '@sneat/core';
 import { Firestore } from '@angular/fire/firestore';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { HappeningStatus, IHappeningContext } from '@sneat/mod-calendarius-core';
+import { HappeningStatus, IHappeningContext } from '@sneat/extension-calendarius-core';
 
 vi.mock('@sneat/space-services', () => ({
   ModuleSpaceItemService: class {

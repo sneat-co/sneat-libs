@@ -12,7 +12,7 @@ import { of } from 'rxjs';
 import { SpaceNavService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
 import { ContactService, ContactusNavService } from '@sneat/contactus-services';
-import { ScheduleNavService } from '@sneat/mod-calendarius-core';
+import { ScheduleNavService } from '@sneat/extension-calendarius-core';
 
 import { MembersListComponent } from './members-list.component';
 

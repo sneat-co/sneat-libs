@@ -4,7 +4,7 @@ import {
   IHappeningContext,
   ISlotAdjustment,
   IHappeningSlotWithID,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { HappeningSlotModalComponent } from './happening-slot-modal.component';
 
 export interface EditRecurringSlotParams {

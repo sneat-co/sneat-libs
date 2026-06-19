@@ -1,4 +1,4 @@
-import { getWd2, wdCodeToWeekdayLongName } from '@sneat/mod-calendarius-core';
+import { getWd2, wdCodeToWeekdayLongName } from '@sneat/extension-calendarius-core';
 import { CalendarDataProvider } from '../services/calendar-data-provider';
 import { Weekday } from './calendar/weekday';
 

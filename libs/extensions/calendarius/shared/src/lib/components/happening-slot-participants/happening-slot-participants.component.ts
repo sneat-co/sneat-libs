@@ -16,7 +16,7 @@ import {
 } from '@sneat/contactus-core';
 import { ContactusSpaceService } from '@sneat/contactus-services';
 import { getRelatedItemByIDs, getRelatedItems } from '@sneat/dto';
-import { ISlotUIContext } from '@sneat/mod-calendarius-core';
+import { ISlotUIContext } from '@sneat/extension-calendarius-core';
 import { ISpaceRef } from '@sneat/core';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 

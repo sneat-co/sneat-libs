@@ -7,7 +7,7 @@ import {
   createWeekdays,
   animationState,
 } from './calendar-core';
-import { WeekdayCode2 } from '@sneat/mod-calendarius-core';
+import { WeekdayCode2 } from '@sneat/extension-calendarius-core';
 import { Parity } from './swipeable-ui';
 import {
   VirtualSliderDirectPushedNext,

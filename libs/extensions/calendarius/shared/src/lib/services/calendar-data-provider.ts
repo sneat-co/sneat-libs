@@ -5,7 +5,7 @@ import {
   CalendarHappeningBriefsBySpaceID,
   ISlotUIContext,
   WeekdayCode2,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { EMPTY, Observable, Subject } from 'rxjs';

@@ -1,5 +1,5 @@
 {
-  "name": "@sneat/extensions-calendarius-shared",
+  "name": "@sneat/extension-calendarius-shared",
   "version": "0.12.0",
   "publishConfig": {
     "access": "public"

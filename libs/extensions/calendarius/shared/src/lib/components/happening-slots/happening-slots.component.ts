@@ -25,7 +25,7 @@ import {
   IHappeningContext,
   IHappeningSlotWithID,
   WdToWeekdayPipe,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import {
   HappeningService,

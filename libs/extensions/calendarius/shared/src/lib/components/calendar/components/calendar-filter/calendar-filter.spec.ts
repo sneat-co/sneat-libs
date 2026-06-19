@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isMatchingScheduleFilter } from './calendar-filter';
-import { IHappeningContext } from '@sneat/mod-calendarius-core';
+import { IHappeningContext } from '@sneat/extension-calendarius-core';
 import { ICalendarFilter } from './calendar-filter';
 
 describe('calendar-filter utilities', () => {

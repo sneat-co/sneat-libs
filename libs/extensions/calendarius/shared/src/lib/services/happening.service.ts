@@ -14,7 +14,7 @@ import {
   IHappeningContext,
   IHappeningPrice,
   IHappeningSlotWithID,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext, ISpaceRequest } from '@sneat/space-models';
 import { QueryOrderByConstraint } from 'firebase/firestore';
