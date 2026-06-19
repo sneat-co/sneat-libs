@@ -141,4 +141,61 @@ describe('InviteModalComponent', () => {
     await component.copyLinkToClipboard();
     expect(writeText).not.toHaveBeenCalled();
   });
+
+  it('composeEmail creates an invite via the mailto protocol', () => {
+    vi.stubGlobal('open', vi.fn());
+    inviteSvc().createInviteForMember.mockReturnValue(
+      of({ invite: { id: 'i1' } }),
+    );
+    component.space = { id: 's1', type: 'family' };
+    component.member = {
+      id: 'm1',
+      brief: { names: { fullName: 'Bob' } },
+      space: { id: 's1' },
+    } as never;
+    component.email.setValue('a@b.com');
+    component.composeEmail();
+    expect(inviteSvc().createInviteForMember).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: expect.objectContaining({ channel: 'email' }),
+      }),
+    );
+  });
+
+  it('composeSMS creates an invite via the sms protocol', () => {
+    vi.stubGlobal('open', vi.fn());
+    inviteSvc().createInviteForMember.mockReturnValue(
+      of({ invite: { id: 'i1' } }),
+    );
+    component.space = { id: 's1', type: 'family' };
+    component.member = {
+      id: 'm1',
+      brief: { names: { fullName: 'Bob' } },
+      space: { id: 's1' },
+    } as never;
+    component.phone.setValue('555');
+    component.composeSMS();
+    expect(inviteSvc().createInviteForMember).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: expect.objectContaining({ channel: 'sms' }),
+      }),
+    );
+  });
+
+  describe('onTabChanged', () => {
+    it('generates a link when switching to the link tab', () => {
+      const getLink = (
+        TestBed.inject(InviteService) as unknown as {
+          getInviteLinkForMember: ReturnType<typeof vi.fn>;
+        }
+      ).getInviteLinkForMember;
+      getLink.mockReturnValue(of({ invite: { id: 'i1', pin: '1234' } }));
+      component.space = { id: 's1', brief: { type: 'family' } };
+      component.member = { id: 'm1', space: { id: 's1' } } as never;
+      component.tab.set('link');
+      component.onTabChanged();
+      expect(getLink).toHaveBeenCalled();
+      expect(component.link()).toContain('i1');
+    });
+  });
 });
