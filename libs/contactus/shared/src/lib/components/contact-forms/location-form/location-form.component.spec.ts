@@ -121,4 +121,26 @@ describe('LocationFormComponent', () => {
     component.ngOnChanges({ contactType: {} as never });
     expect(component.location?.brief?.type).toBe('location');
   });
+
+  it('submit emits locationCreated on a successful create', () => {
+    vi.stubGlobal('alert', vi.fn());
+    contactService.createContact.mockReturnValue(of({ id: 'loc1' }));
+    component.location = {
+      id: '',
+      dbo: {
+        type: 'location',
+        title: 'Home',
+        address: { countryID: 'GB', city: 'London', lines: '1 St' },
+      },
+    } as never;
+    const emit = vi.spyOn(component.locationCreated, 'emit');
+    component.submit();
+    expect(emit).toHaveBeenCalledWith({ id: 'loc1' });
+  });
+
+  it('disabled reflects the creating state', () => {
+    expect(component.disabled).toBe(false);
+    component.isCreating = true;
+    expect(component.disabled).toBe(true);
+  });
 });

@@ -44,4 +44,5 @@ describe('ContactsAsBadgesComponent', () => {
     expect(emit).toHaveBeenCalledWith({ id: 'c1', brief: {} });
     expect(c().$deletingContactIDs()).toContain('c1');
   });
+
 });

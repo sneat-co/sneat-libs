@@ -121,4 +121,30 @@ describe('PersonWizardComponent', () => {
       c().onRelatedAsChanged({ parent: { created: {} } }),
     ).toThrow('!$userContactID()');
   });
+
+  it('onPhoneChanged emits the contact with the channels step', () => {
+    const emit = vi.spyOn(component.contactChange, 'emit');
+    c().onPhoneChanged([{ type: 'mobile', number: '555' }]);
+    expect(emit).toHaveBeenCalled();
+  });
+
+  it('onAgeGroupChanged keeps a person for an adult selection', () => {
+    const emit = vi.spyOn(component.contactChange, 'emit');
+    c().onAgeGroupChanged('adult');
+    expect(emit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dbo: expect.objectContaining({ type: 'person', ageGroup: 'adult' }),
+      }),
+    );
+  });
+
+  it('nextFromName advances when the names form is valid', () => {
+    const openNext = vi.spyOn(c(), 'openNext');
+    c().namesFormComponent = {
+      namesForm: { markAllAsTouched: vi.fn(), valid: true },
+    };
+    c().nextFromName({ stopPropagation: vi.fn() });
+    expect(openNext).toHaveBeenCalledWith('name');
+    expect(component.show.nameNext).toBe(false);
+  });
 });

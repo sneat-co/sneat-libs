@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
+import { Subject } from 'rxjs';
 import { ContactsByTypeComponent } from './contacts-by-type.component';
 import { ContactNavService } from '@sneat/contactus-services';
 import { ErrorLogger } from '@sneat/core';
@@ -107,5 +108,20 @@ describe('ContactsFamilyComponent', () => {
     expect(selChange).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'c1', checked: true, role: 'parent' }),
     );
+  });
+
+  it('the reset_selected command unchecks all contacts', () => {
+    const command$ = new Subject<{ name: string }>();
+    fixture.componentRef.setInput('$contacts', [
+      { id: 'c1', brief: { roles: ['parent'] }, isChecked: true },
+    ]);
+    component.command = command$ as never;
+    fixture.detectChanges();
+    component.ngOnInit();
+    const emit = vi.spyOn(component.contactsChange, 'emit');
+    command$.next({ name: 'reset_selected' });
+    expect(emit).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'c1', isChecked: false }),
+    ]);
   });
 });

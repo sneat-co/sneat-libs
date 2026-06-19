@@ -127,4 +127,37 @@ describe('ContactsSelectorComponent', () => {
       expect.objectContaining({ id: 'c1' }),
     ]);
   });
+
+  it('onContactCreated marks the contact checked and emits it', () => {
+    const onSelected = vi.fn(() => Promise.resolve());
+    component.onSelected = onSelected;
+    c().onContactCreated({ id: 'c9', brief: { title: 'New' } });
+    expect(onSelected).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'c9', isChecked: true }),
+    ]);
+  });
+
+  it('onParentContactCreated selects the created parent', () => {
+    c().onParentContactCreated({
+      id: 'p1',
+      dbo: { title: 'Parent' },
+      space: { id: 'test-space' },
+    });
+    expect(c().selectedParent()?.id).toBe('p1');
+    expect(c().parentContactID()).toBe('p1');
+  });
+
+  it('onParentContactIDChanged selects the matching parent', () => {
+    c().parentContacts.set([{ id: 'p1', brief: { title: 'Parent' } }]);
+    c().onParentContactIDChanged('p1');
+    expect(c().selectedParent()?.id).toBe('p1');
+    expect(c().parentContactID()).toBe('p1');
+  });
+
+  it('emitOnSelected warns when no callback is set', () => {
+    component.onSelected = undefined;
+    expect(() =>
+      c().emitOnSelected({ id: 'c1', space: { id: 's1' } }),
+    ).not.toThrow();
+  });
 });

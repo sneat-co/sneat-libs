@@ -108,4 +108,34 @@ describe('ContactsChecklistComponent', () => {
     );
     expect(c().$checkedInProgress()).toContain('m1');
   });
+
+  it('onCheckboxChange tracks an uncheck in progress', () => {
+    const emit = vi.spyOn(component.checkedChange, 'emit');
+    c().onCheckboxChange(
+      { detail: { checked: false } } as unknown as Event,
+      { id: 'm2', brief: {} },
+    );
+    expect(emit).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'm2', checked: false }),
+    );
+    expect(c().$uncheckedInProgress()).toContain('m2');
+  });
+
+  it('onCheckboxChange clears the in-progress flag once resolved', async () => {
+    let resolveFn: (() => void) | undefined;
+    vi.spyOn(component.checkedChange, 'emit').mockImplementation(
+      (args: unknown) => {
+        resolveFn = (args as { resolve: () => void }).resolve;
+        return true as never;
+      },
+    );
+    c().onCheckboxChange(
+      { detail: { checked: true } } as unknown as Event,
+      { id: 'm3', brief: {} },
+    );
+    expect(c().$checkedInProgress()).toContain('m3');
+    resolveFn?.();
+    await Promise.resolve();
+    expect(c().$checkedInProgress()).not.toContain('m3');
+  });
 });

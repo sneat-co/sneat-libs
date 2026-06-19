@@ -29,7 +29,15 @@ describe('ContactNamesModalComponent', () => {
         },
         {
           provide: ModalController,
-          useValue: { dismiss: vi.fn(), create: vi.fn() },
+          useValue: {
+            dismiss: vi.fn(() => Promise.resolve(true)),
+            create: vi.fn(() =>
+              Promise.resolve({
+                present: vi.fn(() => Promise.resolve()),
+                onDidDismiss: vi.fn(() => Promise.resolve({ data: undefined })),
+              }),
+            ),
+          },
         },
         { provide: ContactService, useValue: { updateContact: vi.fn() } },
       ],

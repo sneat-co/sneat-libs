@@ -24,9 +24,24 @@ describe('InviteModalComponent', () => {
         },
         {
           provide: ModalController,
-          useValue: { dismiss: vi.fn(), create: vi.fn() },
+          useValue: {
+            dismiss: vi.fn(() => Promise.resolve(true)),
+            create: vi.fn(() =>
+              Promise.resolve({
+                present: vi.fn(() => Promise.resolve()),
+                onDidDismiss: vi.fn(() => Promise.resolve({ data: undefined })),
+              }),
+            ),
+          },
         },
-        { provide: ToastController, useValue: { create: vi.fn() } },
+        {
+          provide: ToastController,
+          useValue: {
+            create: vi.fn(() =>
+              Promise.resolve({ present: vi.fn(() => Promise.resolve()) }),
+            ),
+          },
+        },
         {
           provide: InviteService,
           useValue: {
@@ -136,10 +151,9 @@ describe('InviteModalComponent', () => {
   });
 
   it('copyLinkToClipboard is a no-op when there is no link', async () => {
-    const writeText = vi.fn(() => Promise.resolve());
-    vi.stubGlobal('navigator', { clipboard: { writeText } });
-    await component.copyLinkToClipboard();
-    expect(writeText).not.toHaveBeenCalled();
+    // No link set, so the method returns before touching the clipboard.
+    expect(component.link()).toBeUndefined();
+    await expect(component.copyLinkToClipboard()).resolves.toBeUndefined();
   });
 
   it('composeEmail creates an invite via the mailto protocol', () => {

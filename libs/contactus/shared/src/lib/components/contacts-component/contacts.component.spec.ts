@@ -5,6 +5,7 @@ import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { SpaceNavService } from '@sneat/space-services';
 
+import { Subject } from 'rxjs';
 import { ContactsComponent } from './contacts.component';
 
 describe('ContactsComponent', () => {
@@ -144,5 +145,26 @@ describe('ContactsComponent', () => {
     expect(emit).toHaveBeenCalledWith([
       expect.objectContaining({ id: 'a', isChecked: true }),
     ]);
+  });
+
+  it('addNewContact emits addContactClick when not navigating to a page', async () => {
+    component.goToNewContactPage = false;
+    const emit = vi.spyOn(component.addContactClick, 'emit');
+    await c().addNewContact(stopEvent());
+    expect(emit).toHaveBeenCalled();
+  });
+
+  describe('ngOnInit command handling', () => {
+    it('resets selected contacts on the reset_selected command', () => {
+      const command$ = new Subject<{ name: string; event?: Event }>();
+      component.command = command$;
+      withContacts([{ id: 'a', isChecked: true }]);
+      component.ngOnInit();
+      const emit = vi.spyOn(component.contactsChange, 'emit');
+      command$.next({ name: 'reset_selected' });
+      expect(emit).toHaveBeenCalledWith([
+        expect.objectContaining({ id: 'a', isChecked: false }),
+      ]);
+    });
   });
 });
