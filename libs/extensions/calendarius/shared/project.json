@@ -1,0 +1,28 @@
+{
+  "name": "ext-calendarius-shared",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/extensions/calendarius/shared/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/libs/extensions/calendarius/shared"],
+      "options": {
+        "project": "libs/extensions/calendarius/shared/ng-package.json",
+        "tsConfig": "libs/extensions/calendarius/shared/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": { "tsConfig": "libs/extensions/calendarius/shared/tsconfig.lib.prod.json" },
+        "development": {}
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/extensions/calendarius/shared"],
+      "options": { "tsConfig": "libs/extensions/calendarius/shared/tsconfig.spec.json" }
+    },
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

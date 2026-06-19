@@ -22,13 +22,13 @@ describe('Sneat Extensions', () => {
       expect(assets?.emoji).toBe('🏡');
     });
 
-    it('should contain calendarium extension', () => {
-      const calendarium = defaultFamilyExtension.find(
-        (ext) => ext.id === 'calendarium',
+    it('should contain calendarius extension', () => {
+      const calendarius = defaultFamilyExtension.find(
+        (ext) => ext.id === 'calendarius',
       );
-      expect(calendarium).toBeDefined();
-      expect(calendarium?.title).toBe('Calendar');
-      expect(calendarium?.emoji).toBe('🗓️');
+      expect(calendarius).toBeDefined();
+      expect(calendarius?.title).toBe('Calendar');
+      expect(calendarius?.emoji).toBe('🗓️');
     });
 
     it('should contain documents extension', () => {
@@ -77,13 +77,13 @@ describe('Sneat Extensions', () => {
       expect(assets?.emoji).toBe('🏡');
     });
 
-    it('should contain calendarium extension', () => {
-      const calendarium = defaultFamilyMemberExtensions.find(
-        (ext) => ext.id === 'calendarium',
+    it('should contain calendarius extension', () => {
+      const calendarius = defaultFamilyMemberExtensions.find(
+        (ext) => ext.id === 'calendarius',
       );
-      expect(calendarium).toBeDefined();
-      expect(calendarium?.title).toBe('Calendar');
-      expect(calendarium?.emoji).toBe('🗓️');
+      expect(calendarius).toBeDefined();
+      expect(calendarius?.title).toBe('Calendar');
+      expect(calendarius?.emoji).toBe('🗓️');
     });
 
     it('should contain documents extension', () => {

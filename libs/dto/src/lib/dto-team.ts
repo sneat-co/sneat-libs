@@ -14,7 +14,7 @@ export interface ISpaceDbo extends ISpaceBrief, ITotalsHolder {
   // readonly assets?: IAssetBrief[];
   // readonly contacts?: IContactBrief[];
   // readonly numberOf?: TeamCounts;
-  // readonly recurringHappenings?: { [id: string]: IHappeningBrief }; // TODO: Move to ISchedulusTeamDto
+  // readonly recurringHappenings?: { [id: string]: IHappeningBrief }; // TODO: Move to ICalendariusTeamDto
 
   metrics: ISpaceMetric[];
   // active?: ITeamMeetings;
