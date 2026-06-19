@@ -52,4 +52,31 @@ describe('GenderFormComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+
+  it('exposes the gender options', () => {
+    expect(c().genderOptions.map((o: { id: string }) => o.id)).toEqual(
+      expect.arrayContaining(['male', 'female', 'other', 'undisclosed']),
+    );
+  });
+
+  it('onGenderIDChanged emits the gender directly when there is no contact id', () => {
+    const emit = vi.spyOn(component.genderChange, 'emit');
+    c().onGenderIDChanged('male');
+    expect(emit).toHaveBeenCalledWith('male');
+  });
+
+  it('skip emits the undisclosed gender', () => {
+    const emit = vi.spyOn(component.genderChange, 'emit');
+    c().skip();
+    expect(emit).toHaveBeenCalledWith('undisclosed');
+  });
+
+  it('treats a falsy gender as unknown', () => {
+    const emit = vi.spyOn(component.genderChange, 'emit');
+    c().onGenderIDChanged('');
+    expect(emit).toHaveBeenCalledWith('unknown');
+  });
 });

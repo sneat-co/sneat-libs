@@ -25,7 +25,9 @@ describe('ContactsComponent', () => {
         },
         {
           provide: SpaceNavService,
-          useValue: { navigateForwardToSpacePage: vi.fn() },
+          useValue: {
+            navigateForwardToSpacePage: vi.fn(() => Promise.resolve(true)),
+          },
         },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -46,5 +48,101 @@ describe('ContactsComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+  const stopEvent = () =>
+    ({ stopPropagation: vi.fn(), preventDefault: vi.fn() }) as unknown as Event;
+  const spaceNav = () =>
+    TestBed.inject(SpaceNavService) as unknown as {
+      navigateForwardToSpacePage: ReturnType<typeof vi.fn>;
+    };
+
+  const withContacts = (contacts: unknown[], space = { id: 's1', type: 'family' }) => {
+    fixture.componentRef.setInput('$space', space);
+    fixture.componentRef.setInput('$allContacts', contacts);
+    fixture.detectChanges();
+  };
+
+  it('$showTabs is true only for a family space without a fixed role', () => {
+    withContacts([], { id: 's1', type: 'family' });
+    expect(c().$showTabs()).toBe(true);
+    fixture.componentRef.setInput('$roleID', 'tenant');
+    fixture.detectChanges();
+    expect(c().$showTabs()).toBe(false);
+  });
+
+  it('$canAdd is false for tenant/landlord roles', () => {
+    fixture.componentRef.setInput('$roleID', 'tenant');
+    fixture.detectChanges();
+    expect(c().$canAdd()).toBe(false);
+    fixture.componentRef.setInput('$roleID', 'buyer');
+    fixture.detectChanges();
+    expect(c().$canAdd()).toBe(true);
+  });
+
+  it('contactsNumber counts contacts per role', () => {
+    withContacts([
+      { id: 'a', brief: { roles: ['buyer'] } },
+      { id: 'b', brief: { roles: ['buyer', 'trucker'] } },
+    ]);
+    expect(component.contactsNumber('')).toBe(2);
+    expect(component.contactsNumber('buyer')).toBe(2);
+    expect(component.contactsNumber('trucker')).toBe(1);
+  });
+
+  it('onFilterChanged updates the filter signal', () => {
+    c().onFilterChanged('bob');
+    expect(c().$filter()).toBe('bob');
+  });
+
+  it('onRoleChanged emits the selected role', () => {
+    const emit = vi.spyOn(component.roleChange, 'emit');
+    c().onRoleChanged({ ...stopEvent(), detail: { value: 'buyer' } });
+    expect(emit).toHaveBeenCalledWith('buyer');
+  });
+
+  it('addGroup alerts not implemented', () => {
+    const alertSpy = vi.fn();
+    vi.stubGlobal('alert', alertSpy);
+    c().addGroup(stopEvent());
+    expect(alertSpy).toHaveBeenCalled();
+  });
+
+  it('contactClicked navigates to the contact page', () => {
+    component.contactClicked(stopEvent(), { id: 'c1' } as never);
+    expect(spaceNav().navigateForwardToSpacePage).toHaveBeenCalledWith(
+      expect.anything(),
+      'contact/c1',
+      expect.anything(),
+    );
+  });
+
+  it('goGroup navigates to the group page', () => {
+    c().goGroup({ id: 'g1' });
+    expect(spaceNav().navigateForwardToSpacePage).toHaveBeenCalledWith(
+      expect.anything(),
+      'group/g1',
+      expect.anything(),
+    );
+  });
+
+  it('addNewContact navigates to the new-contact page', async () => {
+    await c().addNewContact(stopEvent());
+    expect(spaceNav().navigateForwardToSpacePage).toHaveBeenCalledWith(
+      expect.anything(),
+      'new-contact',
+      expect.anything(),
+    );
+  });
+
+  it('contactSelectionChanged emits the toggled contacts', () => {
+    withContacts([{ id: 'a', isChecked: false }]);
+    const emit = vi.spyOn(component.contactsChange, 'emit');
+    c().contactSelectionChanged({ id: 'a', checked: true });
+    expect(emit).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'a', isChecked: true }),
+    ]);
   });
 });
