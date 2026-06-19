@@ -28,4 +28,20 @@ describe('ContactsAsBadgesComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = () => component as any;
+  const stop = () => ({ stopPropagation: vi.fn() }) as unknown as Event;
+
+  it('delete tracks the contact as deleting and emits it', () => {
+    fixture.componentRef.setInput('$contacts', [
+      { id: 'c1', brief: {} },
+      { id: 'c2', brief: {} },
+    ]);
+    fixture.detectChanges();
+    const emit = vi.spyOn(component.deleteContact, 'emit');
+    c().delete(stop(), { id: 'c1', brief: {} });
+    expect(emit).toHaveBeenCalledWith({ id: 'c1', brief: {} });
+    expect(c().$deletingContactIDs()).toContain('c1');
+  });
 });
