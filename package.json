@@ -41,6 +41,7 @@
     "@nx/workspace": "22.5.3",
     "@sentry/angular": "10.41.0",
     "@sentry/browser": "10.41.0",
+    "@sneat/extension-assetus": "0.0.1",
     "@sneat/random": "0.0.4",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.18",
@@ -67,10 +68,6 @@
     "zone.js": "0.16.1"
   },
   "pnpm": {
-    "_comment_temporary_override": "TEMPORARY — remove before merge. Points @sneat/extension-assetus at local dist until 0.0.1 is published to npmjs. See PR retire-legacy-assetus/sneat-libs.",
-    "overrides": {
-      "@sneat/extension-assetus": "file:/Users/alexandertrakhimenok/projects/sneat-co/assetus/frontend/dist/libs/ext-assetus"
-    },
     "peerDependencyRules": {
       "ignoreMissing": [
         "@sneat/*",
