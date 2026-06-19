@@ -26,7 +26,7 @@ import {
   ITiming,
   IHappeningContext,
   IHappeningSlotWithID,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 // import { HappeningService } from '../../services/happening.service';

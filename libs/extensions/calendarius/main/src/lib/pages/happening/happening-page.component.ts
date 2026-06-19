@@ -17,7 +17,7 @@ import {
   HappeningComponentBaseParamsModule,
   HappeningFormComponent,
   HappeningServiceModule,
-} from '@sneat/extensions-calendarius-shared';
+} from '@sneat/extension-calendarius-shared';
 
 @Component({
   imports: [

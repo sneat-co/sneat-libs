@@ -27,7 +27,7 @@ import {
   IHappeningSlot,
   WeekdayCode2,
   IHappeningWithUiState,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { ClassName } from '@sneat/ui';
 import { takeUntil } from 'rxjs';
 import { CalendarDayServiceModule } from '../../services/calendar-day.service';

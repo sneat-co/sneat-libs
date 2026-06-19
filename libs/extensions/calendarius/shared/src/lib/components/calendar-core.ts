@@ -9,7 +9,7 @@ import {
   wd2,
   wdCodeToWeekdayLongName,
   WeekdayCode2,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { addDays } from './calendar/calendar-state.service';
 import { Weekday } from './calendar/weekday';
 import { Parity } from './swipeable-ui';

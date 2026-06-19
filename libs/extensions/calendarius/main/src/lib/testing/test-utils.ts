@@ -12,12 +12,12 @@ import {
 import { ErrorLogger } from '@sneat/core';
 import { SneatUserService } from '@sneat/auth-core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
-import { ScheduleNavService } from '@sneat/mod-calendarius-core';
+import { ScheduleNavService } from '@sneat/extension-calendarius-core';
 import {
   HappeningService,
   CalendariusSpaceService,
   HappeningComponentBaseParams,
-} from '@sneat/extensions-calendarius-shared';
+} from '@sneat/extension-calendarius-shared';
 
 export const mockSneatUserService = {
   user$: of({}),

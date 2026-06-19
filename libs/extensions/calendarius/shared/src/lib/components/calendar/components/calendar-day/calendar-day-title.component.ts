@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { LongMonthNamePipe } from '@sneat/components';
-import { WdToWeekdayPipe } from '@sneat/mod-calendarius-core';
+import { WdToWeekdayPipe } from '@sneat/extension-calendarius-core';
 import { isToday, isTomorrow } from '../../../calendar-core';
 import { Weekday } from '../../weekday';
 

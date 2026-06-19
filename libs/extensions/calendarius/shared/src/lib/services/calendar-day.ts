@@ -20,7 +20,7 @@ import {
   wdCodeToWeekdayLongName,
   IHappeningContext,
   ITiming,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { HappeningService } from './happening.service';
 import { CalendarDayService } from './calendar-day.service';
 import { runInInjectionContext, Injector, EffectRef } from '@angular/core';

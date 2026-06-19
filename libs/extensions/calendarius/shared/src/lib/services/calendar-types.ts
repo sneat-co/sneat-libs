@@ -6,7 +6,7 @@ import {
   RecurringSlots,
   WeekdayCode2,
   IHappeningBrief,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 
 export type ISpaceRecurrings = {

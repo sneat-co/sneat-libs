@@ -22,7 +22,7 @@ import { CalendarDayComponent } from './calendar-day.component';
 import { CalendarDayTitleComponent } from './calendar-day-title.component';
 import { ISpaceContext } from '@sneat/space-models';
 import { CalendarDataProvider } from '../../../../services/calendar-data-provider';
-import { NewHappeningParams } from '@sneat/mod-calendarius-core';
+import { NewHappeningParams } from '@sneat/extension-calendarius-core';
 import { getToday, CalendarStateService } from '../../calendar-state.service';
 import { swipeableDay } from '../../../swipeable-ui';
 import { CalendarAddButtonsComponent } from '../calendar-add-buttons/calendar-add-buttons.component';

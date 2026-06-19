@@ -46,7 +46,7 @@ import {
   Month,
   RepeatPeriod,
   IHappeningSlotWithID,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { newRandomId } from '@sneat/random';
 import { Observable } from 'rxjs';
 import { StartEndDatetimeFormComponent } from '../start-end-datetime-form/start-end-datetime-form.component';

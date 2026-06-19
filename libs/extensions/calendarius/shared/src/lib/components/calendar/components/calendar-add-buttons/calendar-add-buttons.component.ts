@@ -10,7 +10,7 @@ import {
   WeekdayCode2,
   NewHappeningParams,
   ScheduleNavService,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 

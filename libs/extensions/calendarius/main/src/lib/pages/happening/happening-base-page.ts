@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { ISpaceRef } from '@sneat/core';
-import { IHappeningContext } from '@sneat/mod-calendarius-core';
+import { IHappeningContext } from '@sneat/extension-calendarius-core';
 import {
   distinctUntilChanged,
   map,
@@ -9,7 +9,7 @@ import {
   takeUntil,
 } from 'rxjs';
 import { CalendarBasePage } from '../calendar-base-page';
-import { HappeningComponentBaseParams } from '@sneat/extensions-calendarius-shared';
+import { HappeningComponentBaseParams } from '@sneat/extension-calendarius-shared';
 
 const emptyHappeningContext = { id: '', space: { id: '' } };
 

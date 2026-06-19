@@ -1,5 +1,5 @@
 import { getRelatedItemIDs, IRelatedModules } from '@sneat/dto';
-import { ISlotUIContext } from '@sneat/mod-calendarius-core';
+import { ISlotUIContext } from '@sneat/extension-calendarius-core';
 import { ICalendarFilter } from './calendar/components/calendar-filter/calendar-filter';
 
 export function hasContact(

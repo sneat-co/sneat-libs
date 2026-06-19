@@ -18,12 +18,12 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { ShortMonthNamePipe } from '@sneat/components';
-import { HappeningType } from '@sneat/mod-calendarius-core';
+import { HappeningType } from '@sneat/extension-calendarius-core';
 import {
   ISlotUIContext,
   NewHappeningParams,
   ScheduleNavService,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { ISpaceContext } from '@sneat/space-models';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 import { CalendarDay } from '../../../../services/calendar-day';

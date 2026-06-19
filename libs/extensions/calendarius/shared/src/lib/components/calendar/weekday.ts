@@ -1,4 +1,4 @@
-import { WeekdayCode2 } from '@sneat/mod-calendarius-core';
+import { WeekdayCode2 } from '@sneat/extension-calendarius-core';
 import { CalendarDay } from '../../services/calendar-day';
 
 export interface Weekday {

@@ -4,7 +4,7 @@ import { IRelatedModules } from '@sneat/dto';
 import {
   ISlotUIContext,
   IHappeningContext,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { ICalendarFilter } from './calendar/components/calendar-filter/calendar-filter';
 
 describe('calendar-slots utilities', () => {

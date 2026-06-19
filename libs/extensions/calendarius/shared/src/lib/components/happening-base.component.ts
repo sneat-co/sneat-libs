@@ -18,8 +18,8 @@ import {
 import { ContactsSelectorService } from '@sneat/contactus-shared';
 import { isoStringsToDate } from '@sneat/core';
 import { getRelatedItemIDs } from '@sneat/dto';
-import { IHappeningContext, WeekdayCode2 } from '@sneat/mod-calendarius-core';
-import { getWd2 } from '@sneat/mod-calendarius-core';
+import { IHappeningContext, WeekdayCode2 } from '@sneat/extension-calendarius-core';
+import { getWd2 } from '@sneat/extension-calendarius-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ISpaceContext, zipMapBriefsWithIDs } from '@sneat/space-models';

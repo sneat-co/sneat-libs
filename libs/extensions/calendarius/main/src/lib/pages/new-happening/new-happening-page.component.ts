@@ -14,13 +14,13 @@ import {
   WeekdayCode2,
   IHappeningContext,
   newEmptyHappeningContext,
-} from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { first } from 'rxjs';
 import { CalendarBasePage } from '../calendar-base-page';
-import { HappeningFormComponent } from '@sneat/extensions-calendarius-shared';
+import { HappeningFormComponent } from '@sneat/extension-calendarius-shared';
 
 @Component({
   selector: 'sneat-happening-new',

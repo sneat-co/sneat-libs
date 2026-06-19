@@ -30,8 +30,8 @@ import {
   HappeningUIState,
   IHappeningContext,
   HappeningStatus,
-} from '@sneat/mod-calendarius-core';
-import { ISlotUIContext } from '@sneat/mod-calendarius-core';
+} from '@sneat/extension-calendarius-core';
+import { ISlotUIContext } from '@sneat/extension-calendarius-core';
 import {
   ContactsSelectorModule,
   ContactsSelectorService,
