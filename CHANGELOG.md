@@ -138,7 +138,7 @@ This was a version bump only, there were no code changes.
 
 ### 🚀 Features
 
-- add wizard, contactus-internal, ext-schedulus-shared, ext-schedulus-main libs ([47d6e46](https://github.com/sneat-co/sneat-libs/commit/47d6e46))
+- add wizard, contactus-internal, ext-calendarius-shared, ext-calendarius-main libs ([47d6e46](https://github.com/sneat-co/sneat-libs/commit/47d6e46))
 
 ### ❤️ Thank You
 
@@ -149,7 +149,7 @@ This was a version bump only, there were no code changes.
 
 ### 🚀 Features
 
-- add 7 new @sneat/* libs (assetus, schedulus, contactus-services, app, space-components, contactus-shared) ([ea491d9](https://github.com/sneat-co/sneat-libs/commit/ea491d9))
+- add 7 new @sneat/* libs (assetus, calendarius, contactus-services, app, space-components, contactus-shared) ([ea491d9](https://github.com/sneat-co/sneat-libs/commit/ea491d9))
 
 ### ❤️ Thank You
 

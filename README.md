@@ -76,7 +76,7 @@ Package names under the `@sneat` scope follow these conventions:
 
   > The plural form `@sneat/extensions-*` is **deprecated** — it was an early
   > typo. New and migrated extensions MUST use the singular `extension-`.
-  > (`listus` was migrated to `@sneat/extension-listus`; `schedulus`,
+  > (`listus` was migrated to `@sneat/extension-listus`; `calendarius`,
   > `contactus`, etc. are to follow.)
 
 - **Domain models** use `@sneat/<domain>-models`, **services** use
