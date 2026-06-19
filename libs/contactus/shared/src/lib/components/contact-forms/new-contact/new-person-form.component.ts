@@ -35,9 +35,9 @@ import { ContactRoleFormComponent } from '../role-form';
 import { IIdAndDbo, IIdAndOptionalDbo } from '@sneat/core';
 import {
   AssetService,
-  AssetusServicesModule,
-} from '@sneat/ext-assetus-components';
-import { IAssetContext } from '@sneat/mod-assetus-core';
+  AssetusCoreServicesModule,
+  IAssetContext,
+} from '@sneat/extension-assetus';
 import { first, Observable, Subject, takeUntil } from 'rxjs';
 import { NewContactFormBaseComponent } from './new-contact-form-base.component';
 import { ClassName } from '@sneat/ui';
@@ -59,7 +59,7 @@ export type NewContactFormCommand = 'create' | 'reset';
     ContactRoleFormComponent,
     PersonWizardComponent,
     IonButton,
-    AssetusServicesModule,
+    AssetusCoreServicesModule,
   ],
   providers: [{ provide: ClassName, useValue: 'NewContactFormComponent' }],
   selector: 'sneat-new-person-form',
@@ -303,8 +303,8 @@ export class NewPersonFormComponent
       if (!asset.id) {
         throw new Error('!assetDto.id');
       }
-      if (!asset.brief?.title) {
-        throw new Error('!asset.brief.title');
+      if (!asset.brief?.name) {
+        throw new Error('!asset.brief.name');
       }
 
       if (!this.assetRelation) {
@@ -312,7 +312,7 @@ export class NewPersonFormComponent
       }
       const contact2Asset: IContact2Asset = {
         id: asset.id,
-        title: asset.brief.title,
+        title: asset.brief.name,
         relation: this.assetRelation,
       };
       request = {

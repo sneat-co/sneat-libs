@@ -33,7 +33,7 @@ import {
   SpaceBaseComponent,
   SpaceComponentBaseParams,
 } from '@sneat/space-components';
-import { IAssetContext } from '@sneat/mod-assetus-core';
+import { IAssetContext } from '@sneat/extension-assetus';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 

@@ -8,7 +8,7 @@ import {
   ContactRoleService,
   ContactService,
 } from '@sneat/contactus-services';
-import { AssetService } from '@sneat/ext-assetus-components';
+import { AssetService } from '@sneat/extension-assetus';
 
 import { NewPersonFormComponent } from './new-person-form.component';
 

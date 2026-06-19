@@ -67,6 +67,10 @@
     "zone.js": "0.16.1"
   },
   "pnpm": {
+    "_comment_temporary_override": "TEMPORARY — remove before merge. Points @sneat/extension-assetus at local dist until 0.0.1 is published to npmjs. See PR retire-legacy-assetus/sneat-libs.",
+    "overrides": {
+      "@sneat/extension-assetus": "file:/Users/alexandertrakhimenok/projects/sneat-co/assetus/frontend/dist/libs/ext-assetus"
+    },
     "peerDependencyRules": {
       "ignoreMissing": [
         "@sneat/*",
