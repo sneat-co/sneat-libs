@@ -1,0 +1,71 @@
+name: Publish extension to npm
+
+# Publishes a Sneat niche-app extension library (e.g. @sneat/extension-eventus,
+# @sneat/extension-listus, @sneat/extension-assetus) to npm using THIS repo's
+# NPM_TOKEN.
+#
+# Why here: the niche-app repos (sneat-co/eventus, /listus, /assetus, …) don't
+# carry npm publish credentials, but sneat-libs does (it publishes the whole
+# @sneat/* scope). This workflow checks out the target repo, builds the given Nx
+# library, and runs `nx release publish` for it with sneat-libs' NPM_TOKEN.
+#
+# Reusable across repos via inputs — run on demand ("Run workflow"):
+#   repository: sneat-co/eventus   project: ext-eventus
+#   repository: sneat-co/listus    project: ext-listus
+#   repository: sneat-co/assetus   project: ext-assetus
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: Source repo to publish from (owner/name)
+        required: true
+        default: sneat-co/eventus
+      project:
+        description: Nx project (library) to build & publish
+        required: true
+        default: ext-eventus
+      ref:
+        description: Git ref (branch or tag) to publish from
+        required: false
+        default: main
+      working-directory:
+        description: Nx workspace directory within the repo
+        required: false
+        default: frontend
+      pnpm-version:
+        description: pnpm major version
+        required: false
+        default: "11"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ inputs.repository }}@${{ inputs.ref }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repository }}
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Install deps
+        working-directory: ${{ inputs.working-directory }}
+        run: pnpm install --frozen-lockfile
+      - name: Build ${{ inputs.project }}
+        working-directory: ${{ inputs.working-directory }}
+        run: pnpm nx build ${{ inputs.project }}
+      - name: Publish ${{ inputs.project }}
+        working-directory: ${{ inputs.working-directory }}
+        run: pnpm nx release publish --projects=${{ inputs.project }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
