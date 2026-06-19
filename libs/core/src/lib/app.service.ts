@@ -11,6 +11,7 @@ export type SneatApp =
   | 'debtus'
   | 'docus'
   | 'dream7'
+  | 'eventus'
   | 'feis'
   | 'logist'
   | 'listus'
