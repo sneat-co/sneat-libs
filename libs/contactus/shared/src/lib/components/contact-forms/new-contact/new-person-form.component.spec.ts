@@ -33,7 +33,9 @@ describe('NewPersonFormComponent', () => {
         },
         {
           provide: SpaceNavService,
-          useValue: { navigateForwardToSpacePage: vi.fn() },
+          useValue: {
+            navigateForwardToSpacePage: vi.fn(() => Promise.resolve(true)),
+          },
         },
         {
           provide: ContactService,
@@ -99,5 +101,60 @@ describe('NewPersonFormComponent', () => {
   it('does not watch when no asset id is set', () => {
     expect(assetServiceMock.watchAssetByID).not.toHaveBeenCalled();
     expect(component.$asset()).toBeUndefined();
+  });
+
+  describe('submit', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const c = () => component as any;
+    const contactSvc = () =>
+      TestBed.inject(ContactService) as unknown as {
+        createContact: ReturnType<typeof vi.fn>;
+      };
+
+    it('throws when there is no space', () => {
+      fixture.componentRef.setInput('$contact', {
+        id: '',
+        space: undefined,
+        dbo: { type: 'person' },
+      });
+      fixture.detectChanges();
+      expect(() => c().submit()).toThrow('Space is not defined');
+    });
+
+    it('creates a person contact and navigates on success', () => {
+      contactSvc().createContact.mockReturnValue(of({ id: 'c1' }));
+      c().submit();
+      expect(contactSvc().createContact).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'test-space' }),
+        expect.objectContaining({ type: 'person', spaceID: 'test-space' }),
+      );
+    });
+
+    it('includes the related asset when an asset and relation are set', () => {
+      contactSvc().createContact.mockReturnValue(of({ id: 'c1' }));
+      c().$asset.set({
+        id: 'a1',
+        space: { id: 'test-space' },
+        brief: { name: 'My car' },
+      });
+      c().assetRelation = 'owner';
+      c().submit();
+      expect(contactSvc().createContact).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          relatedToAssets: [
+            expect.objectContaining({ id: 'a1', title: 'My car' }),
+          ],
+        }),
+      );
+    });
+
+    it('adds the selected role to the request', () => {
+      contactSvc().createContact.mockReturnValue(of({ id: 'c1' }));
+      c().$selectedContactRole.set({ id: 'tenant' });
+      c().submit();
+      const request = contactSvc().createContact.mock.calls[0][1];
+      expect(request.person.roles).toContain('tenant');
+    });
   });
 });
