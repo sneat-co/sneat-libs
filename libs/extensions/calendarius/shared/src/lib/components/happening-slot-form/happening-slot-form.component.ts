@@ -35,18 +35,7 @@ import {
   ModalController,
 } from '@ionic/angular/standalone';
 import { ClassName, ISelectItem, SelectFromListComponent } from '@sneat/ui';
-import {
-  emptyTiming,
-  IHappeningSlot,
-  ITiming,
-  MonthlyMode,
-  SlotLocation,
-  WeekdayCode2,
-  IHappeningContext,
-  Month,
-  RepeatPeriod,
-  IHappeningSlotWithID,
-} from '@sneat/extension-calendarius-core';
+import { emptyTiming, IHappeningSlot, ITiming, MonthlyMode, SlotLocation, WeekdayCode2, IHappeningContext, Month, RepeatPeriod, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { newRandomId } from '@sneat/random';
 import { Observable } from 'rxjs';
 import { StartEndDatetimeFormComponent } from '../start-end-datetime-form/start-end-datetime-form.component';

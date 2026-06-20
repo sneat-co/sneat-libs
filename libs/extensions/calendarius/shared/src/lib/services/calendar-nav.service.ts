@@ -1,7 +1,7 @@
 import { inject, Injectable, NgModule } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
-import { ISlotUIEvent } from '@sneat/extension-calendarius-core';
-import { IHappeningContext } from '@sneat/extension-calendarius-core';
+import { ISlotUIEvent } from '@sneat/extension-calendarius-contract';
+import { IHappeningContext } from '@sneat/extension-calendarius-contract';
 import { SpaceNavService } from '@sneat/space-services';
 
 @Injectable()

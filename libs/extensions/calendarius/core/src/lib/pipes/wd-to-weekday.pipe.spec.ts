@@ -1,4 +1,5 @@
-import { WdToWeekdayPipe, wdCodeToWeekdayLongName } from './wd-to-weekday.pipe';
+import { wdCodeToWeekdayLongName } from '@sneat/extension-calendarius-contract';
+import { WdToWeekdayPipe } from './wd-to-weekday.pipe';
 
 describe('WdToWeekdayPipe', () => {
   it('should create', () => {

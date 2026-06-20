@@ -8,12 +8,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import {
-  HappeningType,
-  WeekdayCode2,
-  IHappeningContext,
-  newEmptyHappeningContext,
-} from '@sneat/extension-calendarius-core';
+import { HappeningType, WeekdayCode2, IHappeningContext, newEmptyHappeningContext } from '@sneat/extension-calendarius-contract';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';

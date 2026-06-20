@@ -42,14 +42,7 @@ import {
   IonCol,
 } from '@ionic/angular/standalone';
 import { RoutingState } from '@sneat/core';
-import {
-  HappeningType,
-  IHappeningContext,
-  IHappeningDbo,
-  IHappeningSlotWithID,
-  mergeValuesWithIDs,
-  WeekdayCode2,
-} from '@sneat/extension-calendarius-core';
+import { HappeningType, IHappeningContext, IHappeningDbo, IHappeningSlotWithID, mergeValuesWithIDs, WeekdayCode2 } from '@sneat/extension-calendarius-contract';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
 import { takeUntil } from 'rxjs';
 import { HappeningTitleModalComponent } from '../../modals/happening-title-modal/happening-title-modal.component';

@@ -5,16 +5,7 @@ import {
 } from '@angular/fire/firestore';
 import { IFilter, SneatApiService } from '@sneat/api';
 import { dateToIso } from '@sneat/core';
-import {
-  HappeningStatus,
-  IHappeningBrief,
-  IHappeningDbo,
-  validateHappeningDto,
-  WeekdayCode2,
-  IHappeningContext,
-  IHappeningPrice,
-  IHappeningSlotWithID,
-} from '@sneat/extension-calendarius-core';
+import { HappeningStatus, IHappeningBrief, IHappeningDbo, validateHappeningDto, WeekdayCode2, IHappeningContext, IHappeningPrice, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext, ISpaceRequest } from '@sneat/space-models';
 import { QueryOrderByConstraint } from 'firebase/firestore';

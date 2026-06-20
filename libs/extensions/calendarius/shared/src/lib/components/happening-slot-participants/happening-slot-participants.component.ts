@@ -16,7 +16,7 @@ import {
   IContactWithBriefAndSpace,
 } from '@sneat/extension-contactus-contract';
 import { getRelatedItemByIDs, getRelatedItems } from '@sneat/dto';
-import { ISlotUIContext } from '@sneat/extension-calendarius-core';
+import { ISlotUIContext } from '@sneat/extension-calendarius-contract';
 import { ISpaceRef } from '@sneat/core';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 

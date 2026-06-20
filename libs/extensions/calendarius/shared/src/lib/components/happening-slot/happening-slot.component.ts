@@ -12,12 +12,8 @@ import {
   IonItem,
   IonLabel,
 } from '@ionic/angular/standalone';
-import {
-  emptyHappeningSlot,
-  IHappeningContext,
-  IHappeningSlotWithID,
-  WdToWeekdayPipe,
-} from '@sneat/extension-calendarius-core';
+import { WdToWeekdayPipe } from '@sneat/extension-calendarius-core';
+import { emptyHappeningSlot, IHappeningContext, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { HappeningSlotModalService } from '../happening-slot-form/happening-slot-modal.service';
 
 @Component({

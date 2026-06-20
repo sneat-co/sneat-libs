@@ -26,7 +26,7 @@ import {
   CalendarNavServicesModule,
   HappeningServiceModule,
 } from '../../../../services';
-import { ISlotUIContext } from '@sneat/extension-calendarius-core';
+import { ISlotUIContext } from '@sneat/extension-calendarius-contract';
 import { HappeningSlotModalServiceModule } from '../../../happening-slot-form/happening-slot-modal.service';
 import { HappeningSlotParticipantsComponent } from '../../../happening-slot-participants/happening-slot-participants.component';
 import { TimingBadgeComponent } from '../timing-badge/timing-badge.component';

@@ -20,7 +20,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ContactTitlePipe } from '@sneat/extension-contactus-shared';
 import { IContactWithBriefAndSpace } from '@sneat/extension-contactus-contract';
-import { WeekdayCode2 } from '@sneat/extension-calendarius-core';
+import { WeekdayCode2 } from '@sneat/extension-calendarius-contract';
 import { ISpaceContext } from '@sneat/space-models';
 import {
   emptyCalendarFilter,

@@ -14,8 +14,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
-import { ISlotUIEvent } from '@sneat/extension-calendarius-core';
-import { IHappeningContext } from '@sneat/extension-calendarius-core';
+import { ISlotUIEvent } from '@sneat/extension-calendarius-contract';
+import { IHappeningContext } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { HappeningService } from '../../../../services/happening.service';
 import { Observable, Subscription } from 'rxjs';

@@ -3,7 +3,7 @@ import { CalendarNavService } from './calendar-nav.service';
 import { ErrorLogger } from '@sneat/core';
 import { SpaceNavService } from '@sneat/space-services';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { ISlotUIEvent } from '@sneat/extension-calendarius-core';
+import { ISlotUIEvent } from '@sneat/extension-calendarius-contract';
 
 describe('CalendarNavService', () => {
   let service: CalendarNavService;

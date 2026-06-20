@@ -10,17 +10,7 @@ import {
   Subscription,
   takeUntil,
 } from 'rxjs';
-import {
-  getWd2,
-  ISlotUIContext,
-  RecurringSlots,
-  sortSlotItems,
-  ICalendarDayDbo,
-  WeekdayCode2,
-  wdCodeToWeekdayLongName,
-  IHappeningContext,
-  ITiming,
-} from '@sneat/extension-calendarius-core';
+import { getWd2, ISlotUIContext, RecurringSlots, sortSlotItems, ICalendarDayDbo, WeekdayCode2, wdCodeToWeekdayLongName, IHappeningContext, ITiming } from '@sneat/extension-calendarius-contract';
 import { HappeningService } from './happening.service';
 import { CalendarDayService } from './calendar-day.service';
 import { runInInjectionContext, Injector, EffectRef } from '@angular/core';

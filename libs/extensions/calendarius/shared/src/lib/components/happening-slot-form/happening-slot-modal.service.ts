@@ -1,10 +1,6 @@
 import { Injectable, NgModule, inject } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
-import {
-  IHappeningContext,
-  ISlotAdjustment,
-  IHappeningSlotWithID,
-} from '@sneat/extension-calendarius-core';
+import { IHappeningContext, ISlotAdjustment, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { HappeningSlotModalComponent } from './happening-slot-modal.component';
 
 export interface EditRecurringSlotParams {

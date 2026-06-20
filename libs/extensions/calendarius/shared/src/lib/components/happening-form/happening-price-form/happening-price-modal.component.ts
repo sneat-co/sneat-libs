@@ -24,13 +24,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import {
-  CurrencyCode,
-  IHappeningBrief,
-  IHappeningContext,
-  IHappeningPrice,
-  TermUnit,
-} from '@sneat/extension-calendarius-core';
+import { CurrencyCode, IHappeningBrief, IHappeningContext, IHappeningPrice, TermUnit } from '@sneat/extension-calendarius-contract';
 import { ClassName, SneatBaseModalComponent } from '@sneat/ui';
 import {
   HappeningService,

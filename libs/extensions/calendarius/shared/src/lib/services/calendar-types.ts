@@ -1,12 +1,4 @@
-import {
-  IHappeningContext,
-  IHappeningSlot,
-  ICalendariusSpaceContext,
-  ISlotUIContext,
-  RecurringSlots,
-  WeekdayCode2,
-  IHappeningBrief,
-} from '@sneat/extension-calendarius-core';
+import { IHappeningContext, IHappeningSlot, ICalendariusSpaceContext, ISlotUIContext, RecurringSlots, WeekdayCode2, IHappeningBrief } from '@sneat/extension-calendarius-contract';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 
 export type ISpaceRecurrings = {

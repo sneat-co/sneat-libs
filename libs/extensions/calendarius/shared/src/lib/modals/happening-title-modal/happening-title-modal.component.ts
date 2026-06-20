@@ -33,7 +33,7 @@ import {
   HappeningServiceModule,
   IUpdateHappeningTextsRequest,
 } from '../../services/happening.service';
-import { IHappeningContext } from '@sneat/extension-calendarius-core';
+import { IHappeningContext } from '@sneat/extension-calendarius-contract';
 import { ClassName, SneatBaseModalComponent } from '@sneat/ui';
 
 @Component({

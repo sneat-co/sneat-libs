@@ -19,13 +19,8 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { Numeral2Pipe } from '@sneat/components';
-import {
-  IHappeningSlot,
-  WeekdayCode2,
-  IHappeningContext,
-  IHappeningSlotWithID,
-  WdToWeekdayPipe,
-} from '@sneat/extension-calendarius-core';
+import { WdToWeekdayPipe } from '@sneat/extension-calendarius-core';
+import { IHappeningSlot, WeekdayCode2, IHappeningContext, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import {
   HappeningService,

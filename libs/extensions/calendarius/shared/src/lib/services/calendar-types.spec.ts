@@ -3,7 +3,7 @@ import {
   emptyRecurringsByWeekday,
   groupRecurringSlotsByWeekday,
 } from './calendar-types';
-import { ICalendariusSpaceContext } from '@sneat/extension-calendarius-core';
+import { ICalendariusSpaceContext } from '@sneat/extension-calendarius-contract';
 
 describe('calendar-types utilities', () => {
   describe('emptyRecurringsByWeekday', () => {

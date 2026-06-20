@@ -18,7 +18,7 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
-import { IHappeningWithUiState } from '@sneat/extension-calendarius-core';
+import { IHappeningWithUiState } from '@sneat/extension-calendarius-contract';
 import { ISpaceContext } from '@sneat/space-models';
 import { CalendarFilterService } from '../../../calendar-filter.service';
 import { HappeningCardComponent } from '../../../happening-card/happening-card.component';

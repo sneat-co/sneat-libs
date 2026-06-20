@@ -22,11 +22,7 @@ import {
 } from '@ionic/angular/standalone';
 import { IMemberContext } from '@sneat/extension-contactus-contract';
 import { localDateToIso } from '@sneat/core';
-import {
-  IHappeningSlot,
-  WeekdayCode2,
-  IHappeningWithUiState,
-} from '@sneat/extension-calendarius-core';
+import { IHappeningSlot, WeekdayCode2, IHappeningWithUiState } from '@sneat/extension-calendarius-contract';
 import { ClassName } from '@sneat/ui';
 import { takeUntil } from 'rxjs';
 import { CalendarDayServiceModule } from '../../services/calendar-day.service';

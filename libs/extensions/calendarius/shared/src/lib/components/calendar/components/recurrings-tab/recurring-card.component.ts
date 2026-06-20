@@ -6,10 +6,7 @@ import {
   inject,
 } from '@angular/core';
 import { IonCard } from '@ionic/angular/standalone';
-import {
-  IHappeningContext,
-  IHappeningWithUiState,
-} from '@sneat/extension-calendarius-core';
+import { IHappeningContext, IHappeningWithUiState } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { SpaceNavService } from '@sneat/space-services';

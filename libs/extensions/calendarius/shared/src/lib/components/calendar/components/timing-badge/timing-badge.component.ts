@@ -5,7 +5,7 @@ import {
   input,
 } from '@angular/core';
 import { IonText } from '@ionic/angular/standalone';
-import { ISlotAdjustment, ITiming } from '@sneat/extension-calendarius-core';
+import { ISlotAdjustment, ITiming } from '@sneat/extension-calendarius-contract';
 
 @Component({
   selector: 'sneat-timing-badge',

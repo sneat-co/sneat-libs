@@ -1,14 +1,7 @@
 import { signal } from '@angular/core';
 import { hasRelated } from '@sneat/dto';
 import { CalendariusSpaceService } from '../services/calendarius-space.service';
-import {
-  ICalendariusSpaceDbo,
-  IHappeningBrief,
-  IHappeningDbo,
-  ICalendariusSpaceContext,
-  ISlotUIContext,
-  RecurringSlots,
-} from '@sneat/extension-calendarius-core';
+import { ICalendariusSpaceDbo, IHappeningBrief, IHappeningDbo, ICalendariusSpaceContext, ISlotUIContext, RecurringSlots } from '@sneat/extension-calendarius-contract';
 import {
   ISpaceItemNavContext,
   ISpaceItemWithOptionalDbo,

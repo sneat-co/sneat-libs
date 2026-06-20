@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { hasContact, isSlotVisible } from './calendar-slots';
 import { IRelatedModules } from '@sneat/dto';
-import {
-  ISlotUIContext,
-  IHappeningContext,
-} from '@sneat/extension-calendarius-core';
+import { ISlotUIContext, IHappeningContext } from '@sneat/extension-calendarius-contract';
 import { ICalendarFilter } from './calendar/components/calendar-filter/calendar-filter';
 
 describe('calendar-slots utilities', () => {

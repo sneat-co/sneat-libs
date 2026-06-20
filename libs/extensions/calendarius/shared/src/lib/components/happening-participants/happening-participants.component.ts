@@ -34,7 +34,7 @@ import {
   ISpaceModuleItemRef,
   removeRelatedItem,
 } from '@sneat/dto';
-import { IHappeningContext, IHappeningBase } from '@sneat/extension-calendarius-core';
+import { IHappeningContext, IHappeningBase } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import {

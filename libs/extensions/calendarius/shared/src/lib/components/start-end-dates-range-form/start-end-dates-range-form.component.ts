@@ -16,7 +16,7 @@ import {
   IonItem,
   IonRow,
 } from '@ionic/angular/standalone';
-import { IDateTime, ITiming } from '@sneat/extension-calendarius-core';
+import { IDateTime, ITiming } from '@sneat/extension-calendarius-contract';
 
 @Component({
   selector: 'sneat-start-end-dates-range-form',

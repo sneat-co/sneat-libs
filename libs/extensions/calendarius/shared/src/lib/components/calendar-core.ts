@@ -5,11 +5,7 @@ import {
   VirtualSliderReversePushedNext,
   VirtualSliderReversePushedPrev,
 } from '@sneat/components';
-import {
-  wd2,
-  wdCodeToWeekdayLongName,
-  WeekdayCode2,
-} from '@sneat/extension-calendarius-core';
+import { wd2, wdCodeToWeekdayLongName, WeekdayCode2 } from '@sneat/extension-calendarius-contract';
 import { addDays } from './calendar/calendar-state.service';
 import { Weekday } from './calendar/weekday';
 import { Parity } from './swipeable-ui';

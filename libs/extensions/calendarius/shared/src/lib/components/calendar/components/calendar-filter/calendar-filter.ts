@@ -1,5 +1,5 @@
 import { getRelatedItemIDs } from '@sneat/dto';
-import { WeekdayCode2, IHappeningContext } from '@sneat/extension-calendarius-core';
+import { WeekdayCode2, IHappeningContext } from '@sneat/extension-calendarius-contract';
 
 export interface ICalendarFilter {
   readonly text: string;

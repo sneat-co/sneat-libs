@@ -20,13 +20,7 @@ import {
   IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
-import {
-  emptyHappeningSlot,
-  IHappeningAdjustment,
-  ITiming,
-  IHappeningContext,
-  IHappeningSlotWithID,
-} from '@sneat/extension-calendarius-core';
+import { emptyHappeningSlot, IHappeningAdjustment, ITiming, IHappeningContext, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 // import { HappeningService } from '../../services/happening.service';

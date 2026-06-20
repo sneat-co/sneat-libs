@@ -1,11 +1,7 @@
 import { computed, Signal, signal, Injector } from '@angular/core';
 import { dateToIso } from '@sneat/core';
 import { CalendariusSpaceService } from '../services/calendarius-space.service';
-import {
-  CalendarHappeningBriefsBySpaceID,
-  ISlotUIContext,
-  WeekdayCode2,
-} from '@sneat/extension-calendarius-core';
+import { CalendarHappeningBriefsBySpaceID, ISlotUIContext, WeekdayCode2 } from '@sneat/extension-calendarius-contract';
 import { IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { EMPTY, Observable, Subject } from 'rxjs';

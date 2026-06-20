@@ -19,15 +19,8 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { dateToIso } from '@sneat/core';
-import {
-  ISlotUIContext,
-  jsDayToWeekday,
-  NewHappeningParams,
-  ScheduleNavService,
-  ScheduleNavServiceModule,
-  sortSlotItems,
-  WeekdayNumber,
-} from '@sneat/extension-calendarius-core';
+import { ScheduleNavService, ScheduleNavServiceModule } from '@sneat/extension-calendarius-core';
+import { ISlotUIContext, jsDayToWeekday, NewHappeningParams, sortSlotItems, WeekdayNumber } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { Subscription } from 'rxjs';

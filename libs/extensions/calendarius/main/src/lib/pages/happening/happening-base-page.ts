@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { ISpaceRef } from '@sneat/core';
-import { IHappeningContext } from '@sneat/extension-calendarius-core';
+import { IHappeningContext } from '@sneat/extension-calendarius-contract';
 import {
   distinctUntilChanged,
   map,

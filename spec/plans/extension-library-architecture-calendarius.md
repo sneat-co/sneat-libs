@@ -40,7 +40,7 @@ Scaffold empty `@sneat/extension-calendarius-contract`, `@sneat/extension-calend
 
 **Verifies:** extension-library-architecture#ac:contract-lib-runtime-light, extension-library-architecture#ac:di-token-inversion
 **Depends-On:** 1
-**Status:** pending
+**Status:** done
 
 Move calendarius pure types/interfaces/enums/DTOs (the bulk of `ext-calendarius-core`) into `extension-calendarius-contract`, keeping it runtime-light. Define `SCHEDULE_NAV_SERVICE` + `IScheduleNavService` (interface derived from how `contactus-shared` uses `ScheduleNavService`) and any other token needed for a genuinely cross-extension service. Repoint every reference repo-wide to the contract import; delete the moved symbols from `ext-calendarius-core`.
 

@@ -26,12 +26,8 @@ import { hasRelated } from '@sneat/dto';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { CalendarNavServicesModule } from '../../../../services';
-import {
-  HappeningUIState,
-  IHappeningContext,
-  HappeningStatus,
-} from '@sneat/extension-calendarius-core';
-import { ISlotUIContext } from '@sneat/extension-calendarius-core';
+import { HappeningUIState, IHappeningContext, HappeningStatus } from '@sneat/extension-calendarius-contract';
+import { ISlotUIContext } from '@sneat/extension-calendarius-contract';
 import {
   ContactsSelectorModule,
   ContactsSelectorService,
