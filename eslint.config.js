@@ -23,9 +23,10 @@ module.exports = [
       // Extension library-architecture convention (spec/features/extension-library-architecture).
       // Tier matrix: contract < shared < internal; foundation is the floor everything may use.
       // The load-bearing rule is `type:shared` must NEVER depend on `type:internal`.
-      // Transitional allowances (scope:app, ext:calendarius) cover pre-existing couplings
-      // from contactus into the app layer and the not-yet-reshaped calendarius extension;
-      // remove them as those are migrated to the contract/shared/internal convention.
+      // Transitional allowance (scope:app) covers pre-existing coupling from the
+      // extensions into the app layer; remove it once the app exposes a contract.
+      // (ext:calendarius allowance was removed after calendarius adopted the
+      // contract/shared/internal convention — cross-extension access is now via its contract.)
       '@nx/enforce-module-boundaries': [
         'error',
         {
@@ -42,9 +43,8 @@ module.exports = [
                 'type:contract',
                 'type:shared',
                 'scope:foundation',
-                // transitional — until app/calendarius expose contracts:
+                // transitional — until the app exposes a contract:
                 'scope:app',
-                'ext:calendarius',
               ],
             },
             {
@@ -54,9 +54,8 @@ module.exports = [
                 'type:shared',
                 'type:internal',
                 'scope:foundation',
-                // transitional — until app/calendarius expose contracts:
+                // transitional — until the app exposes a contract:
                 'scope:app',
-                'ext:calendarius',
               ],
             },
             // Foundation, app, and not-yet-migrated extension sources: permissive.

@@ -70,7 +70,7 @@ Move calendarius reusable components/pipes/modules (old `ext-calendarius-shared`
 
 **Verifies:** extension-library-architecture#ac:di-token-inversion, extension-library-architecture#ac:shared-lib-no-internal
 **Depends-On:** 4
-**Status:** pending
+**Status:** done
 
 Reroute `contactus-shared`'s single calendarius dependency (`ScheduleNavService`) to inject `SCHEDULE_NAV_SERVICE` from `@sneat/extension-calendarius-contract` instead of importing `@sneat/extension-calendarius-core`. Then remove the `ext:calendarius` transitional allowance from the `type:shared` and `type:internal` constraints in `eslint.config.js`, so cross-extension calendarius coupling is only permitted through its contract.
 
