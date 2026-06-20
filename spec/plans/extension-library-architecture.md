@@ -28,7 +28,7 @@ Sequenced by hard dependency (`**Depends-On:**` encodes the DAG `specstudio:impl
 
 **Verifies:** extension-library-architecture#ac:nx-tag-enforcement
 **Depends-On:** —
-**Status:** pending
+**Status:** done
 
 Create `feat/extension-library-architecture` off `origin/main`. Define the tier tags (`type:contract` | `type:shared` | `type:internal`), the `ext:<name>` convention, and `scope:foundation` on foundational libs (`core`, `space-models`, `ui`, `components`, …). Add the `@nx/eslint-plugin` `enforce-module-boundaries` rule with the tier dependency matrix in `eslint.config.js`, initially at `warn` so the pre-migration tree still builds.
 

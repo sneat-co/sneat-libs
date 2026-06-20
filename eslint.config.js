@@ -20,12 +20,41 @@ module.exports = [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
+      // Extension library-architecture convention (spec/features/extension-library-architecture).
+      // Tier matrix: contract < shared < internal; foundation is the floor everything may use.
+      // Set to 'warn' during the contactus migration; flipped to 'error' in Task 6.
       '@nx/enforce-module-boundaries': [
-        'error',
+        'warn',
         {
           enforceBuildableLibDependency: true,
           allow: [],
           depConstraints: [
+            {
+              sourceTag: 'scope:foundation',
+              onlyDependOnLibsWithTags: ['scope:foundation'],
+            },
+            {
+              sourceTag: 'type:contract',
+              onlyDependOnLibsWithTags: ['type:contract', 'scope:foundation'],
+            },
+            {
+              sourceTag: 'type:shared',
+              onlyDependOnLibsWithTags: [
+                'type:contract',
+                'type:shared',
+                'scope:foundation',
+              ],
+            },
+            {
+              sourceTag: 'type:internal',
+              onlyDependOnLibsWithTags: [
+                'type:contract',
+                'type:shared',
+                'type:internal',
+                'scope:foundation',
+              ],
+            },
+            // Apps and not-yet-migrated extension libs: permissive until reshaped.
             {
               sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],

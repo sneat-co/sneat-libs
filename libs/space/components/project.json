@@ -7,7 +7,9 @@
   "targets": {
     "build": {
       "executor": "@nx/angular:ng-packagr-lite",
-      "outputs": ["{workspaceRoot}/dist/libs/space/components"],
+      "outputs": [
+        "{workspaceRoot}/dist/libs/space/components"
+      ],
       "options": {
         "project": "libs/space/components/ng-package.json",
         "tsConfig": "libs/space/components/tsconfig.lib.json"
@@ -22,7 +24,9 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/libs/space/components"],
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/space/components"
+      ],
       "options": {
         "tsConfig": "libs/space/components/tsconfig.spec.json"
       }
@@ -30,5 +34,8 @@
     "lint": {
       "executor": "@nx/eslint:lint"
     }
-  }
+  },
+  "tags": [
+    "scope:foundation"
+  ]
 }

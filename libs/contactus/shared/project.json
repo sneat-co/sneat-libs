@@ -7,7 +7,9 @@
   "targets": {
     "build": {
       "executor": "@nx/angular:ng-packagr-lite",
-      "outputs": ["{workspaceRoot}/dist/libs/contactus/shared"],
+      "outputs": [
+        "{workspaceRoot}/dist/libs/contactus/shared"
+      ],
       "options": {
         "project": "libs/contactus/shared/ng-package.json",
         "tsConfig": "libs/contactus/shared/tsconfig.lib.json"
@@ -22,7 +24,9 @@
     },
     "test": {
       "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/libs/contactus/shared"],
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/contactus/shared"
+      ],
       "options": {
         "tsConfig": "libs/contactus/shared/tsconfig.spec.json"
       }
@@ -30,5 +34,8 @@
     "lint": {
       "executor": "@nx/eslint:lint"
     }
-  }
+  },
+  "tags": [
+    "ext:contactus"
+  ]
 }
