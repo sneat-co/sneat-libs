@@ -22,13 +22,15 @@ Same hard-cutover model as the contactus plan: move, never copy; one definition 
 
 **Dependency note:** `contactus-shared` currently imports `ScheduleNavService` from `@sneat/extension-calendarius-core`. Until calendarius exposes the `SCHEDULE_NAV_SERVICE` token (Task 2) and `contactus-shared` is rerouted (Task 5), the `ext:calendarius` allowance must stay; Task 5 removes it only after the reroute lands.
 
+**Package-name collision (calendarius-specific):** unlike contactus, the *old* calendarius shared lib already owns the target package name `@sneat/extension-calendarius-shared`. To avoid a collision during migration, the new shared-tier lib is scaffolded at dir `libs/extensions/calendarius/ui` with a **temporary** package name `@sneat/extension-calendarius-shared-new`; the old lib keeps `@sneat/extension-calendarius-shared` until its content is moved (Task 4) and it is deleted. Task 7 then renames the new lib to the clean `@sneat/extension-calendarius-shared` (package + tsconfig path; optionally dir `ui` → `shared`).
+
 ## Tasks
 
 ### Task 1: Scaffold the three calendarius libs
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition, extension-library-architecture#ac:lib-naming, extension-library-architecture#ac:internal-not-in-tsconfig-paths
 **Depends-On:** —
-**Status:** pending
+**Status:** done
 
 Scaffold empty `@sneat/extension-calendarius-contract`, `@sneat/extension-calendarius-shared`, and `@sneat/extension-calendarius-internal` libs under `libs/extensions/calendarius/`, mirroring the contactus tier libs (project.json with tier + `ext:calendarius` tags, package.json, index). Add `paths` entries for `-contract` and `-shared` only; deliberately omit `-internal` from `tsconfig.base.json` `paths`.
 
@@ -60,7 +62,7 @@ Move calendarius services (incl. `ScheduleNavService`), pages, dialogs, and priv
 **Depends-On:** 3
 **Status:** pending
 
-Move calendarius reusable components/pipes/modules (`ext-calendarius-shared`, ~71 files — calendar, happening cards, slot components, etc.) into `extension-calendarius-shared`, refactoring any service access to contract tokens (zero `-internal` imports). Repoint intra-calendarius and consumer component imports; drop the emptied old `ext-calendarius-shared` lib.
+Move calendarius reusable components/pipes/modules (old `ext-calendarius-shared`, ~71 files — calendar, happening cards, slot components, etc.) into the new shared-tier lib (`ext-calendarius-shared-new`, dir `ui`, package `@sneat/extension-calendarius-shared-new`), refactoring any service access to contract tokens (zero `-internal` imports). Repoint intra-calendarius and consumer component imports to `@sneat/extension-calendarius-shared-new`; drop the emptied old `ext-calendarius-shared` lib (dir `shared`) and its `@sneat/extension-calendarius-shared` path entry.
 
 **Notes:** Touches overlapping consumer files — run after Task 3.
 
@@ -90,7 +92,7 @@ Run the full `sneat-libs` CI (lint, build, test) and confirm green with zero cro
 **Depends-On:** 6
 **Status:** pending
 
-Confirm the old `ext-calendarius-core`/`-main`/`-shared` libs and their `project.json`/`tsconfig` `paths` entries are gone (remove residue). Reconciling sweep: confirm every per-task worktree was removed and its branch deleted; prune stragglers, leaving only the plan branch.
+Confirm the old `ext-calendarius-core`/`-main`/`-shared` libs and their `project.json`/`tsconfig` `paths` entries are gone (remove residue). **Rename the temporary shared lib to the clean name:** package `@sneat/extension-calendarius-shared-new` → `@sneat/extension-calendarius-shared`, its tsconfig path key, project name `ext-calendarius-shared-new` → `ext-calendarius-shared`, and (optionally) dir `ui` → `shared`; repoint the consumers that import `-shared-new`. Reconciling sweep: confirm every per-task worktree was removed and its branch deleted; prune stragglers, leaving only the plan branch.
 
 ## Open Questions
 

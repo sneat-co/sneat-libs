@@ -20,36 +20,98 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "lib": ["ES2023", "DOM"],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@sneat/core": ["libs/core/src/index.ts"],
-      "@sneat/core/testing": ["libs/core/src/lib/testing/test-setup.ts"],
-      "@sneat/core/testing-base": ["libs/core/src/lib/testing/base-test-setup.ts"],
-      "@sneat/core/testing-light": ["libs/core/src/lib/testing/test-setup-light.ts"],
-      "@sneat/ui": ["libs/ui/src/index.ts"],
-      "@sneat/data": ["libs/data/src/index.ts"],
-      "@sneat/grid": ["libs/grid/src/index.ts"],
-      "@sneat/auth-models": ["libs/auth/models/src/index.ts"],
-      "@sneat/api": ["libs/api/src/index.ts"],
-      "@sneat/logging": ["libs/logging/src/index.ts"],
-      "@sneat/dto": ["libs/dto/src/index.ts"],
-      "@sneat/space-models": ["libs/space/models/src/index.ts"],
-      "@sneat/auth-core": ["libs/auth/core/src/index.ts"],
-      "@sneat/datagrid": ["libs/datagrid/src/index.ts"],
-      "@sneat/components": ["libs/components/src/index.ts"],
-      "@sneat/auth-ui": ["libs/auth/ui/src/index.ts"],
-      "@sneat/space-services": ["libs/space/services/src/index.ts"],
-      "@sneat/extension-calendarius-core": ["libs/extensions/calendarius/core/src/index.ts"],
-      "@sneat/app": ["libs/app/src/index.ts"],
-      "@sneat/space-components": ["libs/space/components/src/index.ts"],
-      "@sneat/wizard": ["libs/wizard/src/index.ts"],
-      "@sneat/extension-calendarius-shared": ["libs/extensions/calendarius/shared/src/index.ts"],
-      "@sneat/extension-calendarius-main": ["libs/extensions/calendarius/main/src/index.ts"],
-      "@sneat/extension-contactus-contract": ["libs/extensions/contactus/contract/src/index.ts"],
-      "@sneat/extension-contactus-shared": ["libs/extensions/contactus/shared/src/index.ts"]
+      "@sneat/core": [
+        "libs/core/src/index.ts"
+      ],
+      "@sneat/core/testing": [
+        "libs/core/src/lib/testing/test-setup.ts"
+      ],
+      "@sneat/core/testing-base": [
+        "libs/core/src/lib/testing/base-test-setup.ts"
+      ],
+      "@sneat/core/testing-light": [
+        "libs/core/src/lib/testing/test-setup-light.ts"
+      ],
+      "@sneat/ui": [
+        "libs/ui/src/index.ts"
+      ],
+      "@sneat/data": [
+        "libs/data/src/index.ts"
+      ],
+      "@sneat/grid": [
+        "libs/grid/src/index.ts"
+      ],
+      "@sneat/auth-models": [
+        "libs/auth/models/src/index.ts"
+      ],
+      "@sneat/api": [
+        "libs/api/src/index.ts"
+      ],
+      "@sneat/logging": [
+        "libs/logging/src/index.ts"
+      ],
+      "@sneat/dto": [
+        "libs/dto/src/index.ts"
+      ],
+      "@sneat/space-models": [
+        "libs/space/models/src/index.ts"
+      ],
+      "@sneat/auth-core": [
+        "libs/auth/core/src/index.ts"
+      ],
+      "@sneat/datagrid": [
+        "libs/datagrid/src/index.ts"
+      ],
+      "@sneat/components": [
+        "libs/components/src/index.ts"
+      ],
+      "@sneat/auth-ui": [
+        "libs/auth/ui/src/index.ts"
+      ],
+      "@sneat/space-services": [
+        "libs/space/services/src/index.ts"
+      ],
+      "@sneat/extension-calendarius-core": [
+        "libs/extensions/calendarius/core/src/index.ts"
+      ],
+      "@sneat/extension-calendarius-contract": [
+        "libs/extensions/calendarius/contract/src/index.ts"
+      ],
+      "@sneat/app": [
+        "libs/app/src/index.ts"
+      ],
+      "@sneat/space-components": [
+        "libs/space/components/src/index.ts"
+      ],
+      "@sneat/wizard": [
+        "libs/wizard/src/index.ts"
+      ],
+      "@sneat/extension-calendarius-shared": [
+        "libs/extensions/calendarius/shared/src/index.ts"
+      ],
+      "@sneat/extension-calendarius-main": [
+        "libs/extensions/calendarius/main/src/index.ts"
+      ],
+      "@sneat/extension-contactus-contract": [
+        "libs/extensions/contactus/contract/src/index.ts"
+      ],
+      "@sneat/extension-contactus-shared": [
+        "libs/extensions/contactus/shared/src/index.ts"
+      ],
+      "@sneat/extension-calendarius-shared-new": [
+        "libs/extensions/calendarius/ui/src/index.ts"
+      ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }
