@@ -17,7 +17,7 @@ import {
   HappeningService,
   CalendariusSpaceService,
   HappeningComponentBaseParams,
-} from '@sneat/extension-calendarius-shared-new';
+} from '@sneat/extension-calendarius-shared';
 
 export const mockSneatUserService = {
   user$: of({}),

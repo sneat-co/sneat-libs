@@ -14,7 +14,7 @@ import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { first } from 'rxjs';
 import { CalendarBasePage } from '../calendar-base-page';
-import { HappeningFormComponent } from '@sneat/extension-calendarius-shared-new';
+import { HappeningFormComponent } from '@sneat/extension-calendarius-shared';
 
 @Component({
   selector: 'sneat-happening-new',

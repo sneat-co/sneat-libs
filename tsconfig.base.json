@@ -96,8 +96,8 @@
       "@sneat/extension-contactus-shared": [
         "libs/extensions/contactus/shared/src/index.ts"
       ],
-      "@sneat/extension-calendarius-shared-new": [
-        "libs/extensions/calendarius/ui/src/index.ts"
+      "@sneat/extension-calendarius-shared": [
+        "libs/extensions/calendarius/shared/src/index.ts"
       ]
     }
   },

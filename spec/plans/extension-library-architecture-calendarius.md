@@ -4,7 +4,7 @@ status: Approved
 ---
 # Plan: Extension Library Architecture Calendarius
 
-**Status:** Approved
+**Status:** Implemented
 **Source Feature:** extension-library-architecture
 **Date:** 2026-06-20
 **Owner:** alexandertrakhimenok
@@ -80,7 +80,7 @@ Reroute `contactus-shared`'s single calendarius dependency (`ScheduleNavService`
 
 **Verifies:** extension-library-architecture#ac:nx-tag-enforcement, extension-library-architecture#ac:shared-lib-no-internal, extension-library-architecture#ac:internal-not-in-tsconfig-paths
 **Depends-On:** 5
-**Status:** pending
+**Status:** done
 
 Run the full `sneat-libs` CI (lint, build, test) and confirm green with zero cross-extension `-internal` imports and zero use of the removed `ext:calendarius` allowance. Confirm a deliberate forbidden edge (e.g. `extension-calendarius-contract` importing a `type:shared` lib, or `contactus-shared` importing `extension-calendarius-internal`) correctly fails lint.
 
@@ -90,7 +90,7 @@ Run the full `sneat-libs` CI (lint, build, test) and confirm green with zero cro
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition
 **Depends-On:** 6
-**Status:** pending
+**Status:** done
 
 Confirm the old `ext-calendarius-core`/`-main`/`-shared` libs and their `project.json`/`tsconfig` `paths` entries are gone (remove residue). **Rename the temporary shared lib to the clean name:** package `@sneat/extension-calendarius-shared-new` → `@sneat/extension-calendarius-shared`, its tsconfig path key, project name `ext-calendarius-shared-new` → `ext-calendarius-shared`, and (optionally) dir `ui` → `shared`; repoint the consumers that import `-shared-new`. Reconciling sweep: confirm every per-task worktree was removed and its branch deleted; prune stragglers, leaving only the plan branch.
 

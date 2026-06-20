@@ -5,6 +5,6 @@ import { createBaseViteConfig } from '../../../../vite.config.base';
 export default defineConfig(() =>
 	createBaseViteConfig({
 		dirname: __dirname,
-		name: 'ext-calendarius-shared-new',
+		name: 'ext-calendarius-shared',
 	}),
 );

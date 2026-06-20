@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
-import { ContactsAsBadgesComponent } from '@sneat/components';
-import { MembersSelectorModule } from '@sneat/extension-contactus-shared';
+import {
+  ContactsAsBadgesComponent,
+  ContactsSelectorModule,
+} from '@sneat/extension-contactus-shared';
 import {
   CalendarNavServicesModule,
   HappeningServiceModule,
@@ -18,7 +20,7 @@ import { TimingBadgeComponent } from '../timing-badge/timing-badge.component';
   // exports: [DaySlotItemComponent],
   imports: [
     HappeningServiceModule,
-    MembersSelectorModule,
+    ContactsSelectorModule,
     HappeningSlotModalServiceModule,
     HappeningSlotParticipantsComponent,
     TimingBadgeComponent,
