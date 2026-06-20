@@ -90,12 +90,6 @@
       "@sneat/wizard": [
         "libs/wizard/src/index.ts"
       ],
-      "@sneat/extension-contactus-contract": [
-        "libs/extensions/contactus/contract/src/index.ts"
-      ],
-      "@sneat/extension-contactus-shared": [
-        "libs/extensions/contactus/shared/src/index.ts"
-      ],
       "@sneat/extension-calendarius-shared": [
         "libs/extensions/calendarius/shared/src/index.ts"
       ]

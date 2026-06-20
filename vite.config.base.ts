@@ -59,7 +59,12 @@ export function createBaseViteConfig(
     },
     plugins: [
       angular({
-        jit: true,
+        // AOT (jit: false) so that precompiled Angular packages consumed from
+        // npm (e.g. @sneat/extension-contactus-*, shipped as ɵɵngDeclare partial
+        // declarations) are linked consistently with workspace source libs.
+        // Under jit: true their factory defs clash with analog-JIT base classes
+        // ("Cannot set property ɵfac which has only a getter").
+        jit: false,
         tsconfig: './tsconfig.spec.json',
       }),
       nxViteTsPaths(),
@@ -109,6 +114,11 @@ export function createBaseViteConfig(
             /@angular\//,
             /@stencil\//,
             /tslib/,
+            // Inline the precompiled @sneat/extension-contactus-* packages
+            // consumed from npm so Vite (via nxViteTsPaths) resolves their
+            // `@sneat/*` workspace imports; otherwise Node's resolver fails on
+            // the externalized .mjs ("Cannot find package '@sneat/core'").
+            /@sneat\/extension-contactus-/,
           ],
         },
       },

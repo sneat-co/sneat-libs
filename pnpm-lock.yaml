@@ -107,6 +107,12 @@ importers:
       '@sneat/extension-assetus-contract':
         specifier: '>=0.0.1'
         version: 0.0.5(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))
+      '@sneat/extension-contactus-contract':
+        specifier: ^0.12.0
+        version: 0.12.1(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))
+      '@sneat/extension-contactus-shared':
+        specifier: ^0.12.0
+        version: 0.12.1(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(@ionic/angular@8.7.18(77a787868c292a0880322232bcc32de0))(@sneat/extension-assetus-contract@0.0.5(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2)))
       '@sneat/random':
         specifier: 0.0.4
         version: 0.0.4(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))
@@ -253,24 +259,6 @@ importers:
         version: 2.8.1
 
   libs/extensions/calendarius/shared:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/extensions/contactus/contract:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/extensions/contactus/internal:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/extensions/contactus/shared:
     dependencies:
       tslib:
         specifier: 2.8.1
@@ -3320,6 +3308,20 @@ packages:
       '@sneat/space-models': ^0.9.0
       rxjs: ^7.0.0
       vitest: ^4.0.9
+
+  '@sneat/extension-contactus-contract@0.12.1':
+    resolution: {integrity: sha512-nbzPRlcyamrcg3kz5Vyp0+RHtKQh+9eV7+uvUwDfYXmtkvm1xLi9yY8yerw8566+PqrPn2iaPWARIqnjfNfSSQ==}
+    peerDependencies:
+      '@angular/common': '>=21.0.0'
+      '@angular/core': '>=21.0.0'
+
+  '@sneat/extension-contactus-shared@0.12.1':
+    resolution: {integrity: sha512-oPkpE57rflM6V8Yac6j5aG3dm+vYYxqnMLumO9QSIkpI6taHyai2f9NzvEwqsfCbYPKsNJWiu8h2BiHZMSxrxQ==}
+    peerDependencies:
+      '@angular/common': '>=21.0.0'
+      '@angular/core': '>=21.0.0'
+      '@ionic/angular': '>=8'
+      '@sneat/extension-assetus-contract': '>=0.0.1'
 
   '@sneat/random@0.0.4':
     resolution: {integrity: sha512-zRoBe1rtSgDOWvz8xfSbE9SB6Rn/rGJ7oVvmTmA5X7m89NzW359LROwCTHVnf7o9niD1T9lW7AvsZLdCaM7QOw==}
@@ -11065,6 +11067,20 @@ snapshots:
       rxjs: 7.8.2
       tslib: 2.8.1
       vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2)
+
+  '@sneat/extension-contactus-contract@0.12.1(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))':
+    dependencies:
+      '@angular/common': 21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)
+      '@angular/core': 21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1)
+      tslib: 2.8.1
+
+  '@sneat/extension-contactus-shared@0.12.1(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(@ionic/angular@8.7.18(77a787868c292a0880322232bcc32de0))(@sneat/extension-assetus-contract@0.0.5(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2)))':
+    dependencies:
+      '@angular/common': 21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)
+      '@angular/core': 21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1)
+      '@ionic/angular': 8.7.18(77a787868c292a0880322232bcc32de0)
+      '@sneat/extension-assetus-contract': 0.0.5(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))
+      tslib: 2.8.1
 
   '@sneat/random@0.0.4(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))':
     dependencies:
