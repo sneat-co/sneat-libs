@@ -1,3 +1,30 @@
+## 0.12.0 (2026-06-20)
+
+### 🚀 Features
+
+- **calendarius:** scaffold extension-calendarius contract/shared/internal libs (Task 1) ([da21b70](https://github.com/sneat-co/sneat-libs/commit/da21b70))
+- **calendarius:** contract cutover — types + SCHEDULE_NAV_SERVICE token (Task 2) ([9f21da0](https://github.com/sneat-co/sneat-libs/commit/9f21da0))
+- **calendarius:** internal cutover — services/pages + token providers (Task 3) ([6cfde5b](https://github.com/sneat-co/sneat-libs/commit/6cfde5b))
+- **calendarius:** shared cutover — relocate to shared-tier lib (Task 4) ([3e867b4](https://github.com/sneat-co/sneat-libs/commit/3e867b4))
+- **calendarius:** rename shared lib to clean name + final verify (Tasks 6,7) ([ee6373b](https://github.com/sneat-co/sneat-libs/commit/ee6373b))
+- **contactus:** scaffold extension-contactus contract/shared/internal libs (Task 2) ([272d667](https://github.com/sneat-co/sneat-libs/commit/272d667))
+- **contactus:** contract cutover — move types + define service tokens (Task 3) ([f1e2847](https://github.com/sneat-co/sneat-libs/commit/f1e2847))
+- **contactus:** internal cutover — services to -internal via contract tokens (Task 4) ([80d215a](https://github.com/sneat-co/sneat-libs/commit/80d215a))
+- **contactus:** shared cutover — relocate to extension-contactus-shared (Task 5) ([fed01aa](https://github.com/sneat-co/sneat-libs/commit/fed01aa))
+- **logging:** shared ChunkLoadErrorHandler reused by all apps ([#11](https://github.com/sneat-co/sneat-libs/pull/11))
+- **nx:** tag projects + extension-library tier boundary matrix (Task 1) ([7fbf268](https://github.com/sneat-co/sneat-libs/commit/7fbf268))
+- **nx:** flip boundary matrix to error + document bootstrap wiring (Task 6) ([6dfc753](https://github.com/sneat-co/sneat-libs/commit/6dfc753))
+- **nx:** remove ext:calendarius transitional boundary allowance (Task 5) ([f331b7a](https://github.com/sneat-co/sneat-libs/commit/f331b7a))
+
+### 🩹 Fixes
+
+- **release:** use fixed versioning with v{version} tag pattern ([7cfb518](https://github.com/sneat-co/sneat-libs/commit/7cfb518))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.11.0 (2026-06-19)
 
 ### 🚀 Features
