@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACTUS_NAV_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { NavController } from '@ionic/angular/standalone';
 import { SpaceNavService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
-import { ContactusNavService } from '@sneat/contactus-services';
 import { of } from 'rxjs';
 
 import { InviteLinksComponent, stringHash } from './invite-links.component';
@@ -31,7 +31,7 @@ describe('InviteLinksComponent', () => {
           useValue: { userChanged: of(undefined), userState: of({}) },
         },
         {
-          provide: ContactusNavService,
+          provide: CONTACTUS_NAV_SERVICE,
           useValue: {
             navigateToAddMember: vi.fn(() => Promise.resolve(true)),
           },
@@ -58,7 +58,7 @@ describe('InviteLinksComponent', () => {
   const stop = () =>
     ({ stopPropagation: vi.fn(), preventDefault: vi.fn() }) as unknown as Event;
   const navSvc = () =>
-    TestBed.inject(ContactusNavService) as unknown as {
+    TestBed.inject(CONTACTUS_NAV_SERVICE) as unknown as {
       navigateToAddMember: ReturnType<typeof vi.fn>;
     };
 

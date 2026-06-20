@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
-import { ContactService } from '@sneat/contactus-services';
 import { of } from 'rxjs';
 
 import { CommChannelFormComponent } from './comm-channel-form.component';
@@ -24,7 +24,7 @@ describe('CommChannelFormComponent', () => {
           },
         },
         {
-          provide: ContactService,
+          provide: CONTACT_SERVICE,
           useValue: { addContactCommChannel: vi.fn() },
         },
       ],
@@ -57,7 +57,7 @@ describe('CommChannelFormComponent', () => {
   const stop = () =>
     ({ stopPropagation: vi.fn(), preventDefault: vi.fn() }) as unknown as Event;
   const svc = () =>
-    TestBed.inject(ContactService) as unknown as {
+    TestBed.inject(CONTACT_SERVICE) as unknown as {
       addContactCommChannel: ReturnType<typeof vi.fn>;
     };
 

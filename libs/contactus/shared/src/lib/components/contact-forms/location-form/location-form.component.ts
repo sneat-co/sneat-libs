@@ -29,18 +29,18 @@ import {
 } from '@ionic/angular/standalone';
 import { createSetFocusToInput } from '@sneat/ui';
 import {
+  CONTACT_SERVICE,
   ContactRole,
   ContactType,
   IAddress,
   IContactBrief,
-  IContactDbo,
-  ICreateContactRequest,
-  IContactWithOptionalDbo,
-  IContactWithDboAndSpace,
   IContactContext,
+  IContactDbo,
+  IContactWithDboAndSpace,
+  IContactWithOptionalDbo,
+  ICreateContactRequest,
 } from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
-import { ContactService } from '@sneat/contactus-services';
 import {
   computeSpaceRefFromSpaceContext,
   ISpaceContext,
@@ -67,7 +67,7 @@ import { AddressFormComponent } from '../../address-form';
 })
 export class LocationFormComponent implements OnChanges {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   public readonly $space = input.required<ISpaceContext>();
   protected readonly $spaceRef = computeSpaceRefFromSpaceContext(this.$space);

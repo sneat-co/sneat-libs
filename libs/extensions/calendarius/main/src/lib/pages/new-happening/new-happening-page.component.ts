@@ -8,7 +8,6 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { ContactusServicesModule } from '@sneat/contactus-services';
 import {
   HappeningType,
   WeekdayCode2,
@@ -29,7 +28,6 @@ import { HappeningFormComponent } from '@sneat/extension-calendarius-shared';
     FormsModule,
     ReactiveFormsModule,
     HappeningFormComponent,
-    ContactusServicesModule,
     SpaceServiceModule,
     IonHeader,
     IonToolbar,

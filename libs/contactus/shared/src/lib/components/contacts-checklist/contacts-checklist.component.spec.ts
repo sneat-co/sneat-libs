@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import { of } from 'rxjs';
 
 import { ContactsChecklistComponent } from './contacts-checklist.component';
@@ -24,7 +24,7 @@ describe('ContactsChecklistComponent', () => {
           },
         },
         {
-          provide: ContactusSpaceService,
+          provide: CONTACTUS_SPACE_SERVICE,
           useValue: { watchContactBriefs: vi.fn(() => of([])) },
         },
       ],
@@ -53,7 +53,7 @@ describe('ContactsChecklistComponent', () => {
 
   const loadContacts = (contacts: unknown[]) => {
     (
-      TestBed.inject(ContactusSpaceService) as unknown as {
+      TestBed.inject(CONTACTUS_SPACE_SERVICE) as unknown as {
         watchContactBriefs: ReturnType<typeof vi.fn>;
       }
     ).watchContactBriefs.mockReturnValue(of(contacts));

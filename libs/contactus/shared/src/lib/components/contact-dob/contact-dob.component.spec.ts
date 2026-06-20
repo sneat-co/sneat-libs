@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
-import { ContactService } from '@sneat/contactus-services';
 
 import { ContactDobComponent } from './contact-dob.component';
 import { of } from 'rxjs';
@@ -23,7 +23,7 @@ describe('ContactDobComponent', () => {
             logErrorHandler: vi.fn(() => vi.fn()),
           },
         },
-        { provide: ContactService, useValue: { updateContact: vi.fn() } },
+        { provide: CONTACT_SERVICE, useValue: { updateContact: vi.fn() } },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
@@ -64,14 +64,14 @@ describe('ContactDobComponent', () => {
     it('is a no-op without a contact', () => {
       fixture.componentRef.setInput('$contact', undefined);
       fixture.detectChanges();
-      const updateContact = TestBed.inject(ContactService)
+      const updateContact = TestBed.inject(CONTACT_SERVICE)
         .updateContact as ReturnType<typeof vi.fn>;
       c().onDobChanged('2000-01-02');
       expect(updateContact).not.toHaveBeenCalled();
     });
 
     it('updates the contact with the new date of birth', () => {
-      const updateContact = TestBed.inject(ContactService)
+      const updateContact = TestBed.inject(CONTACT_SERVICE)
         .updateContact as ReturnType<typeof vi.fn>;
       updateContact.mockReturnValue(of(undefined));
       fixture.componentRef.setInput('$contact', {

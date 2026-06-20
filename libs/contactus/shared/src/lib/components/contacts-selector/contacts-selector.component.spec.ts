@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { CONTACT_ROLES_BY_TYPE } from '@sneat/app';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import { ClassName, OverlayController } from '@sneat/ui';
 import { of } from 'rxjs';
 
@@ -41,7 +41,7 @@ describe('ContactsSelectorComponent', () => {
         },
         { provide: CONTACT_ROLES_BY_TYPE, useValue: {} },
         {
-          provide: ContactusSpaceService,
+          provide: CONTACTUS_SPACE_SERVICE,
           useValue: { watchContactBriefs: vi.fn(() => of([])) },
         },
       ],

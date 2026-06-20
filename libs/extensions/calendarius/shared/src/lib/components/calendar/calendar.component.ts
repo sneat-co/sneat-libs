@@ -21,7 +21,6 @@ import {
   IonSegmentButton,
 } from '@ionic/angular/standalone';
 import { IMemberContext } from '@sneat/extension-contactus-contract';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import { localDateToIso } from '@sneat/core';
 import {
   IHappeningSlot,
@@ -65,7 +64,6 @@ import { SinglesTabComponent } from './components/singles-tab/singles-tab.compon
     CalendarFilterService,
     CalendarStateService,
     CalendariusSpaceService,
-    ContactusSpaceService,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'sneat-calendar',

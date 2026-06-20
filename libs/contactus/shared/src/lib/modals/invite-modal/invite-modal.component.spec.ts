@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { INVITE_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ModalController, ToastController } from '@ionic/angular/standalone';
-import { InviteService } from '@sneat/contactus-services';
 
 import { InviteModalComponent } from './invite-modal.component';
 import { of } from 'rxjs';
@@ -43,7 +43,7 @@ describe('InviteModalComponent', () => {
           },
         },
         {
-          provide: InviteService,
+          provide: INVITE_SERVICE,
           useValue: {
             createInviteForMember: vi.fn(),
             getInviteLinkForMember: vi.fn(),
@@ -71,7 +71,7 @@ describe('InviteModalComponent', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c = () => component as any;
   const inviteSvc = () =>
-    TestBed.inject(InviteService) as unknown as {
+    TestBed.inject(INVITE_SERVICE) as unknown as {
       createInviteForMember: ReturnType<typeof vi.fn>;
     };
   const modalCtrl = () =>
@@ -199,7 +199,7 @@ describe('InviteModalComponent', () => {
   describe('onTabChanged', () => {
     it('generates a link when switching to the link tab', () => {
       const getLink = (
-        TestBed.inject(InviteService) as unknown as {
+        TestBed.inject(INVITE_SERVICE) as unknown as {
           getInviteLinkForMember: ReturnType<typeof vi.fn>;
         }
       ).getInviteLinkForMember;

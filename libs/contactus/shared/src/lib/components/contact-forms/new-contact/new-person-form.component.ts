@@ -12,23 +12,21 @@ import {
 } from '@angular/core';
 import { IonButton, IonItemDivider, IonLabel } from '@ionic/angular/standalone';
 import {
-  IContactRoleWithIdAndBrief,
+  CONTACT_GROUP_SERVICE,
+  CONTACT_ROLE_SERVICE,
+  CONTACT_SERVICE,
+  ContactRole,
   ContactToAssetRelation,
   IContact2Asset,
   IContactContext,
   IContactGroupDbo,
-  IPersonRequirements,
-  isRelatedPersonNotReady,
-  ContactRole,
+  IContactRoleWithIdAndBrief,
   IContactRoleWithIdAndOptionalBrief,
-  NewContactBaseDboAndSpaceRef,
   ICreateContactPersonRequest,
+  IPersonRequirements,
+  NewContactBaseDboAndSpaceRef,
+  isRelatedPersonNotReady,
 } from '@sneat/extension-contactus-contract';
-import {
-  ContactGroupService,
-  ContactRoleService,
-  ContactService,
-} from '@sneat/contactus-services';
 import { PersonWizardComponent } from '../pesson-wizard';
 import { IContactAddEventArgs } from '../../contact-events';
 import { ContactRoleFormComponent } from '../role-form';
@@ -124,9 +122,9 @@ export class NewPersonFormComponent
   protected readonly $creating = signal(false);
 
   private readonly assetService = inject(AssetService);
-  private readonly contactGroupService = inject(ContactGroupService);
-  private readonly contactService = inject(ContactService);
-  private readonly contactRoleService = inject(ContactRoleService);
+  private readonly contactGroupService = inject(CONTACT_GROUP_SERVICE);
+  private readonly contactService = inject(CONTACT_SERVICE);
+  private readonly contactRoleService = inject(CONTACT_ROLE_SERVICE);
 
   public constructor() {
     super();

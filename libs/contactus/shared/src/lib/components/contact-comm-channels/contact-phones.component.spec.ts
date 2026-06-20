@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
-import { ContactService } from '@sneat/contactus-services';
 
 import { ContactPhonesComponent } from './contact-phones.component';
 
@@ -23,7 +23,7 @@ describe('ContactPhonesComponent', () => {
           },
         },
         {
-          provide: ContactService,
+          provide: CONTACT_SERVICE,
           useValue: { addContactCommChannel: vi.fn() },
         },
       ],

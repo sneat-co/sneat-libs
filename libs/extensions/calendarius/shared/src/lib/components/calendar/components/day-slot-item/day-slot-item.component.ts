@@ -18,7 +18,6 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import { ContactsSelectorModule } from '@sneat/contactus-shared';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
@@ -49,10 +48,7 @@ import { TimingBadgeComponent } from '../timing-badge/timing-badge.component';
     IonButtons,
     IonButton,
   ],
-  providers: [
-    { provide: ClassName, useValue: 'DaySlotItemComponent' },
-    ContactusSpaceService,
-  ],
+  providers: [{ provide: ClassName, useValue: 'DaySlotItemComponent' }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'sneat-day-slot-item',
   templateUrl: './day-slot-item.component.html',

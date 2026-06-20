@@ -1,4 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,7 +20,6 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { genderColor } from '@sneat/components';
-import { ContactService } from '@sneat/contactus-services';
 import {
   Gender,
   GenderFemale,
@@ -103,7 +103,7 @@ export class GenderFormComponent extends SneatBaseComponent {
 
   @Output() readonly genderChange = new EventEmitter<Gender>();
 
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   // @ViewChild(IonRadioGroup, { static: true }) radioGroup?: IonRadioGroup;
 

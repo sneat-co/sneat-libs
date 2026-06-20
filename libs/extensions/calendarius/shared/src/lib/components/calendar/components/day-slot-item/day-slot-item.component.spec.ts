@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { PopoverController } from '@ionic/angular/standalone';
 import { CalendarNavService } from '../../../../services';
-import { ContactusSpaceService } from '@sneat/contactus-services';
+import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import { of } from 'rxjs';
 import { ClassName } from '@sneat/ui';
 
@@ -24,7 +24,7 @@ describe('ActivityItemComponent', () => {
           providers: [
             { provide: ClassName, useValue: 'DaySlotItemComponent' },
             {
-              provide: ContactusSpaceService,
+              provide: CONTACTUS_SPACE_SERVICE,
               useValue: { watchContactBriefs: () => of([]) },
             },
           ],

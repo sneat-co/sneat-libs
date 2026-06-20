@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { SpaceNavService } from '@sneat/space-services';
-import { ContactService } from '@sneat/contactus-services';
 import { of } from 'rxjs';
 
 import { InlistAgeGroupComponent } from './inlist-age-group.component';
@@ -25,7 +25,7 @@ describe('InlistAgeGroupComponent', () => {
           },
         },
         { provide: SpaceNavService, useValue: {} },
-        { provide: ContactService, useValue: { updateContact: vi.fn() } },
+        { provide: CONTACT_SERVICE, useValue: { updateContact: vi.fn() } },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
@@ -54,7 +54,7 @@ describe('InlistAgeGroupComponent', () => {
   });
 
   it('onAgeGroupSelected updates the contact age group', () => {
-    const svc = TestBed.inject(ContactService) as unknown as {
+    const svc = TestBed.inject(CONTACT_SERVICE) as unknown as {
       updateContact: ReturnType<typeof vi.fn>;
     };
     svc.updateContact.mockReturnValue(of(undefined));

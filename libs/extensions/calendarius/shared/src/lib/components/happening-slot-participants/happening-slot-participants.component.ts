@@ -11,10 +11,10 @@ import {
 import { IonBadge, IonLabel } from '@ionic/angular/standalone';
 import { PersonNamesPipe } from '@sneat/auth-ui';
 import {
+  CONTACTUS_SPACE_SERVICE,
   IContactWithBrief,
   IContactWithBriefAndSpace,
 } from '@sneat/extension-contactus-contract';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import { getRelatedItemByIDs, getRelatedItems } from '@sneat/dto';
 import { ISlotUIContext } from '@sneat/extension-calendarius-core';
 import { ISpaceRef } from '@sneat/core';
@@ -31,7 +31,7 @@ import { ClassName, SneatBaseComponent } from '@sneat/ui';
 })
 export class HappeningSlotParticipantsComponent extends SneatBaseComponent {
   private readonly changedDetectorRef = inject(ChangeDetectorRef);
-  private readonly contactusService = inject(ContactusSpaceService);
+  private readonly contactusService = inject(CONTACTUS_SPACE_SERVICE);
 
   protected contacts?: readonly IContactWithBriefAndSpace[];
   protected readonly $spaceContacts = signal<

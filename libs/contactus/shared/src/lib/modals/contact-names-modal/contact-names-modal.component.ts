@@ -17,8 +17,10 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { IPersonNames } from '@sneat/auth-models';
-import { ContactService } from '@sneat/contactus-services';
-import { IUpdateContactRequest } from '@sneat/extension-contactus-contract';
+import {
+  CONTACT_SERVICE,
+  IUpdateContactRequest,
+} from '@sneat/extension-contactus-contract';
 import { NamesFormComponent } from '../../components/contact-forms/person-forms/names-form';
 import { ClassName, SneatBaseModalComponent } from '@sneat/ui';
 
@@ -50,7 +52,7 @@ export class ContactNamesModalComponent extends SneatBaseModalComponent {
   @Input({ required: true }) contactID?: string;
   @Input({ required: true }) public names: IPersonNames = {};
 
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   protected readonly $saving = signal(false);
 

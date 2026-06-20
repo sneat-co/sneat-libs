@@ -38,6 +38,7 @@ import {
   IContactWithBriefAndSpace,
   ICreatePersonalInviteRequest,
   ICreatePersonalInviteResponse,
+  INVITE_SERVICE,
   InviteChannel,
 } from '@sneat/extension-contactus-contract';
 import {
@@ -46,7 +47,6 @@ import {
 } from '../../pipes/contact-title.pipe';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
-import { InviteService } from '@sneat/contactus-services';
 import { Observable, throwError } from 'rxjs';
 
 @Pipe({ name: 'encodeSmsText' })
@@ -78,7 +78,6 @@ export class EncodeSmsText implements PipeTransform {
     IonSpinner,
     ContactTitlePipe,
   ],
-  providers: [InviteService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'sneat-invite-modal',
   templateUrl: 'invite-modal.component.html',
@@ -87,7 +86,7 @@ export class InviteModalComponent {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly modalController = inject(ModalController);
   private readonly toastController = inject(ToastController);
-  private readonly inviteService = inject(InviteService);
+  private readonly inviteService = inject(INVITE_SERVICE);
 
   @Input({ required: true }) space?: ISpaceContext;
   @Input() member?: IContactWithBriefAndSpace;

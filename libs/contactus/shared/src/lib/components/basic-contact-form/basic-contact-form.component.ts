@@ -8,13 +8,13 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import {
+  CONTACT_SERVICE,
   ContactRole,
   ContactType,
   IContactWithBrief,
   ICreateContactBasicRequest,
 } from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
-import { ContactService } from '@sneat/contactus-services';
 import { ISpaceContext } from '@sneat/space-models';
 
 @Component({
@@ -24,7 +24,7 @@ import { ISpaceContext } from '@sneat/space-models';
 })
 export class BasicContactFormComponent {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   @Input() parentContact?: IContactWithBrief;
   @Input({ required: true }) space?: ISpaceContext;

@@ -25,14 +25,14 @@ import {
 import { ClassName, ISelectItem, SelectFromListComponent } from '@sneat/ui';
 import { excludeEmpty } from '@sneat/core';
 import {
+  CONTACT_SERVICE,
   ContactRole,
   ContactType,
-  validateAddress,
   IContactContext,
-  ICreateContactCompanyRequest,
   IContactWithOptionalDbo,
+  ICreateContactCompanyRequest,
+  validateAddress,
 } from '@sneat/extension-contactus-contract';
-import { ContactService } from '@sneat/contactus-services';
 import { LocationFormComponent } from '../location-form';
 import { NewContactFormBaseComponent } from './new-contact-form-base.component';
 
@@ -59,7 +59,7 @@ export class NewCompanyFormComponent
   extends NewContactFormBaseComponent
   implements OnChanges
 {
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   @Input() contactRoles?: ISelectItem[];
   @Input() contactRole?: ContactRole = undefined;

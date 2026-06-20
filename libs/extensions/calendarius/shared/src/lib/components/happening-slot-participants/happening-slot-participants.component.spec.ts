@@ -1,6 +1,6 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ContactusSpaceService } from '@sneat/contactus-services';
+import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { HappeningSlotParticipantsComponent } from './happening-slot-participants.component';
@@ -19,7 +19,7 @@ describe('HappeningSlotParticipantsComponent', () => {
           useValue: { logError: vi.fn(), logErrorHandler: () => vi.fn() },
         },
         {
-          provide: ContactusSpaceService,
+          provide: CONTACTUS_SPACE_SERVICE,
           useValue: {
             watchContactBriefs: vi.fn(() => ({
               pipe: () => ({ subscribe: vi.fn() }),

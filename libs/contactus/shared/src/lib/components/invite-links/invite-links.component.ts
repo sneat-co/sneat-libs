@@ -7,10 +7,12 @@ import {
   IonSkeletonText,
   NavController,
 } from '@ionic/angular/standalone';
-import { ContactusNavService } from '@sneat/contactus-services';
 import { IIdAndOptionalDbo } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
-import { IContactusSpaceDbo } from '@sneat/extension-contactus-contract';
+import {
+  CONTACTUS_NAV_SERVICE,
+  IContactusSpaceDbo,
+} from '@sneat/extension-contactus-contract';
 import { SpaceNavService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
 import { Subscription } from 'rxjs';
@@ -52,7 +54,7 @@ export class InviteLinksComponent implements OnChanges, OnDestroy {
   private currentUserId?: string;
   private readonly subscription: Subscription;
 
-  private readonly contactusNavService = inject(ContactusNavService);
+  private readonly contactusNavService = inject(CONTACTUS_NAV_SERVICE);
 
   constructor() {
     const userService = this.userService;

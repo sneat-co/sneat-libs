@@ -19,8 +19,11 @@ import {
   IonSelectOption,
   IonTextarea,
 } from '@ionic/angular/standalone';
-import { ContactCommChannelType, IContactContext } from '@sneat/extension-contactus-contract';
-import { ContactService } from '@sneat/contactus-services';
+import {
+  CONTACT_SERVICE,
+  ContactCommChannelType,
+  IContactContext,
+} from '@sneat/extension-contactus-contract';
 import { IAddContactCommChannelRequest } from '@sneat/extension-contactus-contract';
 import {
   ClassName,
@@ -73,7 +76,7 @@ export class CommChannelFormComponent extends SneatBaseComponent {
     this.$type.set(value as 'personal' | 'work');
   }
 
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   protected readonly $saving = signal(false);
 

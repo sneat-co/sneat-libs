@@ -8,7 +8,6 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { ContactusServicesModule } from '@sneat/contactus-services';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { HappeningBasePage } from './happening-base-page';
@@ -23,7 +22,6 @@ import {
   imports: [
     HappeningServiceModule,
     HappeningFormComponent,
-    ContactusServicesModule,
     HappeningComponentBaseParamsModule,
     SpaceServiceModule,
     IonHeader,

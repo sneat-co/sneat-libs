@@ -12,11 +12,11 @@ import {
   inject,
 } from '@angular/core';
 import { IonItem, IonLabel } from '@ionic/angular/standalone';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import {
-  addSpace,
+  CONTACTUS_SPACE_SERVICE,
   IContactWithBrief,
   IContactWithCheck,
+  addSpace,
 } from '@sneat/extension-contactus-contract';
 import {
   computeSpaceIdFromSpaceRef,
@@ -49,7 +49,7 @@ export interface ICheckChangedArgs {
 })
 export class ContactsChecklistComponent extends SneatBaseComponent {
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
-  private readonly contactusSpaceService = inject(ContactusSpaceService);
+  private readonly contactusSpaceService = inject(CONTACTUS_SPACE_SERVICE);
 
   public readonly $lastItemLine = input<
     undefined | 'full' | 'none' | 'inset'

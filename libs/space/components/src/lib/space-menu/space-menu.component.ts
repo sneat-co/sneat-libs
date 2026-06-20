@@ -26,7 +26,6 @@ import {
 import { ISneatUserState } from '@sneat/auth-core';
 import { IUserSpaceBrief } from '@sneat/auth-models';
 import { AuthMenuItemComponent } from '@sneat/auth-ui';
-import { ContactusServicesModule } from '@sneat/contactus-services';
 import { IIdAndBrief } from '@sneat/core';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { SpaceServiceModule } from '@sneat/space-services';
@@ -42,7 +41,6 @@ import { ClassName } from '@sneat/ui';
   styles: '.currentPage ion-label {font-weight: bold}',
   imports: [
     AuthMenuItemComponent,
-    ContactusServicesModule,
     SpaceServiceModule,
     TitleCasePipe,
     RouterLink,

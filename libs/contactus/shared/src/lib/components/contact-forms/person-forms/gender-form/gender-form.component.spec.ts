@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ErrorLogger } from '@sneat/core';
-import { ContactService } from '@sneat/contactus-services';
 
 import { GenderFormComponent } from './gender-form.component';
 
@@ -28,7 +28,7 @@ describe('GenderFormComponent', () => {
       imports: [MockComponent, FormsModule],
       providers: [
         {
-          provide: ContactService,
+          provide: CONTACT_SERVICE,
           useValue: { updateContact: vi.fn() },
         },
         {

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
-import { ContactService } from '@sneat/contactus-services';
 
 import { LocationFormComponent } from './location-form.component';
 import { of } from 'rxjs';
@@ -23,7 +23,7 @@ describe('LocationFormComponent', () => {
             logErrorHandler: vi.fn(() => vi.fn()),
           },
         },
-        { provide: ContactService, useValue: contactService },
+        { provide: CONTACT_SERVICE, useValue: contactService },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })

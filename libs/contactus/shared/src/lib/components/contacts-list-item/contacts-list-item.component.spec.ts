@@ -1,10 +1,10 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 
 import { ContactsListItemComponent } from './contacts-list-item.component';
 import { SpaceNavService } from '@sneat/space-services';
-import { ContactService } from '@sneat/contactus-services';
 import { of } from 'rxjs';
 
 describe('ContactListItemComponent', () => {
@@ -33,7 +33,7 @@ describe('ContactListItemComponent', () => {
             navigateForwardToSpacePage: vi.fn(() => Promise.resolve(true)),
           },
         },
-        { provide: ContactService, useValue: { setContactsStatus: vi.fn() } },
+        { provide: CONTACT_SERVICE, useValue: { setContactsStatus: vi.fn() } },
         {
           provide: ErrorLogger,
           useValue: {
@@ -94,7 +94,7 @@ describe('ContactListItemComponent', () => {
   });
 
   it('archiveContact sets the contact status to archived', () => {
-    const svc = TestBed.inject(ContactService) as unknown as {
+    const svc = TestBed.inject(CONTACT_SERVICE) as unknown as {
       setContactsStatus: ReturnType<typeof vi.fn>;
     };
     svc.setContactsStatus.mockReturnValue(of(undefined));

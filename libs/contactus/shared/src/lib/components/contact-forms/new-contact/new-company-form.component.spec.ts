@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { SpaceNavService } from '@sneat/space-services';
-import { ContactService } from '@sneat/contactus-services';
 
 import { NewCompanyFormComponent } from './new-company-form.component';
 import { of } from 'rxjs';
@@ -25,7 +25,7 @@ describe('NewCompanyFormComponent', () => {
           },
         },
         { provide: SpaceNavService, useValue: {} },
-        { provide: ContactService, useValue: { createContact: vi.fn() } },
+        { provide: CONTACT_SERVICE, useValue: { createContact: vi.fn() } },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
@@ -54,7 +54,7 @@ describe('NewCompanyFormComponent', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c = () => component as any;
   const svc = () =>
-    TestBed.inject(ContactService) as unknown as {
+    TestBed.inject(CONTACT_SERVICE) as unknown as {
       createContact: ReturnType<typeof vi.fn>;
     };
 

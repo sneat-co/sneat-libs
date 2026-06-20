@@ -18,8 +18,11 @@ import {
   IonLabel,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { addSpace, IContactWithCheck } from '@sneat/extension-contactus-contract';
-import { ContactusSpaceService } from '@sneat/contactus-services';
+import {
+  CONTACTUS_SPACE_SERVICE,
+  IContactWithCheck,
+  addSpace,
+} from '@sneat/extension-contactus-contract';
 import { listItemAnimations } from '@sneat/core';
 import { ContactsListItemComponent } from '../contacts-list-item/contacts-list-item.component';
 import {
@@ -87,7 +90,7 @@ const emptyRelatedGroupRoles = emptyRelatedGroups
   providers: [{ provide: ClassName, useValue: 'RelatedContactsComponent' }],
 })
 export class RelatedContactsComponent extends WithSpaceInput {
-  private readonly contactusSpaceService = inject(ContactusSpaceService);
+  private readonly contactusSpaceService = inject(CONTACTUS_SPACE_SERVICE);
 
   public readonly $relatedTo = input.required<IRelatedTo | undefined>();
 

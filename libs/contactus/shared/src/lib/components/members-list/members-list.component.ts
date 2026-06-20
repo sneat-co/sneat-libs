@@ -31,8 +31,9 @@ import {
   ScheduleNavServiceModule,
 } from '@sneat/extension-calendarius-core';
 import { WithSpaceInput } from '@sneat/space-services';
-import { ContactService, ContactusNavService } from '@sneat/contactus-services';
 import {
+  CONTACTUS_NAV_SERVICE,
+  CONTACT_SERVICE,
   IContactWithBrief,
   IContactWithBriefAndSpace,
 } from '@sneat/extension-contactus-contract';
@@ -73,7 +74,7 @@ export class MembersListComponent extends WithSpaceInput {
   private readonly navService = inject(SpaceNavService);
   private readonly navController = inject(NavController);
   private readonly userService = inject(SneatUserService);
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
   private readonly scheduleNavService = inject(ScheduleNavService);
   private readonly modalController = inject(ModalController);
   readonly routerOutlet = inject(IonRouterOutlet);
@@ -105,7 +106,7 @@ export class MembersListComponent extends WithSpaceInput {
     },
   );
 
-  private readonly contactusNavService = inject(ContactusNavService);
+  private readonly contactusNavService = inject(CONTACTUS_NAV_SERVICE);
 
   private readonly $isFamilySpace = computed(
     () => this.$spaceType() === SpaceTypeFamily,

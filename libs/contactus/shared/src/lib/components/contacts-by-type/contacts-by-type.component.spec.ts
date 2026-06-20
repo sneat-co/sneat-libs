@@ -1,10 +1,10 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CONTACT_NAV_SERVICE } from '@sneat/extension-contactus-contract';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { Subject } from 'rxjs';
 import { ContactsByTypeComponent } from './contacts-by-type.component';
-import { ContactNavService } from '@sneat/contactus-services';
 import { ErrorLogger } from '@sneat/core';
 
 describe('ContactsFamilyComponent', () => {
@@ -30,7 +30,7 @@ describe('ContactsFamilyComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ContactsByTypeComponent, NoopAnimationsModule],
       providers: [
-        { provide: ContactNavService, useValue: contactNav },
+        { provide: CONTACT_NAV_SERVICE, useValue: contactNav },
         {
           provide: ErrorLogger,
           useValue: {

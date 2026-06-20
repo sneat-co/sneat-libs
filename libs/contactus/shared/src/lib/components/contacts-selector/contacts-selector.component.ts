@@ -44,17 +44,17 @@ import {
   SelectorModalComponent,
 } from '@sneat/ui';
 import {
+  CONTACTUS_SPACE_SERVICE,
+  ContactIdAndDboWithSpaceRef,
   ContactRole,
   ContactType,
   IContactContext,
-  IContactWithBrief,
-  IContactWithCheck,
-  IContactWithBriefAndSpace,
-  ContactIdAndDboWithSpaceRef,
   IContactDbo,
+  IContactWithBrief,
+  IContactWithBriefAndSpace,
+  IContactWithCheck,
   NewContactBaseDboAndSpaceRef,
 } from '@sneat/extension-contactus-contract';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import {
   computeSpaceRefFromSpaceContext,
   ISpaceContext,
@@ -116,7 +116,7 @@ export class ContactsSelectorComponent
   private readonly contactRolesByType = inject<ContactRolesByType>(
     CONTACT_ROLES_BY_TYPE,
   );
-  private readonly contactusSpaceService = inject(ContactusSpaceService);
+  private readonly contactusSpaceService = inject(CONTACTUS_SPACE_SERVICE);
 
   private readonly parentChanged = new Subject<void>();
 

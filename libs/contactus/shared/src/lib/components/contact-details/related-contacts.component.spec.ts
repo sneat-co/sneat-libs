@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { SpaceNavService } from '@sneat/space-services';
-import { ContactusSpaceService } from '@sneat/contactus-services';
 import { of } from 'rxjs';
 
 import { RelatedContactsComponent } from './related-contacts.component';
@@ -27,7 +27,7 @@ describe('RelatedContactsComponent', () => {
         },
         { provide: SpaceNavService, useValue: {} },
         {
-          provide: ContactusSpaceService,
+          provide: CONTACTUS_SPACE_SERVICE,
           useValue: { watchContactBriefs: vi.fn(() => of([])) },
         },
       ],

@@ -58,7 +58,7 @@ Move interfaces/DTOs/enums from `contactus-core` (and types stranded in `-shared
 
 **Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:di-token-inversion
 **Depends-On:** 3
-**Status:** pending
+**Status:** done
 
 Move services (`ContactService`, `ContactusSpaceService`, `MemberService`, `InviteService`, nav/group services), dialogs, pages, private components, and the runtime remainder of `contactus-core` into `extension-contactus-internal`; bind each contract token to its concrete provider. Repoint consumers (`calendarius`, `app`, `space-*`) to inject the cross-extension services via contract tokens instead of importing them, then drop the emptied `contactus-services` lib (and `-core` remainder). No other extension imports this lib.
 

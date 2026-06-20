@@ -18,10 +18,10 @@ import {
   IonSelectOption,
 } from '@ionic/angular/standalone';
 import {
+  CONTACT_SERVICE,
   ContactCommChannelType,
   IContactCommChannelProps,
 } from '@sneat/extension-contactus-contract';
-import { ContactService } from '@sneat/contactus-services';
 import {
   IContactCommChannelRequest,
   IUpdateContactCommChannelRequest,
@@ -64,7 +64,7 @@ export class CommChannelItemComponent extends SneatBaseComponent {
   public readonly $lines = input.required<'none' | 'full' | undefined>();
   protected readonly $saving = signal(false);
 
-  protected readonly contactService = inject(ContactService);
+  protected readonly contactService = inject(CONTACT_SERVICE);
 
   constructor() {
     super();

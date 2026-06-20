@@ -29,11 +29,11 @@ import {
   GenderIconNamePipe,
 } from '@sneat/components';
 import {
+  CONTACT_SERVICE,
   ContactRole,
   IContactWithBrief,
   IContactWithCheck,
 } from '@sneat/extension-contactus-contract';
-import { ContactService } from '@sneat/contactus-services';
 import { IRelatedTo } from '@sneat/dto';
 import { ISpaceContext } from '@sneat/space-models';
 import { SpaceNavService } from '@sneat/space-services';
@@ -76,7 +76,7 @@ import { RelatedAsComponent } from './related-as.component';
 })
 export class ContactsListItemComponent extends SneatBaseComponent {
   private readonly spaceNavService = inject(SpaceNavService);
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   public readonly $contact = input.required<IContactWithCheck>();
   public readonly $contactID = computed(() => this.$contact().id);

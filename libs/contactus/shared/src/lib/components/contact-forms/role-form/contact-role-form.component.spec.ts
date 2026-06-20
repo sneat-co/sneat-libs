@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_GROUP_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 import { of } from 'rxjs';
 
 import { ContactRoleFormComponent } from './contact-role-form.component';
-import { ContactGroupService } from '@sneat/contactus-services';
 import { ErrorLogger } from '@sneat/core';
 
 describe('ContactRoleFormComponent', () => {
@@ -27,7 +27,7 @@ describe('ContactRoleFormComponent', () => {
       imports: [MockComponent],
       providers: [
         {
-          provide: ContactGroupService,
+          provide: CONTACT_GROUP_SERVICE,
           useValue: { getContactGroups: vi.fn().mockReturnValue(of([])) },
         },
         {

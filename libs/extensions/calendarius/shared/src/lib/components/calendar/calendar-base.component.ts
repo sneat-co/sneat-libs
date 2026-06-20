@@ -6,8 +6,10 @@ import {
   signal,
   computed,
 } from '@angular/core';
-import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
-import { ContactusSpaceService } from '@sneat/contactus-services';
+import {
+  CONTACTUS_SPACE_SERVICE,
+  IContactusSpaceDboAndID,
+} from '@sneat/extension-contactus-contract';
 import { UiState } from '@sneat/dto';
 import { WithSpaceInput } from '@sneat/space-services';
 import { takeUntil, filter } from 'rxjs';
@@ -74,7 +76,7 @@ export abstract class CalendarBaseComponent
   protected readonly spaceDaysProvider: CalendarDataProvider;
   protected readonly injector = inject(Injector);
 
-  private readonly contactusSpaceService = inject(ContactusSpaceService);
+  private readonly contactusSpaceService = inject(CONTACTUS_SPACE_SERVICE);
 
   protected constructor() {
     super();

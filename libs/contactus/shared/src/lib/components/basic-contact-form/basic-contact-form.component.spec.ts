@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
-import { ContactService } from '@sneat/contactus-services';
 
 import { BasicContactFormComponent } from './basic-contact-form.component';
 import { of } from 'rxjs';
@@ -21,7 +21,7 @@ describe('BasicContactFormComponent', () => {
             logErrorHandler: vi.fn(() => vi.fn()),
           },
         },
-        { provide: ContactService, useValue: { createContact: vi.fn() } },
+        { provide: CONTACT_SERVICE, useValue: { createContact: vi.fn() } },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
@@ -45,7 +45,7 @@ describe('BasicContactFormComponent', () => {
   const c = () => component as any;
   const stop = () => ({ stopPropagation: vi.fn() }) as unknown as Event;
   const svc = () =>
-    TestBed.inject(ContactService) as unknown as {
+    TestBed.inject(CONTACT_SERVICE) as unknown as {
       createContact: ReturnType<typeof vi.fn>;
     };
 

@@ -7,8 +7,10 @@ import {
   signal,
 } from '@angular/core';
 import { DateInputComponent } from '@sneat/components';
-import { IContactContext } from '@sneat/extension-contactus-contract';
-import { ContactService } from '@sneat/contactus-services';
+import {
+  CONTACT_SERVICE,
+  IContactContext,
+} from '@sneat/extension-contactus-contract';
 import { IUpdateContactRequest } from '@sneat/extension-contactus-contract';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 
@@ -35,7 +37,7 @@ export class ContactDobComponent extends SneatBaseComponent {
 
   protected readonly today = new Date().toISOString().slice(0, 10);
 
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   protected onDobChanged(dateOfBirth: string | undefined): void {
     const contact = this.$contact();

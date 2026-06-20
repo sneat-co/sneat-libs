@@ -27,15 +27,15 @@ import {
 } from '@ionic/angular/standalone';
 import { FilterItemComponent } from '@sneat/components';
 import {
-  addSpace,
   ContactRole,
-  filterContactsByTextAndRole,
   IContactWithBrief,
-  IContactWithCheck,
   IContactWithBriefAndSpace,
+  IContactWithCheck,
   IMemberGroupContext,
+  addSpace,
+  defaultFamilyContactGroups,
+  filterContactsByTextAndRole,
 } from '@sneat/extension-contactus-contract';
-import { defaultFamilyContactGroups } from '@sneat/contactus-services';
 import { listItemAnimations } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { SpaceNavService } from '@sneat/space-services';

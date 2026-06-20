@@ -10,9 +10,9 @@ import {
 } from '@angular/core';
 import { IonCard, IonItemDivider, IonLabel } from '@ionic/angular/standalone';
 import { ClassName, SelectFromListComponent } from '@sneat/ui';
-import { ContactGroupService } from '@sneat/contactus-services';
 import { IIdAndDbo } from '@sneat/core';
 import {
+  CONTACT_GROUP_SERVICE,
   ContactRole,
   IContactGroupDbo,
   IContactRoleWithIdAndBrief,
@@ -95,7 +95,7 @@ export class ContactRoleFormComponent extends SneatBaseComponent {
 
   constructor() {
     super();
-    const contactGroupService = inject(ContactGroupService);
+    const contactGroupService = inject(CONTACT_GROUP_SERVICE);
     contactGroupService
       .getContactGroups()
       .pipe(this.takeUntilDestroyed())

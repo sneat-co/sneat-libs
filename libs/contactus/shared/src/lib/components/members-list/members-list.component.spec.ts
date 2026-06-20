@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_SERVICE, CONTACTUS_NAV_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -11,7 +12,6 @@ import {
 import { of } from 'rxjs';
 import { SpaceNavService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
-import { ContactService, ContactusNavService } from '@sneat/contactus-services';
 import { ScheduleNavService } from '@sneat/extension-calendarius-core';
 
 import { MembersListComponent } from './members-list.component';
@@ -31,7 +31,7 @@ describe('MembersListComponent', () => {
           useValue: { userState: of({}), currentUserID: 'u1' },
         },
         {
-          provide: ContactService,
+          provide: CONTACT_SERVICE,
           useValue: {
             setContactsStatus: vi.fn(),
             removeSpaceMember: vi.fn(() => of({ id: 'test-space' })),
@@ -40,7 +40,7 @@ describe('MembersListComponent', () => {
         { provide: ScheduleNavService, useValue: { goCalendar: vi.fn(() => Promise.resolve()) } },
         { provide: ModalController, useValue: {} },
         { provide: IonRouterOutlet, useValue: {} },
-        { provide: ContactusNavService, useValue: { navigateToMember: vi.fn() } },
+        { provide: CONTACTUS_NAV_SERVICE, useValue: { navigateToMember: vi.fn() } },
         {
           provide: ErrorLogger,
           useValue: {
@@ -120,7 +120,7 @@ describe('MembersListComponent', () => {
   it('goMember navigates to the member', () => {
     component.goMember({ id: 'm1', brief: {} } as never);
     expect(
-      (TestBed.inject(ContactusNavService) as unknown as {
+      (TestBed.inject(CONTACTUS_NAV_SERVICE) as unknown as {
         navigateToMember: ReturnType<typeof vi.fn>;
       }).navigateToMember,
     ).toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe('MembersListComponent', () => {
   it('removeMember calls the service to remove the member', () => {
     component.removeMember(stop(), { id: 'm1', brief: {} } as never);
     expect(
-      (TestBed.inject(ContactService) as unknown as {
+      (TestBed.inject(CONTACT_SERVICE) as unknown as {
         removeSpaceMember: ReturnType<typeof vi.fn>;
       }).removeSpaceMember,
     ).toHaveBeenCalledWith({ spaceID: 'test-space', contactID: 'm1' });

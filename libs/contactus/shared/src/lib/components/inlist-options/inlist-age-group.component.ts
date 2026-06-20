@@ -1,6 +1,8 @@
 import { Component, Input, inject } from '@angular/core';
-import { ContactService } from '@sneat/contactus-services';
-import { IUpdateContactRequest } from '@sneat/extension-contactus-contract';
+import {
+  CONTACT_SERVICE,
+  IUpdateContactRequest,
+} from '@sneat/extension-contactus-contract';
 import { AgeGroupID } from '@sneat/core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
@@ -18,7 +20,7 @@ import {
   providers: [{ provide: ClassName, useValue: 'InlistAgeGroupComponent' }],
 })
 export class InlistAgeGroupComponent extends WithSpaceInput {
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
 
   protected selectedOption?: Option;
 

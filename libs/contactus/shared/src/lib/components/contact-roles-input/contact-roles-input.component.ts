@@ -7,12 +7,12 @@ import {
 } from '@angular/core';
 import { CONTACT_ROLES_BY_TYPE, IContactRole } from '@sneat/app';
 import {
+  CONTACT_SERVICE,
   ContactRole,
   ContactType,
   IContactWithBrief,
 } from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
-import { ContactService } from '@sneat/contactus-services';
 import { ISpaceContext } from '@sneat/space-models';
 import { MultiSelectorComponent } from '@sneat/ui';
 
@@ -23,7 +23,7 @@ import { MultiSelectorComponent } from '@sneat/ui';
 })
 export class ContactRolesInputComponent implements OnChanges {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
-  private readonly contactService = inject(ContactService);
+  private readonly contactService = inject(CONTACT_SERVICE);
   private readonly contactRolesByType = inject<
     Record<ContactType, IContactRole[]>
   >(CONTACT_ROLES_BY_TYPE);

@@ -24,15 +24,15 @@ import {
 } from '@ionic/angular/standalone';
 import { eq, IIdAndDbo, listItemAnimations } from '@sneat/core';
 import {
+  CONTACT_NAV_SERVICE,
   ContactGroupWithIdAndBrief,
   ContactRole,
-  IContactRoleWithIdAndBrief,
   IContactGroupDbo,
+  IContactRoleWithIdAndBrief,
   IContactWithBrief,
   IContactWithCheck,
   isContactPassFilter,
 } from '@sneat/extension-contactus-contract';
-import { ContactNavService } from '@sneat/contactus-services';
 import { ISpaceContext } from '@sneat/space-models';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 import { Observable } from 'rxjs';
@@ -71,7 +71,7 @@ export class ContactsByTypeComponent
   extends SneatBaseComponent
   implements OnChanges, OnInit
 {
-  private readonly contactNavService = inject(ContactNavService);
+  private readonly contactNavService = inject(CONTACT_NAV_SERVICE);
 
   public readonly $space = input.required<ISpaceContext>();
 

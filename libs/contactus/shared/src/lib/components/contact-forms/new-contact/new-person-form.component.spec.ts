@@ -1,13 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { CONTACT_GROUP_SERVICE, CONTACT_ROLE_SERVICE, CONTACT_SERVICE } from '@sneat/extension-contactus-contract';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { SpaceNavService } from '@sneat/space-services';
-import {
-  ContactGroupService,
-  ContactRoleService,
-  ContactService,
-} from '@sneat/contactus-services';
 import { of } from 'rxjs';
 import { AssetService } from '../../../services/asset.service';
 
@@ -38,15 +34,15 @@ describe('NewPersonFormComponent', () => {
           },
         },
         {
-          provide: ContactService,
+          provide: CONTACT_SERVICE,
           useValue: { createContact: vi.fn(), watchContactById: vi.fn() },
         },
         {
-          provide: ContactGroupService,
+          provide: CONTACT_GROUP_SERVICE,
           useValue: { getContactGroupByID: vi.fn() },
         },
         {
-          provide: ContactRoleService,
+          provide: CONTACT_ROLE_SERVICE,
           useValue: { getContactRoleByID: vi.fn() },
         },
       ],
@@ -107,7 +103,7 @@ describe('NewPersonFormComponent', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const c = () => component as any;
     const contactSvc = () =>
-      TestBed.inject(ContactService) as unknown as {
+      TestBed.inject(CONTACT_SERVICE) as unknown as {
         createContact: ReturnType<typeof vi.fn>;
       };
 

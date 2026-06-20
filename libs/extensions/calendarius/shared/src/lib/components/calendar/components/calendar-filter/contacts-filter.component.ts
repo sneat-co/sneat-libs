@@ -24,15 +24,12 @@ import {
 } from '@ionic/angular/standalone';
 import { ContactTitlePipe } from '@sneat/contactus-shared';
 import {
+  CONTACTUS_SPACE_SERVICE,
   IContactusSpaceDbo,
   IContactWithBriefAndSpace,
 } from '@sneat/extension-contactus-contract';
-import {
-  ContactusSpaceContextService,
-  ContactusSpaceService,
-} from '@sneat/contactus-services';
 import { ContactusModuleBaseComponent } from '@sneat/contactus-shared';
-import { IIdAndOptionalDbo } from '@sneat/core';
+import { SpaceModuleService } from '@sneat/space-services';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { ClassName } from '@sneat/ui';
 
@@ -99,24 +96,19 @@ export class ContactsFilterComponent extends ContactusModuleBaseComponent {
   >(undefined);
 
   constructor() {
-    const contactusSpaceService = inject(ContactusSpaceService);
+    const contactusSpaceService = inject(CONTACTUS_SPACE_SERVICE);
 
-    super(contactusSpaceService);
-    const contactusSpaceContextService = new ContactusSpaceContextService(
-      this.destroyed$,
-      this.spaceIDChanged$,
+    super(
+      contactusSpaceService as unknown as SpaceModuleService<IContactusSpaceDbo>,
     );
-    contactusSpaceContextService.contactusSpaceContext$
-      .pipe(this.takeUntilDestroyed())
-      .subscribe(this.onContactusSpaceChanged.bind(this));
   }
 
-  private onContactusSpaceChanged(
-    contactusSpace?: IIdAndOptionalDbo<IContactusSpaceDbo>,
+  protected override onSpaceModuleDboChanged(
+    dbo: IContactusSpaceDbo | null,
   ): void {
-    const contactBriefs = zipMapBriefsWithIDs(
-      contactusSpace?.dbo?.contacts,
-    )?.map((m) => Object.assign(m, { space: this.space || { id: `` } }));
+    const contactBriefs = zipMapBriefsWithIDs(dbo?.contacts)?.map((m) =>
+      Object.assign(m, { space: this.space || { id: `` } }),
+    );
     this.$members.set(
       contactBriefs.filter((c) => c.brief.roles?.includes('member')),
     );

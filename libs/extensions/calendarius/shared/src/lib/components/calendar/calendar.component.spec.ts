@@ -5,7 +5,7 @@ import { NavController } from '@ionic/angular/standalone';
 import { Firestore } from '@angular/fire/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService, SneatUserService } from '@sneat/auth-core';
-import { ContactusSpaceService } from '@sneat/contactus-services';
+import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import {
   ErrorLogger,
   APP_INFO,
@@ -93,7 +93,7 @@ describe('CalendarComponent', () => {
           useValue: { watchSpaceModuleRecord: vi.fn(() => NEVER) },
         },
         {
-          provide: ContactusSpaceService,
+          provide: CONTACTUS_SPACE_SERVICE,
           useValue: {
             watchSpaceModuleRecord: vi.fn(() => of({ id: 'test', dbo: null })),
           },
