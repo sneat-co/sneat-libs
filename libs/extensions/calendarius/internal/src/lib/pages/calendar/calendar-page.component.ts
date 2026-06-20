@@ -29,7 +29,7 @@ import { IMemberContext } from '@sneat/extension-contactus-contract';
 import {
   CalendarComponent,
   CalendarTab,
-} from '@sneat/extension-calendarius-shared';
+} from '@sneat/extension-calendarius-shared-new';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 

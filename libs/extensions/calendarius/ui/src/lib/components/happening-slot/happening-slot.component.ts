@@ -12,7 +12,7 @@ import {
   IonItem,
   IonLabel,
 } from '@ionic/angular/standalone';
-import { WdToWeekdayPipe } from '@sneat/extension-calendarius-core';
+import { WdToWeekdayPipe } from '../../pipes/wd-to-weekday.pipe';
 import { emptyHappeningSlot, IHappeningContext, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { HappeningSlotModalService } from '../happening-slot-form/happening-slot-modal.service';
 

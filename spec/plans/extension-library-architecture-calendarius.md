@@ -60,7 +60,7 @@ Move calendarius services (incl. `ScheduleNavService`), pages, dialogs, and priv
 
 **Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:shared-lib-no-internal
 **Depends-On:** 3
-**Status:** pending
+**Status:** done
 
 Move calendarius reusable components/pipes/modules (old `ext-calendarius-shared`, ~71 files — calendar, happening cards, slot components, etc.) into the new shared-tier lib (`ext-calendarius-shared-new`, dir `ui`, package `@sneat/extension-calendarius-shared-new`), refactoring any service access to contract tokens (zero `-internal` imports). Repoint intra-calendarius and consumer component imports to `@sneat/extension-calendarius-shared-new`; drop the emptied old `ext-calendarius-shared` lib (dir `shared`) and its `@sneat/extension-calendarius-shared` path entry.
 

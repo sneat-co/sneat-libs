@@ -9,7 +9,7 @@ import {
   takeUntil,
 } from 'rxjs';
 import { CalendarBasePage } from '../calendar-base-page';
-import { HappeningComponentBaseParams } from '@sneat/extension-calendarius-shared';
+import { HappeningComponentBaseParams } from '@sneat/extension-calendarius-shared-new';
 
 const emptyHappeningContext = { id: '', space: { id: '' } };
 

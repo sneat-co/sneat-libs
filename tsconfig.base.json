@@ -78,9 +78,6 @@
       "@sneat/space-services": [
         "libs/space/services/src/index.ts"
       ],
-      "@sneat/extension-calendarius-core": [
-        "libs/extensions/calendarius/core/src/index.ts"
-      ],
       "@sneat/extension-calendarius-contract": [
         "libs/extensions/calendarius/contract/src/index.ts"
       ],
@@ -92,9 +89,6 @@
       ],
       "@sneat/wizard": [
         "libs/wizard/src/index.ts"
-      ],
-      "@sneat/extension-calendarius-shared": [
-        "libs/extensions/calendarius/shared/src/index.ts"
       ],
       "@sneat/extension-contactus-contract": [
         "libs/extensions/contactus/contract/src/index.ts"

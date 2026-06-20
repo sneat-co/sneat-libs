@@ -12,7 +12,7 @@ import { LongMonthNamePipe } from '@sneat/components';
 import { IContactWithBrief } from '@sneat/extension-contactus-contract';
 import { SelectedContactsPipe } from '@sneat/extension-contactus-shared';
 import { getRelatedItemIDs } from '@sneat/dto';
-import { WdToWeekdayPipe } from '@sneat/extension-calendarius-core';
+import { WdToWeekdayPipe } from '../../pipes/wd-to-weekday.pipe';
 import { ClassName } from '@sneat/ui';
 import { HappeningBaseComponent } from '../happening-base.component';
 import { IHappeningContactRequest } from '../../services/happening.service';
