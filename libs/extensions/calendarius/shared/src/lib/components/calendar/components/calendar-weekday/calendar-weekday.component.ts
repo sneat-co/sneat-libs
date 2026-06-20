@@ -19,8 +19,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ShortMonthNamePipe } from '@sneat/components';
 import { HappeningType } from '@sneat/extension-calendarius-contract';
-import { ScheduleNavService } from '@sneat/extension-calendarius-core';
-import { ISlotUIContext, NewHappeningParams } from '@sneat/extension-calendarius-contract';
+import { ISlotUIContext, NewHappeningParams, IScheduleNavService, SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 import { ISpaceContext } from '@sneat/space-models';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 import { CalendarDay } from '../../../../services/calendar-day';
@@ -60,7 +59,8 @@ export class CalendarWeekdayComponent extends SneatBaseComponent {
 
   protected readonly $filter = signal(emptyCalendarFilter);
 
-  private readonly scheduleNavService = inject(ScheduleNavService);
+  private readonly scheduleNavService =
+    inject<IScheduleNavService>(SCHEDULE_NAV_SERVICE);
 
   constructor() {
     super();

@@ -12,7 +12,7 @@ import {
 import { of } from 'rxjs';
 import { SpaceNavService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
-import { ScheduleNavService } from '@sneat/extension-calendarius-core';
+import { SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 
 import { MembersListComponent } from './members-list.component';
 
@@ -37,7 +37,7 @@ describe('MembersListComponent', () => {
             removeSpaceMember: vi.fn(() => of({ id: 'test-space' })),
           },
         },
-        { provide: ScheduleNavService, useValue: { goCalendar: vi.fn(() => Promise.resolve()) } },
+        { provide: SCHEDULE_NAV_SERVICE, useValue: { goCalendar: vi.fn(() => Promise.resolve()) } },
         { provide: ModalController, useValue: {} },
         { provide: IonRouterOutlet, useValue: {} },
         { provide: CONTACTUS_NAV_SERVICE, useValue: { navigateToMember: vi.fn() } },
@@ -129,7 +129,7 @@ describe('MembersListComponent', () => {
   it('goSchedule navigates to the member calendar', () => {
     component.goSchedule(stop(), { id: 'm1' } as never);
     expect(
-      (TestBed.inject(ScheduleNavService) as unknown as {
+      (TestBed.inject(SCHEDULE_NAV_SERVICE) as unknown as {
         goCalendar: ReturnType<typeof vi.fn>;
       }).goCalendar,
     ).toHaveBeenCalledWith(expect.anything(), { member: 'm1' });

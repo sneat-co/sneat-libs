@@ -12,7 +12,7 @@ import {
   AnalyticsService,
   NgModulePreloaderService,
 } from '@sneat/core';
-import { ScheduleNavService } from '@sneat/extension-calendarius-core';
+import { SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
 import { ClassName } from '@sneat/ui';
@@ -79,7 +79,7 @@ describe('CalendarAddButtonsComponent', () => {
           useValue: { post: vi.fn(() => of({})), get: vi.fn(() => of({})) },
         },
         {
-          provide: ScheduleNavService,
+          provide: SCHEDULE_NAV_SERVICE,
           useValue: { goNewHappening: vi.fn() },
         },
         SpaceComponentBaseParams,

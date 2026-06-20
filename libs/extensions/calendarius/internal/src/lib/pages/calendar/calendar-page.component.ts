@@ -18,7 +18,7 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { virtualSliderAnimations } from '@sneat/components';
-import { ScheduleNavService, ScheduleNavServiceModule } from '@sneat/extension-calendarius-core';
+import { ScheduleNavService, ScheduleNavServiceModule } from '../../services';
 import { HappeningType, NewHappeningParams } from '@sneat/extension-calendarius-contract';
 import {
   SpaceBaseComponent,

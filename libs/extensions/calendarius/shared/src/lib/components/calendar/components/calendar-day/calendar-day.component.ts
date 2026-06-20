@@ -19,8 +19,7 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { dateToIso } from '@sneat/core';
-import { ScheduleNavService, ScheduleNavServiceModule } from '@sneat/extension-calendarius-core';
-import { ISlotUIContext, jsDayToWeekday, NewHappeningParams, sortSlotItems, WeekdayNumber } from '@sneat/extension-calendarius-contract';
+import { ISlotUIContext, jsDayToWeekday, NewHappeningParams, sortSlotItems, WeekdayNumber, IScheduleNavService, SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { Subscription } from 'rxjs';
@@ -35,7 +34,6 @@ import { DaySlotItemComponent } from '../day-slot-item/day-slot-item.component';
 
 @Component({
   imports: [
-    ScheduleNavServiceModule,
     DaySlotItemComponent,
     IonItem,
     IonSpinner,
@@ -55,7 +53,8 @@ export class CalendarDayComponent
   implements OnChanges, OnDestroy
 {
   private readonly filterService = inject(CalendarFilterService);
-  private readonly scheduleNavService = inject(ScheduleNavService);
+  private readonly scheduleNavService =
+    inject<IScheduleNavService>(SCHEDULE_NAV_SERVICE);
 
   private slotsSubscription?: Subscription;
   private filter = emptyCalendarFilter;

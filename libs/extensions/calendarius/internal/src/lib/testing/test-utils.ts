@@ -12,7 +12,7 @@ import {
 import { ErrorLogger } from '@sneat/core';
 import { SneatUserService } from '@sneat/auth-core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
-import { ScheduleNavService } from '@sneat/extension-calendarius-core';
+import { ScheduleNavService } from '../services';
 import {
   HappeningService,
   CalendariusSpaceService,

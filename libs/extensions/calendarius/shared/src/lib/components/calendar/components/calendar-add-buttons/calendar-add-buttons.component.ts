@@ -5,8 +5,7 @@ import {
   inject,
 } from '@angular/core';
 import { IonButton, IonButtons, IonIcon } from '@ionic/angular/standalone';
-import { ScheduleNavService } from '@sneat/extension-calendarius-core';
-import { HappeningType, WeekdayCode2, NewHappeningParams } from '@sneat/extension-calendarius-contract';
+import { HappeningType, WeekdayCode2, NewHappeningParams, IScheduleNavService, SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 
@@ -18,7 +17,8 @@ import { ClassName } from '@sneat/ui';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarAddButtonsComponent extends WithSpaceInput {
-  private readonly scheduleNavService = inject(ScheduleNavService);
+  private readonly scheduleNavService =
+    inject<IScheduleNavService>(SCHEDULE_NAV_SERVICE);
 
   public readonly dateID = input.required<string | undefined>();
   public readonly weekdayID = input.required<WeekdayCode2 | undefined>();

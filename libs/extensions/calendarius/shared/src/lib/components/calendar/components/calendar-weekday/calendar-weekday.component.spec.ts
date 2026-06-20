@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { CalendarFilterService } from '../../../calendar-filter.service';
-import { ScheduleNavService } from '@sneat/extension-calendarius-core';
+import { SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 
 import { CalendarWeekdayComponent } from './calendar-weekday.component';
 
@@ -15,7 +15,7 @@ describe('ScheduleWeekdayComponent', () => {
       imports: [CalendarWeekdayComponent],
       providers: [
         { provide: CalendarFilterService, useValue: { filter: of({}) } },
-        { provide: ScheduleNavService, useValue: {} },
+        { provide: SCHEDULE_NAV_SERVICE, useValue: {} },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();

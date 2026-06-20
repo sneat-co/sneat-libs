@@ -50,7 +50,7 @@ Move calendarius pure types/interfaces/enums/DTOs (the bulk of `ext-calendarius-
 
 **Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:di-token-inversion
 **Depends-On:** 2
-**Status:** pending
+**Status:** done
 
 Move calendarius services (incl. `ScheduleNavService`), pages, dialogs, and private components into `extension-calendarius-internal`; bind each contract token to its concrete provider via a `provideCalendariusInternal(): Provider[]` factory (wired by the app at bootstrap). Drop the emptied `ext-calendarius-core`/`-main` libs as their contents migrate. No other extension imports this lib.
 

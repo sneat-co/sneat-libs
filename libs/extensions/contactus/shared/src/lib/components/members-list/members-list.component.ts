@@ -27,9 +27,9 @@ import {
 } from '@ionic/angular/standalone';
 import { listAddRemoveAnimation, SpaceTypeFamily } from '@sneat/core';
 import {
-  ScheduleNavService,
-  ScheduleNavServiceModule,
-} from '@sneat/extension-calendarius-core';
+  IScheduleNavService,
+  SCHEDULE_NAV_SERVICE,
+} from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import {
   CONTACTUS_NAV_SERVICE,
@@ -50,7 +50,6 @@ import { InlistAgeGroupComponent } from '../inlist-options/inlist-age-group.comp
   templateUrl: './members-list.component.html',
   animations: listAddRemoveAnimation,
   imports: [
-    ScheduleNavServiceModule,
     RouterModule,
     ContactRoleBadgesComponent,
     InlistAgeGroupComponent,
@@ -75,7 +74,8 @@ export class MembersListComponent extends WithSpaceInput {
   private readonly navController = inject(NavController);
   private readonly userService = inject(SneatUserService);
   private readonly contactService = inject(CONTACT_SERVICE);
-  private readonly scheduleNavService = inject(ScheduleNavService);
+  private readonly scheduleNavService =
+    inject<IScheduleNavService>(SCHEDULE_NAV_SERVICE);
   private readonly modalController = inject(ModalController);
   readonly routerOutlet = inject(IonRouterOutlet);
 
