@@ -54,7 +54,8 @@
   },
   "release": {
     "projects": ["*"],
-    "projectsRelationship": "independent",
+    "projectsRelationship": "fixed",
+    "releaseTagPattern": "v{version}",
     "git": {
       "commit": true,
       "tag": true,
@@ -67,7 +68,7 @@
         "packageRoot": "dist/{projectRoot}"
       }
     },
-    "changelog": { "workspaceChangelog": true },
+    "changelog": { "workspaceChangelog": true, "automaticFromRef": true },
     "publish": {
       "executor": "@nx/js:release-publish",
       "dependsOn": ["build"],
