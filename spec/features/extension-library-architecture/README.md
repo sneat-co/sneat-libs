@@ -1,12 +1,12 @@
 ---
 format: https://specscore.md/feature-specification
-status: Approved
+status: Stable
 ---
 
 # Feature: Extension library architecture convention
 
 > [SpecScore.**Studio**](https://specscore.studio): | [Explore](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=explore) | [Edit](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=edit) | [Ask question](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=ask) | [Request change](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=request-change) |
-**Status:** Approved
+**Status:** Stable
 **Source Ideas:** cross-extension-interaction
 
 ## Summary
