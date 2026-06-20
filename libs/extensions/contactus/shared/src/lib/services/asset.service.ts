@@ -4,7 +4,7 @@ import { SneatApiService } from '@sneat/api';
 import { ISpaceContext } from '@sneat/space-models';
 import { ModuleSpaceItemService } from '@sneat/space-services';
 import { Observable } from 'rxjs';
-import type { IAssetBrief, IAssetContext, IAssetDbo } from '@sneat/extension-assetus';
+import type { IAssetBrief, IAssetContext, IAssetDbo } from '@sneat/extension-assetus-contract';
 
 // In-repo asset watch seam for contactus.
 //

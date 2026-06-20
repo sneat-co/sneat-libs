@@ -31,7 +31,7 @@ import { PersonWizardComponent } from '../pesson-wizard';
 import { IContactAddEventArgs } from '../../contact-events';
 import { ContactRoleFormComponent } from '../role-form';
 import { IIdAndDbo, IIdAndOptionalDbo } from '@sneat/core';
-import type { IAssetContext } from '@sneat/extension-assetus';
+import type { IAssetContext } from '@sneat/extension-assetus-contract';
 import { AssetService } from '../../../services/asset.service';
 import { first, Observable, Subject, takeUntil } from 'rxjs';
 import { NewContactFormBaseComponent } from './new-contact-form-base.component';

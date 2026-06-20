@@ -104,9 +104,9 @@ importers:
       '@sentry/browser':
         specifier: 10.41.0
         version: 10.41.0
-      '@sneat/extension-assetus':
-        specifier: 0.0.1
-        version: 0.0.1(cc2be62ed65e3cd765c6bdf46adc3b26)
+      '@sneat/extension-assetus-contract':
+        specifier: '>=0.0.1'
+        version: 0.0.5(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))
       '@sneat/random':
         specifier: 0.0.4
         version: 0.0.4(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))
@@ -3311,30 +3311,13 @@ packages:
   '@sinclair/typebox@0.34.48':
     resolution: {integrity: sha512-kKJTNuK3AQOrgjjotVxMrCn1sUJwM76wMszfq1kdU4uYVJjvEWuFQ6HgvLt4Xz3fSmZlTOxJ/Ie13KnIcWQXFA==}
 
-  '@sneat/extension-assetus@0.0.1':
-    resolution: {integrity: sha512-WUiskwouHV9adZm5ZQIlVPFh6jZbPtzg3G/Td2h07paA/d4rZ+OgC2ZXBgBLq6AYntWyEHcXIvRjbJ8wrlSb6g==}
+  '@sneat/extension-assetus-contract@0.0.5':
+    resolution: {integrity: sha512-nU7Snuv+Uezw28/QpCiEgAIa42v/KUUeTY+yRE32gt29vxB13uauuvPuG+AAJkakX+XNmHjgIi7tI5fhbeTP1A==}
     peerDependencies:
-      '@angular/common': ^21.0.0
       '@angular/core': ^21.0.0
-      '@angular/fire': ^20.0.0
-      '@angular/forms': ^21.0.0
-      '@angular/router': ^21.0.0
-      '@ionic/angular': ^8.0.0
-      '@sneat/api': ^0.9.0
-      '@sneat/app': ^0.9.0
-      '@sneat/auth-core': ^0.9.0
-      '@sneat/auth-models': ^0.9.0
-      '@sneat/auth-ui': ^0.9.0
-      '@sneat/components': ^0.9.0
-      '@sneat/contactus-services': ^0.9.0
       '@sneat/core': ^0.9.0
       '@sneat/dto': ^0.9.0
-      '@sneat/logging': ^0.9.0
-      '@sneat/space-components': ^0.9.0
       '@sneat/space-models': ^0.9.0
-      '@sneat/space-services': ^0.9.0
-      '@sneat/ui': ^0.9.0
-      date-fns: ^4.1.0
       rxjs: ^7.0.0
       vitest: ^4.0.9
 
@@ -11076,15 +11059,9 @@ snapshots:
 
   '@sinclair/typebox@0.34.48': {}
 
-  '@sneat/extension-assetus@0.0.1(cc2be62ed65e3cd765c6bdf46adc3b26)':
+  '@sneat/extension-assetus-contract@0.0.5(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2))':
     dependencies:
-      '@angular/common': 21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)
       '@angular/core': 21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1)
-      '@angular/fire': 20.0.1(2fcdedd589fadd79cbc463c007f0cff4)
-      '@angular/forms': 21.2.0(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(@angular/platform-browser@21.2.0(@angular/animations@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1)))(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1)))(rxjs@7.8.2)
-      '@angular/router': 21.2.0(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(@angular/platform-browser@21.2.0(@angular/animations@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1)))(@angular/common@21.2.0(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.0(@angular/compiler@21.2.0)(rxjs@7.8.2)(zone.js@0.16.1)))(rxjs@7.8.2)
-      '@ionic/angular': 8.7.18(77a787868c292a0880322232bcc32de0)
-      date-fns: 4.1.0
       rxjs: 7.8.2
       tslib: 2.8.1
       vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.3)(happy-dom@20.8.3)(jiti@2.6.1)(less@4.5.1)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.46.0)(yaml@2.8.2)
