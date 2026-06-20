@@ -88,7 +88,7 @@ Wire the contract-token providers at app bootstrap. Flip `enforce-module-boundar
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition
 **Depends-On:** 6
-**Status:** pending
+**Status:** done
 
 Confirm all four old contactus libs (`-core`/`-services`/`-shared`/`-internal`) and their `project.json`/`tsconfig` `paths` entries are gone (remove any residue). Reconciling sweep: confirm every per-task worktree was already removed and its branch deleted; remove stragglers via `git worktree prune` + `git branch -d`, leaving only `feat/extension-library-architecture`.
 
