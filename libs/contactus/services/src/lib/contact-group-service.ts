@@ -6,7 +6,7 @@ import {
   IContactGroupBrief,
   IContactGroupDbo,
   IContactRoleWithIdAndBrief,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ModuleSpaceItemService } from '@sneat/space-services';
 import { Observable, of } from 'rxjs';
 

@@ -20,7 +20,7 @@ import {
   IonSegment,
   IonSegmentButton,
 } from '@ionic/angular/standalone';
-import { IMemberContext } from '@sneat/contactus-core';
+import { IMemberContext } from '@sneat/extension-contactus-contract';
 import { ContactusSpaceService } from '@sneat/contactus-services';
 import { localDateToIso } from '@sneat/core';
 import {

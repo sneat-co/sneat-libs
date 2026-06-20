@@ -1,6 +1,6 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import { Firestore as AngularFirestore } from '@angular/fire/firestore';
-import { IContactBrief, IContactusSpaceDbo } from '@sneat/contactus-core';
+import { IContactBrief, IContactusSpaceDbo } from '@sneat/extension-contactus-contract';
 import { SpaceModuleService } from '@sneat/space-services';
 
 @Injectable()

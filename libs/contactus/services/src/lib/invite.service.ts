@@ -7,7 +7,7 @@ import {
   ICreatePersonalInviteRequest,
   ICreatePersonalInviteResponse,
   IJoinSpaceInfoResponse,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { excludeEmpty } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { RandomIdService } from '@sneat/random';

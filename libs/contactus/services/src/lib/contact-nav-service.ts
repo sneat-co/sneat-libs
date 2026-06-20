@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { excludeUndefined } from '@sneat/core';
-import { ContactRole } from '@sneat/contactus-core';
+import { ContactRole } from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { SpaceNavService } from '@sneat/space-services';

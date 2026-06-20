@@ -40,7 +40,7 @@ import {
   isRelatedPersonReady,
   MemberContactType,
   NewContactBaseDboAndSpaceRef,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { WithNewContactInput } from '@sneat/contactus-shared';

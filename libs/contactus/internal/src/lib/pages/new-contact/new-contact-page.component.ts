@@ -27,7 +27,7 @@ import {
   ContactRole,
   ContactToContactRelation,
   NewContactBaseDboAndSpaceRef,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { emptySpaceRef } from '@sneat/core';
 import {
   SpaceBaseComponent,

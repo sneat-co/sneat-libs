@@ -1,5 +1,5 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { IContactContext } from '@sneat/contactus-core';
+import { IContactContext } from '@sneat/extension-contactus-contract';
 import { ContactEmailsComponent } from './contact-emails.component';
 import { ContactPhonesComponent } from './contact-phones.component';
 

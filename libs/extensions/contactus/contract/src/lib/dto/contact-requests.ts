@@ -1,8 +1,8 @@
 import { IPersonNames } from '@sneat/auth-models';
-import { ContactCommChannelType } from '@sneat/contactus-core';
-import { IAddress } from '@sneat/contactus-core';
 import { AgeGroupID, Gender } from '@sneat/core';
 import { ISpaceRequest } from '@sneat/space-models';
+import { ContactCommChannelType } from './contact-base';
+import { IAddress } from './address';
 
 export interface IContactRequest extends ISpaceRequest {
   readonly contactID: string;

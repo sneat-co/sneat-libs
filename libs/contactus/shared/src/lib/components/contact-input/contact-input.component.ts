@@ -25,7 +25,7 @@ import {
   IContactBrief,
   IContactDbo,
   IContactContext,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { IContactSelectorOptions } from '../contacts-selector/contacts-selector.interfaces';

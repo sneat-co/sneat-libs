@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { SneatUserService } from '@sneat/auth-core';
-import { IContactusSpaceDboAndID } from '@sneat/contactus-core';
+import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { ContactusSpaceService } from './contactus-space.service';
 import { ErrorLogger } from '@sneat/core';
 import { Observable, Subject, Subscription, takeUntil } from 'rxjs';

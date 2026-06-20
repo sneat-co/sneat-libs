@@ -7,11 +7,9 @@ import {
   signal,
 } from '@angular/core';
 import { DateInputComponent } from '@sneat/components';
-import { IContactContext } from '@sneat/contactus-core';
-import {
-  ContactService,
-  IUpdateContactRequest,
-} from '@sneat/contactus-services';
+import { IContactContext } from '@sneat/extension-contactus-contract';
+import { ContactService } from '@sneat/contactus-services';
+import { IUpdateContactRequest } from '@sneat/extension-contactus-contract';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 
 @Component({

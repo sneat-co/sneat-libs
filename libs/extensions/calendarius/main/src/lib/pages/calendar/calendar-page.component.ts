@@ -29,7 +29,7 @@ import {
   SpaceComponentBaseParams,
   SpacePageTitleComponent,
 } from '@sneat/space-components';
-import { IMemberContext } from '@sneat/contactus-core';
+import { IMemberContext } from '@sneat/extension-contactus-contract';
 import {
   CalendarComponent,
   CalendarTab,

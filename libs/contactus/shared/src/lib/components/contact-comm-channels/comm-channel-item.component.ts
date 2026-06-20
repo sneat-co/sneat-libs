@@ -20,12 +20,12 @@ import {
 import {
   ContactCommChannelType,
   IContactCommChannelProps,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
+import { ContactService } from '@sneat/contactus-services';
 import {
-  ContactService,
   IContactCommChannelRequest,
   IUpdateContactCommChannelRequest,
-} from '@sneat/contactus-services';
+} from '@sneat/extension-contactus-contract';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 
 export interface ICommChannelListItem extends IContactCommChannelProps {

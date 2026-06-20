@@ -23,7 +23,7 @@ import {
   IContactusSpaceDboAndID,
   IContactWithBrief,
   IContactWithBriefAndSpace,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactTitlePipe } from '../../pipes';
 import { ContactsListComponent } from '../contacts-list';
 import { ContactsAsBadgesComponent } from '../members-as-badges';

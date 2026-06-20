@@ -38,7 +38,7 @@ import {
   IPersonRequirements,
   IPhone,
   IRelatedPerson,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import {
   getRelatedItemIDs,
   IRelatedItem,

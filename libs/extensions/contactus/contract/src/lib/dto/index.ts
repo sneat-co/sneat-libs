@@ -12,3 +12,4 @@ export * from './contact2item';
 export * from './contact-group-brief';
 export * from './contact-types';
 export * from './member-types';
+export * from './contact-requests';

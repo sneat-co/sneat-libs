@@ -13,7 +13,7 @@ import {
   MemberRelationshipOther,
   MemberRelationshipUndisclosed,
   relationshipTitle,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { AgeGroupID } from '@sneat/core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { IRelatedChange, IUpdateRelatedRequest } from '@sneat/space-models';

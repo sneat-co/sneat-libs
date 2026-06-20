@@ -6,7 +6,7 @@ import {
   signal,
   computed,
 } from '@angular/core';
-import { IContactusSpaceDboAndID } from '@sneat/contactus-core';
+import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { ContactusSpaceService } from '@sneat/contactus-services';
 import { UiState } from '@sneat/dto';
 import { WithSpaceInput } from '@sneat/space-services';

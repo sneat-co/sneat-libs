@@ -48,7 +48,7 @@ Scaffold empty `@sneat/extension-contactus-contract`, `@sneat/extension-contactu
 
 **Verifies:** extension-library-architecture#ac:contract-lib-runtime-light, extension-library-architecture#ac:di-token-inversion
 **Depends-On:** 2
-**Status:** pending
+**Status:** done
 
 Move interfaces/DTOs/enums from `contactus-core` (and types stranded in `-shared`/`-services`, e.g. `PersonTitle`, `MemberGroup`, `IUpdateContactRequest`) into `extension-contactus-contract`, and define the `InjectionToken`s + interfaces for the cross-extension services — at minimum `ContactService` and `ContactusSpaceService` (the ×29 / ×16 consumers) — keeping the lib runtime-light (no heavy `@sneat/*` peers). Repoint every reference repo-wide (contactus internals, `calendarius`, `app`, `space-*`) to the new contract import, and delete the moved symbols from `contactus-core`.
 

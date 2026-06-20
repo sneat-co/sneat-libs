@@ -16,7 +16,7 @@ import {
   ContactRole,
   IContactGroupDbo,
   IContactRoleWithIdAndBrief,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { SneatBaseComponent } from '@sneat/ui';
 
 @Component({

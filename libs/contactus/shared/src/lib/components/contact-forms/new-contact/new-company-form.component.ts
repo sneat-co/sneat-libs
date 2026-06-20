@@ -31,7 +31,7 @@ import {
   IContactContext,
   ICreateContactCompanyRequest,
   IContactWithOptionalDbo,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactService } from '@sneat/contactus-services';
 import { LocationFormComponent } from '../location-form';
 import { NewContactFormBaseComponent } from './new-contact-form-base.component';

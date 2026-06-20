@@ -20,7 +20,7 @@ import {
   addSpace,
   IContactusSpaceDboAndID,
   IContactWithBrief,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { excludeUndefined } from '@sneat/core';
 import { hasRelated } from '@sneat/dto';
 import { WithSpaceInput } from '@sneat/space-services';

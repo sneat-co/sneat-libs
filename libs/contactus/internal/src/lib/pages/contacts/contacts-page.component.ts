@@ -29,7 +29,7 @@ import {
   addSpace,
   ContactRole,
   IContactWithCheck,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import {
   SpacePageTitleComponent,
   SpaceItemsBaseComponent,

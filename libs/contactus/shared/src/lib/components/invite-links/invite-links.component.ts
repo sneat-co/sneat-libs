@@ -10,7 +10,7 @@ import {
 import { ContactusNavService } from '@sneat/contactus-services';
 import { IIdAndOptionalDbo } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
-import { IContactusSpaceDbo } from '@sneat/contactus-core';
+import { IContactusSpaceDbo } from '@sneat/extension-contactus-contract';
 import { SpaceNavService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
 import { Subscription } from 'rxjs';

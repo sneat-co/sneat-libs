@@ -8,7 +8,7 @@ import {
   IonLabel,
 } from '@ionic/angular/standalone';
 import { defaultFamilyMemberExtensions, ISneatExtension } from '@sneat/core';
-import { IContactWithBrief } from '@sneat/contactus-core';
+import { IContactWithBrief } from '@sneat/extension-contactus-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 

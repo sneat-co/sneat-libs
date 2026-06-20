@@ -31,7 +31,7 @@ import {
 } from '@ionic/angular/standalone';
 import { CountrySelectorComponent, ISaveEvent } from '@sneat/components';
 import { excludeUndefined } from '@sneat/core';
-import { IAddress } from '@sneat/contactus-core';
+import { IAddress } from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { createSetFocusToInput } from '@sneat/ui';
 

@@ -31,7 +31,7 @@ import {
   IContactWithBrief,
   IContactWithCheck,
   isContactPassFilter,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactNavService } from '@sneat/contactus-services';
 import { ISpaceContext } from '@sneat/space-models';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';

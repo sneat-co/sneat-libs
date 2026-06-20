@@ -1,7 +1,7 @@
 import {
   IContactWithBriefAndSpace,
   MemberGroupType,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 
 export interface MemberGroup {
   readonly id: MemberGroupType;

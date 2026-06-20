@@ -18,7 +18,7 @@ import {
   MemberGroupTypeKids,
   MemberGroupTypeOther,
   MemberGroupTypePets,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { MembersByRoleComponent } from '../members-by-role/members-by-role.component';

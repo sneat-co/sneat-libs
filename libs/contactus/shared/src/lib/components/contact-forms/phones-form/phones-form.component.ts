@@ -20,7 +20,7 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';
-import { IPhone } from '@sneat/contactus-core';
+import { IPhone } from '@sneat/extension-contactus-contract';
 
 type PhoneType = 'personal' | 'mobile' | 'work' | 'fax' | 'landline';
 

@@ -20,7 +20,7 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';
-import { IEmail } from '@sneat/contactus-core';
+import { IEmail } from '@sneat/extension-contactus-contract';
 
 type EmailType = 'personal' | 'work';
 

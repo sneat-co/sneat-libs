@@ -17,7 +17,7 @@ import {
   addSpace,
   IContactWithBrief,
   IContactWithCheck,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import {
   computeSpaceIdFromSpaceRef,
   computeSpaceRefFromSpaceContext,

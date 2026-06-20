@@ -6,7 +6,7 @@ import {
   computed,
 } from '@angular/core';
 import { IonCard } from '@ionic/angular/standalone';
-import { IContactusSpaceDbo, IContactWithBrief } from '@sneat/contactus-core';
+import { IContactusSpaceDbo, IContactWithBrief } from '@sneat/extension-contactus-contract';
 import { ISpaceContext, zipMapBriefsWithIDs } from '@sneat/space-models';
 import { MembersCardHeaderComponent } from '../members-card-header/members-card-header.component';
 import { MembersListComponent } from '../members-list';

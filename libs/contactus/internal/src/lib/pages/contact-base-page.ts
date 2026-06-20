@@ -7,7 +7,7 @@ import {
   IContactBrief,
   IContactDbo,
   IContactContext,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { SpaceItemPageBaseComponent } from '@sneat/space-components';
 import { Observable, takeUntil, throwError } from 'rxjs';
 

@@ -1,5 +1,5 @@
 import { Directive, EventEmitter, input, Output } from '@angular/core';
-import { NewContactBaseDboAndSpaceRef } from '@sneat/contactus-core';
+import { NewContactBaseDboAndSpaceRef } from '@sneat/extension-contactus-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 
 @Directive()

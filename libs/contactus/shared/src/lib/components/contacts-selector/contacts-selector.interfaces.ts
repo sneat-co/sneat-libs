@@ -3,7 +3,7 @@ import {
   ContactType,
   IContactContext,
   IContactWithBriefAndSpace,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ISpaceContext } from '@sneat/space-models';
 import { ISelectorOptions } from '@sneat/ui';
 

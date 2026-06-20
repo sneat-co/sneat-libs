@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { IonCheckbox, IonItem, IonSpinner } from '@ionic/angular/standalone';
 import { PersonNamesPipe } from '@sneat/auth-ui';
-import { IContactWithBrief, IContactWithCheck } from '@sneat/contactus-core';
+import { IContactWithBrief, IContactWithCheck } from '@sneat/extension-contactus-contract';
 
 interface IItemWithEvent<T> {
   event: Event;

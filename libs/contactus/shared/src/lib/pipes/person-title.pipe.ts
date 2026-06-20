@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { personNames } from '@sneat/auth-ui';
 import { IIdAndOptionalBriefAndOptionalDbo } from '@sneat/core';
-import { IPerson, IPersonBrief } from '@sneat/contactus-core';
+import { IPerson, IPersonBrief } from '@sneat/extension-contactus-contract';
 
 @Pipe({ name: 'personTitle' })
 export class PersonTitle implements PipeTransform {

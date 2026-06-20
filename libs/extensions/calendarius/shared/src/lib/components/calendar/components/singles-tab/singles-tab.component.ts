@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
-import { IContactusSpaceDboAndID } from '@sneat/contactus-core';
+import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { ISlotUIEvent } from '@sneat/extension-calendarius-core';
 import { IHappeningContext } from '@sneat/extension-calendarius-core';
 import { WithSpaceInput } from '@sneat/space-services';

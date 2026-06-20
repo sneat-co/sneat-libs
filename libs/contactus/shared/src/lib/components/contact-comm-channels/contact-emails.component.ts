@@ -4,7 +4,7 @@ import {
   computed,
   input,
 } from '@angular/core';
-import { IContactContext } from '@sneat/contactus-core';
+import { IContactContext } from '@sneat/extension-contactus-contract';
 import {
   CommChannelsListComponent,
   importsForChannelsListComponent,

@@ -23,7 +23,7 @@ import {
   IContactRoleWithIdAndOptionalBrief,
   NewContactBaseDboAndSpaceRef,
   ICreateContactPersonRequest,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import {
   ContactGroupService,
   ContactRoleService,

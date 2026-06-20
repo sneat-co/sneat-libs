@@ -1,4 +1,4 @@
-import { IContactContext } from '@sneat/contactus-core';
+import { IContactContext } from '@sneat/extension-contactus-contract';
 import { ContactService } from '@sneat/contactus-services';
 import { ContactBasePage } from '../../pages/contact-base-page';
 

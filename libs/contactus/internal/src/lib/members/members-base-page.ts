@@ -3,7 +3,7 @@ import { ContactusModuleBaseComponent } from '@sneat/contactus-shared';
 import { IIdAndBriefAndOptionalDbo } from '@sneat/core';
 import { isSpaceSupportsMemberGroups } from '@sneat/dto';
 import { ContactusSpaceService } from '@sneat/contactus-services';
-import { IContactBrief, IContactDbo } from '@sneat/contactus-core';
+import { IContactBrief, IContactDbo } from '@sneat/extension-contactus-contract';
 
 export abstract class MembersBasePage extends ContactusModuleBaseComponent {
   public members?: readonly IIdAndBriefAndOptionalDbo<

@@ -15,7 +15,7 @@ import {
   IonSpinner,
   IonText,
 } from '@ionic/angular/standalone';
-import { IContactusSpaceDboAndID } from '@sneat/contactus-core';
+import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { IHappeningContext } from '@sneat/extension-calendarius-core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';

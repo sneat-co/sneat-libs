@@ -11,7 +11,7 @@ import {
 import {
   ContactCommChannelType,
   IContactCommChannelProps,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { SneatBaseComponent } from '@sneat/ui';
 import { CommChannelFormComponent } from './comm-channel-form.component';
 import {

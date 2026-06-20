@@ -6,7 +6,7 @@ import {
   IContactRequest,
   IUpdateContactRequest,
   ISetContactsStatusRequest,
-} from './contact';
+} from './contact-requests';
 
 describe('Contact DTO Validators', () => {
   describe('validateContactRequest', () => {

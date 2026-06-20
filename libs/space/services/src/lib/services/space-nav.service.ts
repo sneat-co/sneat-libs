@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Params } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { AnalyticsService, IAnalyticsService, IIdAndBrief, ISpaceRef } from '@sneat/core';
-import { IMemberBrief } from '@sneat/contactus-core';
+import { IMemberBrief } from '@sneat/extension-contactus-contract';
 
 type NavigationOptions = NonNullable<
   Parameters<NavController['navigateRoot']>[1]

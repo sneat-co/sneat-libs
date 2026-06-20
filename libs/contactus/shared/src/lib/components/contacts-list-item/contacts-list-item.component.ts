@@ -32,7 +32,7 @@ import {
   ContactRole,
   IContactWithBrief,
   IContactWithCheck,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactService } from '@sneat/contactus-services';
 import { IRelatedTo } from '@sneat/dto';
 import { ISpaceContext } from '@sneat/space-models';

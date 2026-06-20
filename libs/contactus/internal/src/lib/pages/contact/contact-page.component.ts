@@ -13,12 +13,14 @@ import {
 import { ISaveEvent } from '@sneat/components';
 import { ContactDetailsComponent, PersonTitle } from '@sneat/contactus-shared';
 import { SneatNavService } from '@sneat/core';
-import { IAddress } from '@sneat/contactus-core';
+import {
+  IAddress,
+  IContactRequest,
+  IUpdateContactRequest,
+} from '@sneat/extension-contactus-contract';
 import {
   ContactService,
   ContactusServicesModule,
-  IContactRequest,
-  IUpdateContactRequest,
 } from '@sneat/contactus-services';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';

@@ -26,7 +26,7 @@ import {
   ContactusSpaceService,
 } from '@sneat/contactus-services';
 import { FamilyMembersComponent, MemberGroup } from '@sneat/contactus-shared';
-import { IMemberGroupContext } from '@sneat/contactus-core';
+import { IMemberGroupContext } from '@sneat/extension-contactus-contract';
 import { isSpaceSupportsMemberGroups } from '@sneat/dto';
 import {
   SpaceComponentBaseParams,

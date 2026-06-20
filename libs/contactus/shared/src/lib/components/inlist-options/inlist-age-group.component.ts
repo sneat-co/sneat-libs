@@ -1,8 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
-import {
-  ContactService,
-  IUpdateContactRequest,
-} from '@sneat/contactus-services';
+import { ContactService } from '@sneat/contactus-services';
+import { IUpdateContactRequest } from '@sneat/extension-contactus-contract';
 import { AgeGroupID } from '@sneat/core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';

@@ -24,7 +24,7 @@ import {
   IContactusSpaceDboAndID,
   NewContactBaseDboAndSpaceRef,
   RoleSpaceMember,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { AgeGroupID } from '@sneat/core';
 import { SpacePageBaseComponent } from '@sneat/space-components';
 import { SpaceServiceModule } from '@sneat/space-services';

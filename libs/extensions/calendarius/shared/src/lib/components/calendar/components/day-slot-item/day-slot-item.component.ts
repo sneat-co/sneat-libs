@@ -17,7 +17,7 @@ import {
   IonLabel,
   IonText,
 } from '@ionic/angular/standalone';
-import { IContactusSpaceDboAndID } from '@sneat/contactus-core';
+import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { ContactusSpaceService } from '@sneat/contactus-services';
 import { ContactsSelectorModule } from '@sneat/contactus-shared';
 import { WithSpaceInput } from '@sneat/space-services';

@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { personNames } from '@sneat/auth-ui';
 import { IIdAndOptionalBriefAndOptionalDbo } from '@sneat/core';
-import { IContactBrief, IContactDbo } from '@sneat/contactus-core';
+import { IContactBrief, IContactDbo } from '@sneat/extension-contactus-contract';
 
 export function getContactTitle(
   m: IIdAndOptionalBriefAndOptionalDbo<IContactBrief, IContactDbo>,

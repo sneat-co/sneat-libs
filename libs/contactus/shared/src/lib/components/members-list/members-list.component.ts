@@ -35,7 +35,7 @@ import { ContactService, ContactusNavService } from '@sneat/contactus-services';
 import {
   IContactWithBrief,
   IContactWithBriefAndSpace,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { SpaceNavService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
 import { ClassName } from '@sneat/ui';

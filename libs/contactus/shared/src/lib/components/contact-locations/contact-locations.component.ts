@@ -22,7 +22,7 @@ import {
   IContactDbo,
   IContactWithBrief,
   IContactWithCheck,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ISpaceContext } from '@sneat/space-models';
 import { ContactsListComponent } from '../contacts-list';
 

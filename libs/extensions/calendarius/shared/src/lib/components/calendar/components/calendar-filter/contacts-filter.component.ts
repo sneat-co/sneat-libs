@@ -26,7 +26,7 @@ import { ContactTitlePipe } from '@sneat/contactus-shared';
 import {
   IContactusSpaceDbo,
   IContactWithBriefAndSpace,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import {
   ContactusSpaceContextService,
   ContactusSpaceService,

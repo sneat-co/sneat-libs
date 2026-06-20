@@ -15,7 +15,7 @@ import {
   ContactRolePet,
   NewContactBaseDboAndSpaceRef,
   RoleSpaceMember,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ClassName } from '@sneat/ui';
 import { Observable } from 'rxjs';
 import { IContactAddEventArgs } from '../../contact-events';
@@ -26,7 +26,7 @@ import {
   NewPersonFormComponent,
 } from './new-person-form.component';
 
-import { ContactTypeAnimal } from '@sneat/contactus-core';
+import { ContactTypeAnimal } from '@sneat/extension-contactus-contract';
 import { NewPetFormComponent } from './new-pet-form.component';
 
 type NewContactFormTab = 'person' | 'pet' | 'company' | 'location';

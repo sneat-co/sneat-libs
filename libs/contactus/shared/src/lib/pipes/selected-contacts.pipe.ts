@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import {
   IContactBrief,
   IContactWithBriefAndSpace,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 
 @Pipe({ name: 'selectedContacts' })
 export class SelectedContactsPipe implements PipeTransform {

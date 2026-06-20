@@ -17,7 +17,7 @@ import {
 import {
   IContactWithBrief,
   IContactWithBriefAndSpace,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { PersonTitle } from '../../pipes';
 
 interface IContactWithState extends IContactWithBriefAndSpace {

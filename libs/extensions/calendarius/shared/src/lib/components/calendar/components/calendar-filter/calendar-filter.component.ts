@@ -19,7 +19,7 @@ import {
   IonRow,
 } from '@ionic/angular/standalone';
 import { ContactTitlePipe } from '@sneat/contactus-shared';
-import { IContactWithBriefAndSpace } from '@sneat/contactus-core';
+import { IContactWithBriefAndSpace } from '@sneat/extension-contactus-contract';
 import { WeekdayCode2 } from '@sneat/extension-calendarius-core';
 import { ISpaceContext } from '@sneat/space-models';
 import {

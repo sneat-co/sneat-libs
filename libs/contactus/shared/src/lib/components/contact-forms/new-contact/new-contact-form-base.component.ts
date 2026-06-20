@@ -10,7 +10,7 @@ import {
   IEmail,
   IPhone,
   NewContactBaseDboAndSpaceRef,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactFormBaseComponent } from '../contact-form-base.component';
 
 @Directive()

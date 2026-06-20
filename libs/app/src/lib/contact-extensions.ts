@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { ContactRole, ContactType } from '@sneat/contactus-core';
+import { ContactRole, ContactType } from '@sneat/extension-contactus-contract';
 
 export interface IContactRole {
   id: ContactRole;

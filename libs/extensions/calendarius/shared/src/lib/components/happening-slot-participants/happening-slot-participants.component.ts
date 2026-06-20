@@ -13,7 +13,7 @@ import { PersonNamesPipe } from '@sneat/auth-ui';
 import {
   IContactWithBrief,
   IContactWithBriefAndSpace,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactusSpaceService } from '@sneat/contactus-services';
 import { getRelatedItemByIDs, getRelatedItems } from '@sneat/dto';
 import { ISlotUIContext } from '@sneat/extension-calendarius-core';

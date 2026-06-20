@@ -17,7 +17,7 @@ import {
   ContactusServicesModule,
 } from '@sneat/contactus-services';
 import { ContactDetailsComponent } from '@sneat/contactus-shared';
-import { MemberRelationship } from '@sneat/contactus-core';
+import { MemberRelationship } from '@sneat/extension-contactus-contract';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { MemberBasePage } from '../member-base-page';

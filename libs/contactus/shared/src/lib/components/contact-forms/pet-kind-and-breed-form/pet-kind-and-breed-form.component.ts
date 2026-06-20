@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { IonCard, IonItemDivider, IonLabel } from '@ionic/angular/standalone';
 import { ClassName, ISelectItem, SelectFromListComponent } from '@sneat/ui';
-import { ContactTypeAnimal, PetKind } from '@sneat/contactus-core';
+import { ContactTypeAnimal, PetKind } from '@sneat/extension-contactus-contract';
 import { EditContactFormBaseComponent } from '../contact-form-base.component';
 
 @Component({

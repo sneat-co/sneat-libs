@@ -12,7 +12,7 @@ import {
   IonItem,
   IonLabel,
 } from '@ionic/angular/standalone';
-import { IContactusSpaceDbo } from '@sneat/contactus-core';
+import { IContactusSpaceDbo } from '@sneat/extension-contactus-contract';
 import { IIdAndOptionalDbo } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { SpaceNavService } from '@sneat/space-services';

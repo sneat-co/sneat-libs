@@ -11,7 +11,7 @@ import {
   ContactRole,
   ContactType,
   IContactContext,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
 import { ContactsSelectorService } from '../contacts-selector/contacts-selector.service';

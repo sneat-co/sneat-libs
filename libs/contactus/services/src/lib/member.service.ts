@@ -6,7 +6,7 @@ import {
   IAddSpaceMemberResponse,
   ICreateSpaceMemberRequest,
   validateCreateSpaceMemberRequest,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactService } from './contact-service';
 import { Observable } from 'rxjs';
 

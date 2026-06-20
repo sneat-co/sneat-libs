@@ -25,7 +25,6 @@ import {
   ModalController,
 } from '@ionic/angular/standalone';
 import { SneatUserService } from '@sneat/auth-core';
-import { IUpdateContactRequest } from '@sneat/contactus-services';
 import { Gender, IIdAndBriefAndOptionalDbo } from '@sneat/core';
 import {
   ContactType,
@@ -33,7 +32,8 @@ import {
   IContactDbo,
   IContactContext,
   IContactWithOptionalDbo,
-} from '@sneat/contactus-core';
+  IUpdateContactRequest,
+} from '@sneat/extension-contactus-contract';
 import {
   getRelatedItemByKey,
   IRelatedTo,

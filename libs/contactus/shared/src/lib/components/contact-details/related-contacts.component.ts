@@ -18,7 +18,7 @@ import {
   IonLabel,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { addSpace, IContactWithCheck } from '@sneat/contactus-core';
+import { addSpace, IContactWithCheck } from '@sneat/extension-contactus-contract';
 import { ContactusSpaceService } from '@sneat/contactus-services';
 import { listItemAnimations } from '@sneat/core';
 import { ContactsListItemComponent } from '../contacts-list-item/contacts-list-item.component';

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SelectorBaseService } from '@sneat/ui';
-import { IContactWithBriefAndSpace } from '@sneat/contactus-core';
+import { IContactWithBriefAndSpace } from '@sneat/extension-contactus-contract';
 import { ContactsSelectorComponent } from './contacts-selector.component';
 import { IContactSelectorOptions } from './contacts-selector.interfaces';
 

@@ -1,7 +1,7 @@
 import { Component, computed, Input, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { IonItem, IonItemSliding, IonLabel } from '@ionic/angular/standalone';
-import { addSpace, IContactWithCheck } from '@sneat/contactus-core';
+import { addSpace, IContactWithCheck } from '@sneat/extension-contactus-contract';
 import { ISpaceContext } from '@sneat/space-models';
 import { ContactsListItemComponent } from '../contacts-list-item/contacts-list-item.component';
 

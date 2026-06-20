@@ -9,7 +9,7 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { LongMonthNamePipe } from '@sneat/components';
-import { IContactWithBrief } from '@sneat/contactus-core';
+import { IContactWithBrief } from '@sneat/extension-contactus-contract';
 import { SelectedContactsPipe } from '@sneat/contactus-shared';
 import { getRelatedItemIDs } from '@sneat/dto';
 import { WdToWeekdayPipe } from '@sneat/extension-calendarius-core';

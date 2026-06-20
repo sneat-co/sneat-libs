@@ -1,7 +1,7 @@
 import {
   ContactGroupWithIdAndBrief,
   IContactRoleWithIdAndBrief,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 
 export interface IContactAddEventArgs {
   event: Event;

@@ -19,11 +19,9 @@ import {
   IonSelectOption,
   IonTextarea,
 } from '@ionic/angular/standalone';
-import { ContactCommChannelType, IContactContext } from '@sneat/contactus-core';
-import {
-  ContactService,
-  IAddContactCommChannelRequest,
-} from '@sneat/contactus-services';
+import { ContactCommChannelType, IContactContext } from '@sneat/extension-contactus-contract';
+import { ContactService } from '@sneat/contactus-services';
+import { IAddContactCommChannelRequest } from '@sneat/extension-contactus-contract';
 import {
   ClassName,
   ISelectItem,

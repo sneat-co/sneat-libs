@@ -12,7 +12,7 @@ import {
   ContactType,
   IContactWithBrief,
   ICreateContactBasicRequest,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ContactService } from '@sneat/contactus-services';
 import { ISpaceContext } from '@sneat/space-models';

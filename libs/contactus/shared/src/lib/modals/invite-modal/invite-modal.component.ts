@@ -39,7 +39,7 @@ import {
   ICreatePersonalInviteRequest,
   ICreatePersonalInviteResponse,
   InviteChannel,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import {
   ContactTitlePipe,
   getContactTitle,

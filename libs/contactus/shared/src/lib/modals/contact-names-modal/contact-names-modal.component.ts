@@ -17,10 +17,8 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { IPersonNames } from '@sneat/auth-models';
-import {
-  ContactService,
-  IUpdateContactRequest,
-} from '@sneat/contactus-services';
+import { ContactService } from '@sneat/contactus-services';
+import { IUpdateContactRequest } from '@sneat/extension-contactus-contract';
 import { NamesFormComponent } from '../../components/contact-forms/person-forms/names-form';
 import { ClassName, SneatBaseModalComponent } from '@sneat/ui';
 

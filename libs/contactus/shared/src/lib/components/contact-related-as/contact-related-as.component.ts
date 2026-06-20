@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { IContactContext } from '@sneat/contactus-core';
+import { IContactContext } from '@sneat/extension-contactus-contract';
 
 @Component({
   selector: 'sneat-contact-related-as',

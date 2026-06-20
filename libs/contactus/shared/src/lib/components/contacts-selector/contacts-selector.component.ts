@@ -53,7 +53,7 @@ import {
   ContactIdAndDboWithSpaceRef,
   IContactDbo,
   NewContactBaseDboAndSpaceRef,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { ContactusSpaceService } from '@sneat/contactus-services';
 import {
   computeSpaceRefFromSpaceContext,

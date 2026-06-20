@@ -34,7 +34,7 @@ import {
   IContactWithCheck,
   IContactWithBriefAndSpace,
   IMemberGroupContext,
-} from '@sneat/contactus-core';
+} from '@sneat/extension-contactus-contract';
 import { defaultFamilyContactGroups } from '@sneat/contactus-services';
 import { listItemAnimations } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';

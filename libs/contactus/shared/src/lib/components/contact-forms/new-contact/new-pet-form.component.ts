@@ -6,7 +6,7 @@ import {
   IonItem,
   IonLabel,
 } from '@ionic/angular/standalone';
-import { NewContactBaseDboAndSpaceRef } from '@sneat/contactus-core';
+import { NewContactBaseDboAndSpaceRef } from '@sneat/extension-contactus-contract';
 import { ClassName } from '@sneat/ui';
 import { PetKindAndBreedFormComponent } from '../pet-kind-and-breed-form/pet-kind-and-breed-form.component';
 import { NewContactFormBaseComponent } from './new-contact-form-base.component';
