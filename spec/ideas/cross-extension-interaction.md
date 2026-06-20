@@ -1,14 +1,14 @@
 ---
 format: https://specscore.md/idea-specification
-status: Approved
+status: Specified
 ---
 
 # Idea: Cross-extension interaction without circular dependencies
 
-**Status:** Approved
+**Status:** Specified
 **Date:** 2026-06-19
 **Owner:** alexander.trakhimenok
-**Promotes To:** —
+**Promotes To:** extension-library-architecture
 **Supersedes:** —
 **Related Ideas:** —
 
