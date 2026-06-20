@@ -216,30 +216,6 @@ importers:
         specifier: 2.8.1
         version: 2.8.1
 
-  libs/contactus/core:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/contactus/internal:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/contactus/services:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/contactus/shared:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
   libs/core:
     dependencies:
       tslib:
@@ -264,19 +240,37 @@ importers:
         specifier: 2.8.1
         version: 2.8.1
 
-  libs/extensions/calendarius/core:
+  libs/extensions/calendarius/contract:
     dependencies:
       tslib:
         specifier: 2.8.1
         version: 2.8.1
 
-  libs/extensions/calendarius/main:
+  libs/extensions/calendarius/internal:
     dependencies:
       tslib:
         specifier: 2.8.1
         version: 2.8.1
 
   libs/extensions/calendarius/shared:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/extensions/contactus/contract:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/extensions/contactus/internal:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/extensions/contactus/shared:
     dependencies:
       tslib:
         specifier: 2.8.1
