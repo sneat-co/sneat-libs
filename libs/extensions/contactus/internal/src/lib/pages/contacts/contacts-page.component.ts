@@ -23,7 +23,7 @@ import {
   ContactsComponent,
   ContactsComponentCommand,
   ContactsComponentCommandName,
-} from '@sneat/contactus-shared';
+} from '@sneat/extension-contactus-shared';
 import { setHrefQueryParam } from '@sneat/core';
 import {
   addSpace,

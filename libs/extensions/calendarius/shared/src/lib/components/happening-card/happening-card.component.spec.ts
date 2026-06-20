@@ -14,7 +14,7 @@ import {
 } from '@sneat/core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
-import { ContactsSelectorService } from '@sneat/contactus-shared';
+import { ContactsSelectorService } from '@sneat/extension-contactus-shared';
 import { ClassName } from '@sneat/ui';
 import { of } from 'rxjs';
 import { HappeningService } from '../../services/happening.service';

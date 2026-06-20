@@ -29,7 +29,7 @@ import {
 } from '@ionic/angular/standalone';
 import { namesToUrlParams } from '@sneat/auth-models';
 import { MemberService } from '../../../services';
-import { PersonWizardComponent } from '@sneat/contactus-shared';
+import { PersonWizardComponent } from '@sneat/extension-contactus-shared';
 import { formNexInAnimation } from '@sneat/core';
 import { personNames } from '@sneat/auth-ui';
 import { RoutingState } from '@sneat/core';
@@ -43,7 +43,7 @@ import {
 } from '@sneat/extension-contactus-contract';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { WithNewContactInput } from '@sneat/contactus-shared';
+import { WithNewContactInput } from '@sneat/extension-contactus-shared';
 import { ClassName } from '@sneat/ui';
 
 @Component({

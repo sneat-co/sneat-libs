@@ -1,5 +1,5 @@
 import { SpaceMemberType } from '@sneat/auth-models';
-import { ContactusModuleBaseComponent } from '@sneat/contactus-shared';
+import { ContactusModuleBaseComponent } from '@sneat/extension-contactus-shared';
 import { IIdAndBriefAndOptionalDbo } from '@sneat/core';
 import { isSpaceSupportsMemberGroups } from '@sneat/dto';
 import { ContactusSpaceService } from '../services';

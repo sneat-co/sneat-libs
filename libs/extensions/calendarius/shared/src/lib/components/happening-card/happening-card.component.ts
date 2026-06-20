@@ -10,14 +10,14 @@ import {
 } from '@ionic/angular/standalone';
 import { LongMonthNamePipe } from '@sneat/components';
 import { IContactWithBrief } from '@sneat/extension-contactus-contract';
-import { SelectedContactsPipe } from '@sneat/contactus-shared';
+import { SelectedContactsPipe } from '@sneat/extension-contactus-shared';
 import { getRelatedItemIDs } from '@sneat/dto';
 import { WdToWeekdayPipe } from '@sneat/extension-calendarius-core';
 import { ClassName } from '@sneat/ui';
 import { HappeningBaseComponent } from '../happening-base.component';
 import { IHappeningContactRequest } from '../../services/happening.service';
 import { HappeningSlotsComponent } from '../happening-slots/happening-slots.component';
-import { ContactsAsBadgesComponent } from '@sneat/contactus-shared';
+import { ContactsAsBadgesComponent } from '@sneat/extension-contactus-shared';
 
 @Component({
   styleUrls: ['happening-card.component.scss'],

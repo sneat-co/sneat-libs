@@ -11,7 +11,7 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { ISaveEvent } from '@sneat/components';
-import { ContactDetailsComponent, PersonTitle } from '@sneat/contactus-shared';
+import { ContactDetailsComponent, PersonTitle } from '@sneat/extension-contactus-shared';
 import { SneatNavService } from '@sneat/core';
 import {
   IAddress,

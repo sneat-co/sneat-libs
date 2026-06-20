@@ -18,7 +18,7 @@ import {
 import {
   InviteLinksComponent,
   NewPetFormComponent,
-} from '@sneat/contactus-shared';
+} from '@sneat/extension-contactus-shared';
 import {
   ContactType,
   IContactusSpaceDboAndID,

@@ -15,7 +15,7 @@ import {
   IContactWithBrief,
   IContactWithBriefAndSpace,
 } from '@sneat/extension-contactus-contract';
-import { ContactsSelectorService } from '@sneat/contactus-shared';
+import { ContactsSelectorService } from '@sneat/extension-contactus-shared';
 import { isoStringsToDate } from '@sneat/core';
 import { getRelatedItemIDs } from '@sneat/dto';
 import { IHappeningContext, WeekdayCode2 } from '@sneat/extension-calendarius-core';

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { ContactsAsBadgesComponent } from '@sneat/components';
-import { MembersSelectorModule } from '@sneat/contactus-shared';
+import { MembersSelectorModule } from '@sneat/extension-contactus-shared';
 import {
   CalendarNavServicesModule,
   HappeningServiceModule,

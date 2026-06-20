@@ -21,7 +21,7 @@ import {
   OptionalContactGroupIdAndBrief,
   OptionalContactRoleIdAndBrief,
   NewContactFormComponent,
-} from '@sneat/contactus-shared';
+} from '@sneat/extension-contactus-shared';
 import {
   ContactIdAndDboWithSpaceRef,
   ContactRole,

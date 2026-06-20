@@ -26,7 +26,7 @@ import {
   ContactsSelectorModule,
   ICheckChangedArgs,
   IContactSelectorProps,
-} from '@sneat/contactus-shared';
+} from '@sneat/extension-contactus-shared';
 import { AnalyticsService } from '@sneat/core';
 import {
   addRelatedItem,

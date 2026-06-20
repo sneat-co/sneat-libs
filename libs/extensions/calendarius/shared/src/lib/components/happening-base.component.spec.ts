@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular/standalone';
 import { ErrorLogger } from '@sneat/core';
 import { SpaceNavService } from '@sneat/space-services';
-import { ContactsSelectorService } from '@sneat/contactus-shared';
+import { ContactsSelectorService } from '@sneat/extension-contactus-shared';
 import { HappeningService } from '../services/happening.service';
 import { HappeningBaseComponentParams } from './happening-base.component';
 

@@ -11,12 +11,12 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { PersonTitle } from '@sneat/contactus-shared';
+import { PersonTitle } from '@sneat/extension-contactus-shared';
 import {
   ContactService,
   ContactusServicesModule,
 } from '../../../services';
-import { ContactDetailsComponent } from '@sneat/contactus-shared';
+import { ContactDetailsComponent } from '@sneat/extension-contactus-shared';
 import { MemberRelationship } from '@sneat/extension-contactus-contract';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';

@@ -22,13 +22,13 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';
-import { ContactTitlePipe } from '@sneat/contactus-shared';
+import { ContactTitlePipe } from '@sneat/extension-contactus-shared';
 import {
   CONTACTUS_SPACE_SERVICE,
   IContactusSpaceDbo,
   IContactWithBriefAndSpace,
 } from '@sneat/extension-contactus-contract';
-import { ContactusModuleBaseComponent } from '@sneat/contactus-shared';
+import { ContactusModuleBaseComponent } from '@sneat/extension-contactus-shared';
 import { SpaceModuleService } from '@sneat/space-services';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { ClassName } from '@sneat/ui';

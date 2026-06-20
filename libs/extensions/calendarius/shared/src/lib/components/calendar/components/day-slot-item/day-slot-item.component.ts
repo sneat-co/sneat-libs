@@ -18,7 +18,7 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
-import { ContactsSelectorModule } from '@sneat/contactus-shared';
+import { ContactsSelectorModule } from '@sneat/extension-contactus-shared';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import {

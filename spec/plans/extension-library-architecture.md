@@ -68,7 +68,7 @@ Move services (`ContactService`, `ContactusSpaceService`, `MemberService`, `Invi
 
 **Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:shared-lib-no-internal
 **Depends-On:** 4
-**Status:** pending
+**Status:** done
 
 Move the ~9 externally-consumed reusable units (`ContactDetailsComponent`, `PersonWizardComponent`, `ContactsAsBadgesComponent`, `FamilyMembersComponent`, `LocationFormComponent`, `MembersSelectorModule`, `ContactsSelectorModule`, `ContactTitlePipe`, `SelectedContactsPipe`) into `extension-contactus-shared`, refactoring each to obtain services via Task 3 contract tokens (zero `-internal` imports). Repoint consumer component imports to `extension-contactus-shared`, then drop the emptied `contactus-shared` and `contactus-internal` libs. `calendarius → contactus` is the cross-extension PoC: after this task it imports only contactus `-contract` + `-shared`, never `-internal`.
 

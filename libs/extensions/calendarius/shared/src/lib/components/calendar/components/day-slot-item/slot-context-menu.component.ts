@@ -36,7 +36,7 @@ import {
   ContactsSelectorModule,
   ContactsSelectorService,
   IContactSelectorOptions,
-} from '@sneat/contactus-shared';
+} from '@sneat/extension-contactus-shared';
 import { ISpaceContext, zipMapBriefsWithIDs } from '@sneat/space-models';
 import { NEVER, Observable } from 'rxjs';
 import {

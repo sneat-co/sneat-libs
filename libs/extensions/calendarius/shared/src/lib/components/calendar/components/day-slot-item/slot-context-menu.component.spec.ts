@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
-import { ContactsSelectorService } from '@sneat/contactus-shared';
+import { ContactsSelectorService } from '@sneat/extension-contactus-shared';
 import { SpaceNavService } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import { PopoverController } from '@ionic/angular/standalone';
