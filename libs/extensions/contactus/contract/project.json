@@ -1,0 +1,42 @@
+{
+  "name": "ext-contactus-contract",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/extensions/contactus/contract/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "outputs": [
+        "{workspaceRoot}/dist/libs/extensions/contactus/contract"
+      ],
+      "options": {
+        "project": "libs/extensions/contactus/contract/ng-package.json",
+        "tsConfig": "libs/extensions/contactus/contract/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/extensions/contactus/contract/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/extensions/contactus/contract"
+      ],
+      "options": {
+        "tsConfig": "libs/extensions/contactus/contract/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  },
+  "tags": [
+    "type:contract",
+    "ext:contactus"
+  ]
+}

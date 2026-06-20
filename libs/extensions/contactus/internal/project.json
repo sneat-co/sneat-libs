@@ -1,0 +1,42 @@
+{
+  "name": "ext-contactus-internal",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/extensions/contactus/internal/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "outputs": [
+        "{workspaceRoot}/dist/libs/extensions/contactus/internal"
+      ],
+      "options": {
+        "project": "libs/extensions/contactus/internal/ng-package.json",
+        "tsConfig": "libs/extensions/contactus/internal/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/extensions/contactus/internal/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/extensions/contactus/internal"
+      ],
+      "options": {
+        "tsConfig": "libs/extensions/contactus/internal/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  },
+  "tags": [
+    "type:internal",
+    "ext:contactus"
+  ]
+}

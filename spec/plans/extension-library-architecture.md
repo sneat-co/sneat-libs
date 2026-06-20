@@ -38,11 +38,11 @@ Create `feat/extension-library-architecture` off `origin/main`. Define the tier 
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition, extension-library-architecture#ac:lib-naming, extension-library-architecture#ac:internal-not-in-tsconfig-paths
 **Depends-On:** 1
-**Status:** pending
+**Status:** done
 
 Scaffold empty `@sneat/extension-contactus-contract`, `@sneat/extension-contactus-shared`, and `@sneat/extension-contactus-internal` libs (project.json with tier + `ext:contactus` tags, package.json, index). Add `paths` entries for `-contract` and `-shared` only; deliberately omit `-internal` from `tsconfig.base.json` `paths`.
 
-**Notes:** Edits `tsconfig.base.json` — run solo.
+**Notes:** Edits `tsconfig.base.json` — run solo. Status: done — libs scaffolded under `libs/extensions/contactus/`.
 
 ### Task 3: Contract cutover — move types + tokens, repoint all references
 
