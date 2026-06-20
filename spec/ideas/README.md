@@ -10,7 +10,7 @@ Pre-spec one-pagers. Each Idea is a lint-clean problem-direction-MVP one-pager t
 
 | Idea | Status | Date | Owner | Promotes To |
 |------|--------|------|-------|-------------|
-| [cross-extension-interaction](cross-extension-interaction.md) | Draft | 2026-06-19 | alexander.trakhimenok | — |
+| [cross-extension-interaction](cross-extension-interaction.md) | Approved | 2026-06-19 | alexander.trakhimenok | — |
 
 ## Open Questions
 

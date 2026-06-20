@@ -1,11 +1,11 @@
 ---
 format: https://specscore.md/idea-specification
-status: Draft
+status: Approved
 ---
 
 # Idea: Cross-extension interaction without circular dependencies
 
-**Status:** Draft
+**Status:** Approved
 **Date:** 2026-06-19
 **Owner:** alexander.trakhimenok
 **Promotes To:** —
@@ -36,16 +36,22 @@ Prior art: classic ports-and-adapters / dependency-inversion, Angular `Injection
 
 ## Recommended Direction
 
-Adopt one guiding rule: **extensions never depend *sideways* on each other's implementations; each extension exposes a small public *contract*, and other extensions call it only through that contract — which lives in a lib light enough to depend on safely.** Dependencies point at *contracts*, never at *implementations*, turning the graph into a DAG.
+Adopt one guiding rule: **extensions never depend *sideways* on each other's implementations; each extension exposes a small public *contract*, and other extensions call it only through that contract — which lives in a lib light enough to depend on safely.** Dependencies point at *contracts* (and *shared* public code), never at *internal implementations*, turning the graph into a DAG.
 
-**Recommended decomposition — two libs per extension (`*-contract` + `*-impl`):**
+**Recommended decomposition — three libs per extension (`*-contract` + `*-shared` + `*-internal`):**
 
-1. **Split every extension into a public `*-contract` lib and a private `*-impl` lib.**
-   - **`*-contract`** (the public API surface other extensions may depend on): pure TypeScript interfaces, DTO/model types, enums, and the Angular `InjectionToken`s for any behaviour the extension offers — **no** components, **no** service implementations, nothing that drags heavy `@sneat/*` runtime peers. Because it is runtime-light, any other extension can depend on it safely (type-only for the shapes; the token for runtime calls) with **no** prebuilt-bundle peer-resolution wall.
-   - **`*-impl`** (private): the services, components, dialogs and pages. No other extension may import it — only the extension itself and the app (at bootstrap) consume it.
-   - Cross-extension references therefore touch only the callee's `*-contract`. Example: `assetus-impl` depends on `contactus-contract` (for `IContactSelector` + `CONTACT_SELECTOR`), **never** on `contactus-impl`. The contract libs form their own DAG; there are no `impl → impl` edges, so no cycles and no fesm wall. (This is the user's "core contactus vs extended contactus" / "two libs per extension" instinct; `contactus` already partly has `-core`/`-services`/`-shared`/`-internal` tiers that can collapse into this contract/impl split. A finer 3-tier `*-core`/`*-services`/`*-ui` layering is a valid elaboration for a large extension — the load-bearing rule is simply *public contract vs private impl*.)
-2. **Dependency-inversion for runtime calls — the token lives in the provider's own `*-contract`.** The provider extension owns and publishes the `InjectionToken` + interface for what it offers (e.g. `contactus-contract` exports `CONTACT_SELECTOR` + `IContactSelector`). The provider's `*-impl` supplies the concrete implementation, wired by the app at bootstrap; the caller injects the interface and calls `selectContact()` without importing any provider implementation. No cycle, no fesm wall (the heavy dialog is lazy-loaded by the app, where peers resolve).
-3. **Enforce the rule mechanically with nx module-boundary tags** — tag projects `scope:extension-contract` vs `scope:extension-impl`; an extension's `*-impl` may depend on any `*-contract` (its own or another's), but a *runtime* import of another extension's `*-impl` is a lint error. This turns tribal knowledge into a CI gate.
+1. **Split every extension into three libs by two orthogonal axes — *runtime weight* (the fesm wall) and *visibility* (who may import).**
+   - **`extension-<name>-contract`** (public, runtime-light): pure TypeScript interfaces, DTO/model types, enums, and the Angular `InjectionToken`s for any behaviour the extension offers — **no** components, **no** service implementations, nothing that drags heavy `@sneat/*` runtime peers. Because it is runtime-light, any other extension can depend on it safely (type-only for the shapes; the token for runtime calls) with **no** prebuilt-bundle peer-resolution wall.
+   - **`extension-<name>-shared`** (public, reusable *implementation*): the reusable components, pipes, and services other extensions may consume. It is heavy (real Angular peers), so it is kept separate from `-contract` — a consumer that only needs a token must not be forced to load this bundle. **It may import any `-contract` but never any `-internal`** (see the rule below); when a shared component needs a service, it injects it through a token defined in a `-contract`, not by importing the implementation.
+   - **`extension-<name>-internal`** (private): the services, dialogs, pages and components that are this extension's own business. No other extension may import it — only the extension itself and the app (at bootstrap) consume it.
+   - Cross-extension references therefore touch only the callee's `-contract` or `-shared`. Example: `extension-assetus-internal` depends on `extension-contactus-contract` (for `IContactSelector` + `CONTACT_SELECTOR`), **never** on `extension-contactus-internal`. The contract libs form their own DAG; there are no `internal → internal` edges, so no cycles and no fesm wall.
+   - Naming rationale: `contract` names the runtime-light type/token surface; `shared` names reusable implementation (not UI-only — services live here too) and matches the existing `contactus-shared` dir; `internal` is the private tier and matches the existing `contactus-internal` dir. `shared` is preferred over `public` because `contract` is *also* public, so `public` would be ambiguous. Keeping `contract` separate from `shared` is load-bearing: folding them into one `public` lib reintroduces the fesm peer-resolution wall this whole idea exists to eliminate.
+2. **Dependency-inversion for runtime calls — the token lives in the provider's own `*-contract`.** The provider extension owns and publishes the `InjectionToken` + interface for what it offers (e.g. `extension-contactus-contract` exports `CONTACT_SELECTOR` + `IContactSelector`). The provider's `-shared`/`-internal` supplies the concrete implementation, wired by the app at bootstrap; the caller injects the interface and calls `selectContact()` without importing any provider implementation. No cycle, no fesm wall (the heavy dialog is lazy-loaded by the app, where peers resolve). The same inversion applies *within* an extension: a `-shared` component that needs `ContactService` injects it via a `-contract` token rather than importing `-internal`.
+3. **Enforce the rule mechanically with nx module-boundary tags.** nx 22 + `@nx/eslint-plugin` are already installed (no tags configured yet — greenfield). Tag every project on two axes: `type:contract` | `type:shared` | `type:internal`, and `ext:<name>`. Then `enforce-module-boundaries` encodes the matrix:
+   - `type:contract` → may depend only on `type:contract` + foundational libs.
+   - `type:shared` → may depend on `type:contract` + `type:shared` + foundational — **never `type:internal`** (this is the load-bearing rule: shared/public code never imports implementation).
+   - `type:internal` → may depend on any public tier + foundational + its own `internal`.
+   - Coarse-tag limitation: nx tags cannot natively express "an `internal` may depend only on its *own* extension's `internal`." Close the cross-extension gap structurally by **not exposing `-internal` libs in the tsconfig `paths`** so other extensions cannot resolve the import at all. This turns tribal knowledge into a CI gate.
 
 A typed **extension bus** (mediator in a shared low-level lib) and **route-based invocation** are complementary tools layered on top for many-to-many events and full-page hops respectively — added only when a real need appears.
 
@@ -59,7 +65,17 @@ A typed **extension bus** (mediator in a shared low-level lib) and **route-based
 
 ## MVP Scope
 
-Prove the pattern end-to-end on the one real case we just touched: add a `contactus-contract` lib exporting a `CONTACT_SELECTOR` injection token + `IContactSelector` interface, have `contactus`'s impl provide the concrete picker, and refactor the assetus↔contactus link so `assetus` calls it through the token (replacing the tactical in-repo workaround). One capability, one provider's contract, one consumer, wired by the app — enough to validate that the cycle and the fesm wall both disappear and that DI + tests stay clean. The contract/impl split of the other extensions and the nx lint rule follow once the pattern is proven.
+**Prove the pattern on `contactus` first, then roll out to every extension.** `contactus` is the hub — today calendarius, `app`, and `space-*` all reach straight into its `-core`/`-shared`/`-services` tiers (132 import statements: ~70 are contract-shaped types, ~50 are services like `ContactService`×29 / `ContactusSpaceService`×16, ~9 are reusable components). Reshaping it both fixes the most coupling and produces the reference template the other extensions copy.
+
+Phase 1 — contactus reshape (the reference implementation):
+
+1. Stand up `extension-contactus-contract` (seed from `-core` + the types stranded in `-shared`/`-services`); add the `CONTACT_SELECTOR` token + `IContactSelector` interface, plus tokens for the cross-extension services (`ContactService`, `ContactusSpaceService`).
+2. Stand up `extension-contactus-shared` for the ~9 reusable components/pipes; make them inject services via `-contract` tokens (no `-internal` imports).
+3. Reroute external consumers (calendarius, `app`, `space-*`) onto `-contract`/`-shared`; refactor the assetus↔contactus link through `CONTACT_SELECTOR`, replacing the tactical in-repo workaround.
+4. Collapse the now-private remainder (`-core` remainder + `-services` + `-internal` + non-shared `-shared`) into `extension-contactus-internal`.
+5. Land the nx tags + `enforce-module-boundaries` rule and drop `-internal` from tsconfig `paths`; confirm `sneat-libs` CI green with zero cross-extension `-internal` imports.
+
+Phase 2 — apply the same `contract`/`shared`/`internal` split to the remaining extensions (assetus, calendarius, …) incrementally, using the contactus libs as the template.
 
 ## Not Doing (and Why)
 
@@ -79,7 +95,7 @@ Prove the pattern end-to-end on the one real case we just touched: add a `contac
 
 ## SpecScore Integration
 
-- **New Features this would create:** TBD at design time — likely (a) the per-extension `*-contract`/`*-impl` split + token convention, (b) a small shared lib for genuinely cross-cutting primitives, (c) nx module-boundary enforcement (`scope:extension-contract` vs `scope:extension-impl`), (d) optional extension bus.
+- **New Features this would create:** TBD at design time — likely (a) the per-extension `-contract`/`-shared`/`-internal` split + token convention (contactus first as the reference), (b) a small shared lib for genuinely cross-cutting primitives, (c) nx module-boundary enforcement (`type:contract`/`type:shared`/`type:internal` tags + `-internal` excluded from tsconfig `paths`), (d) optional extension bus.
 - **Existing Features affected:** the assetus↔contactus integration (currently the tactical type-only workaround).
 - **Dependencies:** relates to `sneat-co/assetus#9` (type-only guideline) and `sneat-co/assetus#4` (retirement).
 
