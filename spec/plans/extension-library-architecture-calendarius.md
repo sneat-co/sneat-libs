@@ -1,10 +1,10 @@
 ---
 format: https://specscore.md/plan-specification
-status: Draft
+status: Approved
 ---
 # Plan: Extension Library Architecture Calendarius
 
-**Status:** Draft
+**Status:** Approved
 **Source Feature:** extension-library-architecture
 **Date:** 2026-06-20
 **Owner:** alexandertrakhimenok
