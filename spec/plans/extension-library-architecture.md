@@ -78,7 +78,7 @@ Move the ~9 externally-consumed reusable units (`ContactDetailsComponent`, `Pers
 
 **Verifies:** extension-library-architecture#ac:nx-tag-enforcement, extension-library-architecture#ac:shared-lib-no-internal, extension-library-architecture#ac:internal-not-in-tsconfig-paths
 **Depends-On:** 5
-**Status:** pending
+**Status:** done
 
 Wire the contract-token providers at app bootstrap. Flip `enforce-module-boundaries` from `warn` to `error`. Run the full `sneat-libs` CI (lint, build, test) and confirm it is green with zero cross-extension `-internal` imports and a deliberate violating import correctly failing lint.
 

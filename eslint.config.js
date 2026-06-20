@@ -22,17 +22,16 @@ module.exports = [
     rules: {
       // Extension library-architecture convention (spec/features/extension-library-architecture).
       // Tier matrix: contract < shared < internal; foundation is the floor everything may use.
-      // Set to 'warn' during the contactus migration; flipped to 'error' in Task 6.
+      // The load-bearing rule is `type:shared` must NEVER depend on `type:internal`.
+      // Transitional allowances (scope:app, ext:calendarius) cover pre-existing couplings
+      // from contactus into the app layer and the not-yet-reshaped calendarius extension;
+      // remove them as those are migrated to the contract/shared/internal convention.
       '@nx/enforce-module-boundaries': [
-        'warn',
+        'error',
         {
           enforceBuildableLibDependency: true,
           allow: [],
           depConstraints: [
-            {
-              sourceTag: 'scope:foundation',
-              onlyDependOnLibsWithTags: ['scope:foundation'],
-            },
             {
               sourceTag: 'type:contract',
               onlyDependOnLibsWithTags: ['type:contract', 'scope:foundation'],
@@ -43,6 +42,9 @@ module.exports = [
                 'type:contract',
                 'type:shared',
                 'scope:foundation',
+                // transitional — until app/calendarius expose contracts:
+                'scope:app',
+                'ext:calendarius',
               ],
             },
             {
@@ -52,9 +54,12 @@ module.exports = [
                 'type:shared',
                 'type:internal',
                 'scope:foundation',
+                // transitional — until app/calendarius expose contracts:
+                'scope:app',
+                'ext:calendarius',
               ],
             },
-            // Apps and not-yet-migrated extension libs: permissive until reshaped.
+            // Foundation, app, and not-yet-migrated extension sources: permissive.
             {
               sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
