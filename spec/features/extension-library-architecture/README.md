@@ -126,6 +126,7 @@ Then no `*-internal` lib has an entry, while every `*-contract` and `*-shared` l
 
 - Where do *genuinely cross-cutting* primitives (a base space-item context type, the optional extension bus) live — a small new shared lib, or an existing low-level lib such as `space-models`? (Deferred; does not block the convention.)
 - Does the typed extension bus and route-based invocation become part of this convention later, or stay separate complementary patterns? (Deferred until a real many-to-many / page-hop case appears.)
+- Where does the `contract` tier physically *live* once an extension is its own repo — an in-repo lib, or a separately-published per-extension `<name>-ext` repo? Refined by the `per-extension-contract-repo` idea (Approved): the three-tier split here is unchanged; only the `-contract` tier's home/publication changes. (Deferred to that idea's Features.)
 
 ---
 *This document follows the https://specscore.md/feature-specification*
