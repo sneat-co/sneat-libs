@@ -8,7 +8,7 @@ status: Specified
 **Status:** Specified
 **Date:** 2026-06-21
 **Owner:** alexandertrakhimenok
-**Promotes To:** extension-contract-repo
+**Promotes To:** contactus-ext, extension-contract-repo
 **Supersedes:** —
 **Related Ideas:** extends:cross-extension-interaction
 
