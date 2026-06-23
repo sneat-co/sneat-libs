@@ -1,0 +1,63 @@
+{
+  "name": "libs-demo",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/libs-demo/src",
+  "prefix": "sneat",
+  "tags": ["scope:app"],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/libs-demo",
+        "index": "apps/libs-demo/src/index.html",
+        "browser": "apps/libs-demo/src/main.ts",
+        "tsConfig": "apps/libs-demo/tsconfig.app.json",
+        "polyfills": ["zone.js"],
+        "assets": [],
+        "styles": [
+          "node_modules/@ionic/angular/css/ionic.bundle.css",
+          "apps/libs-demo/src/styles.scss"
+        ],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "2mb",
+              "maximumError": "4mb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular/build:dev-server",
+      "options": {
+        "buildTarget": "libs-demo:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "libs-demo:build:production"
+        },
+        "development": {
+          "buildTarget": "libs-demo:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
