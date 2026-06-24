@@ -29,7 +29,7 @@ Create `sneat-co/contactus-ext` following the `extension-contract-repo` conventi
 
 #### REQ: relocate-contactusmodels
 
-Move `contactus`'s own contract shapes — `briefs4contactus` and `const4contactus` — out of `sneat-core-modules/contactusmodels` into `contactus-ext/backend` (history-preserving). Repoint every importer (the `contactus` main repo and the sibling modules that consume these shapes) to the new import path, and remove the packages from `sneat-core-modules`.
+Move `contactus`'s own contract shapes — `briefs4contactus` and `const4contactus` — out of `sneat-core-modules/contactusmodels` into `contactus-ext/backend` (history-preserving). This relocation is done **contract-first**: the packages land in `contactus-ext/backend` (which then depends only on foundational/core code, e.g. `sneat-go-core`) and that module is published *before* importers are repointed — see `contract-first-release`. The removal of the packages from `sneat-core-modules` and the import-path repoint of every consumer happen **after** the publish, via a real pinned Go `require` (never a committed local `replace`), as specified in `repoint-consumers`. Because these shapes are shared across several independently-published Go modules, the relocation cannot be completed as a single local edit — see `repoint-consumers` for why.
 
 #### REQ: rehome-passing-contributors
 
@@ -49,13 +49,28 @@ Move the `@sneat/extension-contactus-contract` nx lib out of the main repo into 
 
 #### REQ: repoint-consumers
 
-Repoint every consumer of the relocated contract onto the new `contactus-ext` packages: backend siblings (`spaceus`, `linkage`, `userus`, `invitus`) and the `contactus` main repo onto the relocated Go packages; frontend consumers (`calendarius`, `app`, `space-*`, `sneat-apps`) onto the published `@sneat/extension-contactus-contract`. No consumer imports an old location after cutover.
+Repoint every consumer of the relocated contract onto the **published** `contactus-ext` artifacts.
+
+**Backend (Go) — the true consumer set is 7 modules, not the four "siblings".** `invitus`/`spaceus`/`userus`/`linkage` are *packages inside the single `sneat-core-modules` module*, so repointing them is an internal import-path rewrite within that one module, not a separate dependency. The modules that actually consume `briefs4contactus`/`const4contactus` and must each repoint are: `sneat-core-modules` (the relocated-from source), `github.com/sneat-co/contactus/backend`, `github.com/sneat-co/debtus/backend`, `github.com/sneat-co/logistus/backend`, `github.com/sneat-co/sneat-bots`, `github.com/sneat-co/sneat-go-backend`, and `github.com/sneat-co/sneat-go`.
+
+**The backend cutover is publish-first; a local `replace` web is not a valid mechanism.** Once `briefs4contactus`/`const4contactus` move modules, Go treats the old and new copies as *distinct, incompatible types*, so every module in a build must resolve a single copy. A consumer cannot repoint-and-build locally while the interfaces it implements (declared in `sneat-core-modules`) still resolve the published old types — and committed `replace … => ../…` directives only work on one machine and break CI for every module and every other consumer. Therefore each consumer repoints by switching to a **real pinned `require`** on the published `contactus-ext` module (and, transitively, on the republished `sneat-core-modules`/`contactus` that carry the new type), in the dependency order defined by `contract-first-release`.
+
+**Frontend (npm):** consumers (`calendarius`, `app`, `space-*`, `sneat-apps`, and the `contactus` main repo's own `internal`+`shared` frontend tiers) depend on the published `@sneat/extension-contactus-contract` by package name + pinned version.
+
+No consumer imports a pre-extraction location after cutover, and each consumer builds green against published artifacts (no committed local `replace`/path override).
 
 ### Release
 
 #### REQ: contract-first-release
 
-Release `contactus-ext` first (tag the Go module + publish the npm package), then bump consumers in dependency order. After cutover, the convention's dependency-invariant check passes on `contactus-ext` — it carries no `@sneat/extension-*` or sibling-module implementation dependency.
+Release `contactus-ext` first (tag the Go module + publish the npm package), then repoint+republish consumers in **strict dependency order** — each step pins the previously-published version with a real `require`, never a local `replace`:
+
+1. **Tag/publish `contactus-ext`** (Go module tag + npm `@sneat/extension-contactus-contract`).
+2. **`sneat-core-modules`** — rewrite its internal `contactusmodels` imports to the published `contactus-ext`, delete the old packages, `require` the tag, republish.
+3. **`github.com/sneat-co/contactus/backend`** — repoint onto the republished `sneat-core-modules` + `contactus-ext`, republish.
+4. **Leaf modules** — `debtus/backend`, `logistus/backend`, `sneat-bots`, `sneat-go-backend`, `sneat-go` — repoint onto the published versions and build green.
+
+After cutover, the convention's dependency-invariant check passes on `contactus-ext` — it carries no `@sneat/extension-*` or sibling-module implementation dependency.
 
 ## Dependencies
 
@@ -100,17 +115,17 @@ Then its sources reside under `contactus-ext/frontend`, the old in-repo lib loca
 
 ### AC: repoint-consumers
 
-Scenario: No consumer imports an old contract location
+Scenario: Every consumer resolves the published contract, none a pre-extraction location
 Given the cutover is complete
-When the backend siblings, the `contactus` main repo, and the frontend consumers (`calendarius`, `app`, `space-*`, `sneat-apps`) are built
-Then each resolves the contract from the `contactus-ext` packages and none imports a pre-extraction location.
+When the 7 backend Go modules (`sneat-core-modules`, `contactus/backend`, `debtus/backend`, `logistus/backend`, `sneat-bots`, `sneat-go-backend`, `sneat-go`) and the frontend consumers (`calendarius`, `app`, `space-*`, `sneat-apps`, and the `contactus` main repo's `internal`+`shared` tiers) are built
+Then each resolves the contract from the published `contactus-ext` artifacts via a real pinned `require`/dependency (no committed local `replace` or path override), and none imports a pre-extraction location.
 
 ### AC: contract-first-release
 
-Scenario: Contract is released before its consumers
+Scenario: Contract is released before its consumers, in dependency order
 Given the release sequence is executed
 When versions are published
-Then `contactus-ext` is tagged/published first, consumers are bumped onto it in dependency order, and the convention's dependency-invariant check passes on `contactus-ext`.
+Then `contactus-ext` is tagged/published first, then consumers are repointed+republished in strict dependency order (`sneat-core-modules` → `contactus/backend` → leaf modules), each pinning the prior published version with a real `require` (never a local `replace`), and the convention's dependency-invariant check passes on `contactus-ext`.
 
 ## Open Questions
 
