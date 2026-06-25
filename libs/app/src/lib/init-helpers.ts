@@ -5,9 +5,16 @@ import { emulatorEnvironmentConfig } from '../environments/environment.base';
 // decide, at RUNTIME, whether to use the Firebase emulator — see
 // appEnvironmentConfig() below.
 export function isLocalhost(): boolean {
+  if (typeof location === 'undefined') {
+    return false;
+  }
+  const { hostname } = location;
+  // Any *.localhost host is loopback by spec (RFC 6761), so full-site-preview
+  // domains like gameboard.localhost must use the emulator too — not just bare
+  // localhost. Without the suffix check they fall through to production config.
   return (
-    typeof location !== 'undefined' &&
-    ['localhost', '127.0.0.1', '[::1]', '0.0.0.0'].includes(location.hostname)
+    ['localhost', '127.0.0.1', '[::1]', '0.0.0.0'].includes(hostname) ||
+    hostname.endsWith('.localhost')
   );
 }
 
