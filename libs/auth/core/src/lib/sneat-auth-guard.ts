@@ -20,13 +20,38 @@ type AuthCanLoadPipeGenerator = (
   segments: UrlSegment[],
 ) => AuthPipe;
 
+/**
+ * Strip the document's `<base href>` prefix from a browser pathname, returning a
+ * router-relative path.
+ *
+ * Apps mounted under a base href (e.g. `/app/` in the Sneat site-hosting
+ * pattern) have a `location.pathname` of `/app/new-game`, but the Angular Router
+ * matches routes relative to the base href (`new-game`). Feeding the un-stripped
+ * pathname back into the router after login fails to match any route (NG04002).
+ */
+function routerRelativePath(pathname: string): string {
+  const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
+  if (baseHref === '/' || baseHref === '') {
+    return pathname;
+  }
+  const base = baseHref.replace(/\/$/, ''); // '/app/' -> '/app'
+  if (pathname === base) {
+    return '/';
+  }
+  if (pathname.startsWith(base + '/')) {
+    return pathname.slice(base.length); // '/app/new-game' -> '/new-game'
+  }
+  return pathname;
+}
+
 export const redirectToLoginIfNotSignedIn: AuthPipe = map((user) => {
   if (user) {
     return true;
   }
+  const path = routerRelativePath(location.pathname);
   let url = '/login';
-  if (location.pathname != '/') {
-    url += '#' + location.pathname;
+  if (path != '/') {
+    url += '#' + path;
   }
   return url;
 });
