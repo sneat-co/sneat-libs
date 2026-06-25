@@ -1,6 +1,6 @@
 {
   "name": "@sneat/extension-calendarius-internal",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "publishConfig": {
     "access": "public"
   },

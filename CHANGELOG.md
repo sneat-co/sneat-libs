@@ -1,3 +1,15 @@
+## 0.14.0 (2026-06-25)
+
+### 🚀 Features
+
+- **app:** treat any *.localhost host as localhost for emulator selection ([70b4688](https://github.com/sneat-co/sneat-libs/commit/70b4688))
+- **auth-ui:** show sign-in reason heading + detail on the login page ([ca210f3](https://github.com/sneat-co/sneat-libs/commit/ca210f3))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8 (1M context)
+
 ## 0.13.1 (2026-06-25)
 
 ### 🩹 Fixes
