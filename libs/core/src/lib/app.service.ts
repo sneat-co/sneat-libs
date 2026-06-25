@@ -1,10 +1,17 @@
 import { InjectionToken } from '@angular/core';
 import { SpaceType } from './team-type';
 
+// Sneat app identifier. The type is intentionally OPEN: third-party / niche
+// apps can use their own appId without being enumerated here (the `string & {}`
+// arm accepts any string). The explicit first-party literals are kept only for
+// editor autocomplete and documentation — `string & {}` preserves those
+// suggestions while still accepting arbitrary strings (plain `| string` would
+// collapse the whole union to `string` and drop the autocomplete).
 export type SneatApp =
   | 'sneat'
   | 'aaproject'
   | 'agendum'
+  | 'budgetus'
   | 'class'
   | 'contactus'
   | 'creche'
@@ -13,6 +20,7 @@ export type SneatApp =
   | 'dream7'
   | 'eventus'
   | 'feis'
+  | 'gameboard'
   | 'logist'
   | 'listus'
   | 'neighbours'
@@ -22,8 +30,14 @@ export type SneatApp =
   | 'sizechart'
   | 'splitus'
   | 'sportclubs'
+  | 'template'
   | 'tournament'
-  | 'datatug';
+  | 'trackus'
+  | 'datatug'
+  // Open arm: accept any appId (e.g. third-party apps) while keeping the
+  // literal suggestions above. Do not remove — this is what makes the union
+  // extensible without a platform release per new app.
+  | (string & {});
 
 export interface IAppInfo {
   readonly appId: SneatApp;
