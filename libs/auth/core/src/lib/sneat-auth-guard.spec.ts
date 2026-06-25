@@ -121,4 +121,48 @@ describe('redirectToLoginIfNotSignedIn', () => {
       value: originalPathname,
     });
   });
+
+  it('should strip the <base href> prefix so the return path is router-relative', async () => {
+    const originalPathname = location.pathname;
+    const base = document.createElement('base');
+    base.setAttribute('href', '/app/');
+    document.head.appendChild(base);
+    Object.defineProperty(window.location, 'pathname', {
+      writable: true,
+      value: '/app/new-game',
+    });
+
+    const result = await firstValueFrom(
+      of(null).pipe(redirectToLoginIfNotSignedIn),
+    );
+    expect(result).toBe('/login#/new-game');
+
+    Object.defineProperty(window.location, 'pathname', {
+      writable: true,
+      value: originalPathname,
+    });
+    document.head.removeChild(base);
+  });
+
+  it('should treat the base href root as the app root (no hash)', async () => {
+    const originalPathname = location.pathname;
+    const base = document.createElement('base');
+    base.setAttribute('href', '/app/');
+    document.head.appendChild(base);
+    Object.defineProperty(window.location, 'pathname', {
+      writable: true,
+      value: '/app',
+    });
+
+    const result = await firstValueFrom(
+      of(null).pipe(redirectToLoginIfNotSignedIn),
+    );
+    expect(result).toBe('/login');
+
+    Object.defineProperty(window.location, 'pathname', {
+      writable: true,
+      value: originalPathname,
+    });
+    document.head.removeChild(base);
+  });
 });
