@@ -106,6 +106,12 @@ export class LoginPageComponent extends SneatBaseComponent {
   );
   private readonly redirectTo?: string;
   protected readonly to?: string;
+  // Free-text explanation of WHY sign-in is needed, passed by the calling page
+  // as query params (rendered as escaped text — never as HTML):
+  //   reason       — short heading, e.g. "Sign in to create a new game"
+  //   reasonDetail — optional sub-heading / one-line elaboration
+  protected readonly reason?: string;
+  protected readonly reasonDetail?: string;
   protected readonly action?: Action; // TODO: document possible values?
 
   protected readonly isNativePlatform = Capacitor.isNativePlatform();
@@ -135,6 +141,8 @@ export class LoginPageComponent extends SneatBaseComponent {
       this.redirectTo = location.hash.substring(1);
     }
     this.to = this.route.snapshot.queryParams['to']; // should we subscribe? I believe no.
+    this.reason = this.route.snapshot.queryParams['reason'];
+    this.reasonDetail = this.route.snapshot.queryParams['reasonDetail'];
     const action = location.hash.match(/[#&]action=(\w+)/);
     this.action = action?.[1] as Action;
 

@@ -8,7 +8,16 @@
 </ion-header>
 
 <ion-content id="main-content">
-  @if (to) {
+  @if (reason) {
+    <ion-card color="tertiary">
+      <ion-card-content>
+        <h2 class="reason-title">{{ reason }}</h2>
+        @if (reasonDetail) {
+          <p class="reason-detail">{{ reasonDetail }}</p>
+        }
+      </ion-card-content>
+    </ion-card>
+  } @else if (to) {
     <ion-card color="tertiary">
       <ion-card-content>
         <p>Please sign in to join a team</p>
