@@ -53,7 +53,7 @@
     ]
   },
   "release": {
-    "projects": ["*"],
+    "projects": ["*", "!libs-demo", "!libs-demo-e2e"],
     "projectsRelationship": "fixed",
     "releaseTagPattern": "v{version}",
     "git": {
