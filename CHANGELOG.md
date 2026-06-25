@@ -1,3 +1,14 @@
+## 0.13.1 (2026-06-25)
+
+### 🩹 Fixes
+
+- **auth-core:** make login return-path base-href aware ([#20](https://github.com/sneat-co/sneat-libs/pull/20))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8 (1M context)
+
 ## 0.13.0 (2026-06-25)
 
 ### 🚀 Features
