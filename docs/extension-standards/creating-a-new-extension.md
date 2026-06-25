@@ -20,16 +20,26 @@ pre-built with:
 
 1. **Create the new repo from the template** (`sneat-co/<ext>`), keeping the
    `org/repo` layout.
-2. **Rename `template` → `<ext>`** throughout (app names, library packages,
-   paths, ids).
+2. **Rename `template` → `<ext>`** by running the bundled `customize.sh` from the
+   repo root:
 
-   > ⚠️ **Rename script — WIP.** A script to automate the `template → <ext>`
-   > rename is being built. Until it lands, the rename is manual. This section
-   > will be updated with the script's name and usage once it's ready.
+   ```bash
+   ./customize.sh <ext>     # e.g. ./customize.sh gameboard
+   ```
+
+   The `<ext>` id must be a single lowercase token (`[a-z][a-z0-9]*`). The script
+   renames the placeholder `template` extension across the whole Nx workspace —
+   the app (`template-app` → `<ext>-app`), the library triad
+   (`@sneat/extension-template-*` → `@sneat/extension-<ext>-*`,
+   `ext-template-*` → `ext-<ext>-*`), symbols (`TemplateHomePage`,
+   `TEMPLATE_SERVICE`, …), the appId, and titles. The replacement is **targeted**,
+   so it never corrupts Angular keywords like `templateUrl`, inline `template:`,
+   or `<ng-template>`. It does **not** touch `pnpm-lock.yaml` (reconciled by the
+   `pnpm install` in the next step), and it **deletes itself** when done.
 
 3. **Install & verify:**
    ```bash
-   pnpm install
+   pnpm install   # reconcile the renamed workspace packages
    pnpm exec nx run-many -t lint test build
    pnpm exec nx e2e <ext>-app-e2e
    ```
