@@ -1,3 +1,20 @@
+## 0.13.0 (2026-06-25)
+
+### 🚀 Features
+
+- **core:** open SneatApp union to accept any appId ([#18](https://github.com/sneat-co/sneat-libs/pull/18))
+- **libs-demo:** scaffold demo app + Playwright e2e for library components ([faeeadf](https://github.com/sneat-co/sneat-libs/commit/faeeadf))
+
+### 🩹 Fixes
+
+- **release:** exclude non-publishable demo apps from nx release ([#19](https://github.com/sneat-co/sneat-libs/pull/19))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+- Claude Opus 4.8 (1M context)
+
 ## 0.12.1 (2026-06-20)
 
 This was a version bump only, there were no code changes.
