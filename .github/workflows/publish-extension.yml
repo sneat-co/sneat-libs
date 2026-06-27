@@ -13,6 +13,12 @@ name: Publish extension to npm
 #   repository: sneat-co/eventus   project: ext-eventus
 #   repository: sneat-co/listus    project: ext-listus
 #   repository: sneat-co/assetus   project: ext-assetus
+#
+# Plain (non-Nx) packages: some contract repos (e.g. sneat-co/<ext>-ext) ship the
+# published lib as a plain pnpm package (package.json + src), not an Nx project.
+# For those set plain=true and package-directory=<dir with package.json>; the
+# workflow then runs `pnpm publish` there instead of nx build / nx release:
+#   repository: sneat-co/sneat-team-ext   plain: true   package-directory: frontend
 on:
   workflow_dispatch:
     inputs:
@@ -21,15 +27,23 @@ on:
         required: true
         default: sneat-co/eventus
       project:
-        description: Nx project (library) to build & publish
-        required: true
+        description: Nx project (library) to build & publish (Nx mode only)
+        required: false
         default: ext-eventus
       ref:
         description: Git ref (branch or tag) to publish from
         required: false
         default: main
       working-directory:
-        description: Nx workspace directory within the repo
+        description: Nx workspace directory within the repo (Nx mode)
+        required: false
+        default: frontend
+      plain:
+        description: "Publish a plain (non-Nx) pnpm package with `pnpm publish` instead of nx"
+        required: false
+        default: "false"
+      package-directory:
+        description: "Plain mode: path to the package dir (containing package.json)"
         required: false
         default: frontend
       pnpm-version:
@@ -57,15 +71,31 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-      - name: Install deps
+      # --- Nx mode (default) ---
+      - name: Install deps (Nx)
+        if: inputs.plain != 'true'
         working-directory: ${{ inputs.working-directory }}
         run: pnpm install --frozen-lockfile
       - name: Build ${{ inputs.project }}
+        if: inputs.plain != 'true'
         working-directory: ${{ inputs.working-directory }}
         run: pnpm nx build ${{ inputs.project }}
-      - name: Publish ${{ inputs.project }}
+      - name: Publish ${{ inputs.project }} (nx release)
+        if: inputs.plain != 'true'
         working-directory: ${{ inputs.working-directory }}
         run: pnpm nx release publish --projects=${{ inputs.project }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # --- Plain (non-Nx) mode ---
+      - name: Install deps (plain)
+        if: inputs.plain == 'true'
+        working-directory: ${{ inputs.package-directory }}
+        run: pnpm install --frozen-lockfile
+      - name: Publish plain package (pnpm publish)
+        if: inputs.plain == 'true'
+        working-directory: ${{ inputs.package-directory }}
+        run: pnpm publish --no-git-checks --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
