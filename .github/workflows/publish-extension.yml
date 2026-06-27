@@ -91,7 +91,10 @@ jobs:
       - name: Install deps (plain)
         if: inputs.plain == 'true'
         working-directory: ${{ inputs.package-directory }}
-        run: pnpm install --frozen-lockfile
+        # --ignore-scripts: a source-only contract package doesn't need its
+        # devDeps' build scripts; skipping them avoids pnpm's ERR_PNPM_IGNORED_BUILDS
+        # non-zero exit (e.g. esbuild) in CI.
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Publish plain package (pnpm publish)
         if: inputs.plain == 'true'
         working-directory: ${{ inputs.package-directory }}
