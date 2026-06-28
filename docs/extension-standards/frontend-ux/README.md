@@ -8,6 +8,8 @@ Sneat standards, because they span every extension repo (`calendarius`,
 
 What you'll find there:
 
+- **flows** — how screens connect + the per-component lifecycle checklist
+  (entry · validation · in-progress · output · exit). Start here.
 - **cards** — `ion-card` as the content container, header styles.
 - **card-title-buttons** — action buttons in card / section headers.
 - **buttons** — colour, fill, expand, icon, and in-flight conventions.
