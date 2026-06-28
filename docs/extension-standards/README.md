@@ -18,7 +18,7 @@ extension developers build against it.
 | --- | --- | --- |
 | **Backend** | Go impl in the extension's own `backend/` module, wired into `sneat-go` at fixed injection points | [`backend-wiring.md`](./backend-wiring.md) |
 | **Frontend** | Nx + Angular + Ionic; tier libraries + a mandatory `<ext-id>-app` standalone e2e app | [`frontend-apps.md`](./frontend-apps.md) |
-| **UX** | House conventions for cards, buttons, and lists | [`frontend-ux/`](./frontend-ux/README.md) |
+| **UX** | House conventions for cards, buttons, lists, page layout, forms, modals, and states (in `sneat-specs`) | [`frontend-ux/`](./frontend-ux/README.md) → [sneat-specs](https://github.com/sneat-co/sneat-specs/blob/main/standards/frontend-ux/README.md) |
 
 ## Contents
 
@@ -30,8 +30,8 @@ extension developers build against it.
   into `sneat-go`, with the exact injection points.
 - [`frontend-apps.md`](./frontend-apps.md) — Nx library tiers and the
   `<ext-id>-app` e2e harness.
-- [`frontend-ux/`](./frontend-ux/README.md) — cards, card-title buttons, buttons,
-  and lists.
+- [`frontend-ux/`](./frontend-ux/README.md) — UX standards (now in `sneat-specs`):
+  cards, buttons, lists, page layout, forms, modals, and loading/empty/error states.
 
 ## Related conventions (in this repo)
 
