@@ -5,10 +5,17 @@ export interface IRelatedItemKey {
   readonly spaceID?: string;
 }
 
+// specscore: decisions/0002-reserved-extension-space-ids
+// See sneat-specs Decision 0002:
+// https://github.com/sneat-co/sneat-specs/blob/main/spec/decisions/0002-reserved-extension-space-ids.md
 export interface ISpaceModuleItemRef {
   readonly module: string;
   readonly collection: string;
-  readonly spaceID: string;
+  // spaceID is optional: an empty/undefined spaceID denotes the spaceless
+  // system namespace (record stored at /ext/{ext-id}/...). A non-empty spaceID
+  // denotes a space-bound record at /spaces/{space-id}/ext/{ext-id}/...
+  // (sneat-specs Decision 0002).
+  readonly spaceID?: string;
   readonly itemID: string;
 }
 
@@ -120,8 +127,12 @@ export const removeRelatedItem = (
   return related;
 };
 
-export const getLongRelatedItemID = (itemID: string, spaceID: string) =>
-  `${itemID}@${spaceID}`;
+// specscore: decisions/0002-reserved-extension-space-ids
+// Omit the "@{spaceID}" suffix for the spaceless system namespace. See
+// sneat-specs Decision 0002:
+// https://github.com/sneat-co/sneat-specs/blob/main/spec/decisions/0002-reserved-extension-space-ids.md
+export const getLongRelatedItemID = (itemID: string, spaceID?: string) =>
+  spaceID ? `${itemID}@${spaceID}` : itemID;
 
 export const getRelatedItemByIDs = (
   relatedItems: Readonly<Record<string, IRelatedItem>> | undefined,
