@@ -1,3 +1,14 @@
+## 0.15.1 (2026-06-29)
+
+### 🚀 Features
+
+- **libs-demo:** scaffold demo app + Playwright e2e for library components ([98c6b2e](https://github.com/sneat-co/sneat-libs/commit/98c6b2e))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8
+
 ## 0.15.0 (2026-06-29)
 
 ### 🚀 Features
