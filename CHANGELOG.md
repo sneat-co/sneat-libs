@@ -1,3 +1,14 @@
+## 0.15.0 (2026-06-29)
+
+### 🚀 Features
+
+- **dto:** spaceless system namespace for global extension records ([2556fb7](https://github.com/sneat-co/sneat-libs/commit/2556fb7))
+
+### ❤️ Thank You
+
+- Alexander Trakhimeno
+- Claude Opus 4.8
+
 ## 0.14.0 (2026-06-25)
 
 ### 🚀 Features
