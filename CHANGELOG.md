@@ -1,3 +1,14 @@
+## 0.15.2 (2026-06-30)
+
+### 🚀 Features
+
+- **calendarius-contract:** add 'event' HappeningKind + IHappeningBase.ext ([#23](https://github.com/sneat-co/sneat-libs/pull/23))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.15.1 (2026-06-29)
 
 ### 🚀 Features
