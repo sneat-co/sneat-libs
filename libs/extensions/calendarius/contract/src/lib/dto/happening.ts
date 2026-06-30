@@ -56,6 +56,13 @@ export interface IHappeningBase extends IWithRelatedOnly {
   readonly slots?: Readonly<Record<string, IHappeningSlot>>;
   readonly prices?: readonly IHappeningPrice[];
   // readonly participants?: Record<string, Readonly<IHappeningParticipant>>;
+  /**
+   * Per-extension data embedded on the happening, keyed by extension id (e.g.
+   * `eventus`). Lets a hosting module store its own fields on the happening
+   * instead of a separate overlay document; calendarius stays agnostic to the
+   * blob shapes. Mirrors the backend `HappeningBase.Ext`.
+   */
+  readonly ext?: Readonly<Record<string, unknown>>;
 }
 
 export type IHappeningBrief = IHappeningBase;
@@ -149,7 +156,7 @@ export type HappeningType = 'recurring' | 'single';
 
 export type HappeningStatus = 'draft' | 'active' | 'canceled' | 'archived';
 
-export type HappeningKind = 'appointment' | 'activity' | 'task';
+export type HappeningKind = 'appointment' | 'activity' | 'task' | 'event';
 
 export interface SlotLocation {
   readonly title?: string;
