@@ -14,6 +14,7 @@ export * from './sneat-extensions';
 export * from './form-field';
 export * from './team-type';
 export * from './location-href';
+export * from './reserved-public-path';
 export * from './interfaces';
 export * from './current-space-storage';
 export * from './directives';
