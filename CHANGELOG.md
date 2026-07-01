@@ -1,3 +1,14 @@
+## 0.16.0 (2026-07-01)
+
+### 🚀 Features
+
+- **components:** sneat-country-input inline-list mode + loader error/retry ([#27](https://github.com/sneat-co/sneat-libs/pull/27))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8 (1M context)
+
 ## 0.15.2 (2026-06-30)
 
 ### 🚀 Features
