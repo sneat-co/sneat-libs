@@ -57,6 +57,56 @@ interface and never import the `internal`/`shared` implementation directly (the
 [`di-token-inversion`](../../spec/features/extension-library-architecture/README.md)
 rule; enforced by nx `enforce-module-boundaries`).
 
+### Root register function vs. lazy, route-scoped providers
+
+`provide<Name>Internal()` is the **app-root** wiring: it runs once at bootstrap, so
+everything it binds is instantiated for **every** user of the app. That is correct
+for an extension's always-on capabilities (its core services, cheap tokens). It is
+the **wrong** place for a capability that:
+
+- is only reached on a **specific route** (a details page, a wizard, a report), and
+- pulls in a **heavy or cross-module dependency** (e.g. another extension's
+  `AssetService`, a charting engine, a map SDK) that a user who never opens that
+  route should not pay for.
+
+For those, ship a **route-scoped provider bundle** instead. Angular route
+`providers` create a child injector for that route's subtree, so the services are
+constructed **only when the route is activated** and torn down with it — never at
+app root:
+
+```ts
+// libs/extensions/<id>/internal/src/lib/provide-<id>-<feature>.ts
+export function provide<Name><Feature>(): Provider[] {
+  return [
+    HeavyDep,                                     // e.g. a sibling AssetService, not providedIn:'root'
+    <Feature>Service,
+    { provide: <FEATURE>_SERVICE, useExisting: <Feature>Service },
+  ];
+}
+
+// Ship the route with its providers baked in, so a host mounts it in one line.
+// `internal` may import `shared`, so the route can lazy-load the shared page.
+export const <name><Feature>Routes: Route[] = [
+  {
+    path: '<feature>/:id',
+    providers: [...provide<Name><Feature>()],
+    loadComponent: () =>
+      import('@sneat/extension-<id>-shared').then((m) => m.<Feature>PageComponent),
+  },
+];
+```
+
+The host mounts `...<name><Feature>Routes` under its shell; the same export serves
+every host (standalone `<ext-id>-app` and the main Sneat app). The page still
+injects **only** the `contract` token — the impl and its heavy dependency are
+resolved from the route injector, so the boundary and `di-token-inversion` rules
+are unchanged.
+
+Rule of thumb: **bind in `provide<Name>Internal()` by default; move a binding to a
+route-scoped bundle when it (a) is only used on one route and (b) drags in a heavy
+or cross-extension dependency.** Prefer this over `providedIn: 'root'` for such
+services so nothing eagerly loads a sibling extension at startup.
+
 ## The standalone app — `<ext-id>-app`
 
 Every extension ships an Nx **application** that hosts the extension in a minimal
