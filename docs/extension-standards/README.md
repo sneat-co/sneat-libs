@@ -30,6 +30,9 @@ extension developers build against it.
   into `sneat-go`, with the exact injection points.
 - [`frontend-apps.md`](./frontend-apps.md) — Nx library tiers and the
   `<ext-id>-app` e2e harness.
+- [`routing-and-deployment.md`](./routing-and-deployment.md) — the root-mounted
+  app + locale-prefixed content URL scheme, edge (Cloudflare Worker) routing,
+  and the combined landing+app distribution.
 - [`frontend-ux/`](./frontend-ux/README.md) — UX standards (now in `sneat-specs`):
   cards, buttons, lists, page layout, forms, modals, and loading/empty/error states.
 
