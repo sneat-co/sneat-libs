@@ -142,8 +142,16 @@ export default {
     // landing page or static file 404s as itself.
     if (isReservedPublicPath(p)) return res;
 
-    // Application deep link → serve the SPA shell for the client router.
-    return env.ASSETS.fetch(new Request(new URL('/index.app.html', url.origin), request));
+    // Application deep link → serve the SPA shell as 200 at the REQUESTED url,
+    // following any html_handling redirect (Cloudflare Assets rewrites
+    // `/index.app.html` → `/index.app`) so the deep link keeps its URL instead
+    // of the browser bouncing to the shell path.
+    let shell = await env.ASSETS.fetch(new Request(new URL('/index.app.html', url.origin), request));
+    if (shell.status >= 301 && shell.status <= 308) {
+      const loc = shell.headers.get('location');
+      if (loc) shell = await env.ASSETS.fetch(new Request(new URL(loc, url.origin), request));
+    }
+    return new Response(shell.body, { status: 200, headers: shell.headers });
   },
 };
 ```
