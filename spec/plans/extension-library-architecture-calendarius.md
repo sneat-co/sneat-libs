@@ -30,7 +30,7 @@ Same hard-cutover model as the contactus plan: move, never copy; one definition 
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition, extension-library-architecture#ac:lib-naming, extension-library-architecture#ac:internal-not-in-tsconfig-paths
 **Depends-On:** —
-**Status:** done
+**Status:** complete
 
 Scaffold empty `@sneat/extension-calendarius-contract`, `@sneat/extension-calendarius-shared`, and `@sneat/extension-calendarius-internal` libs under `libs/extensions/calendarius/`, mirroring the contactus tier libs (project.json with tier + `ext:calendarius` tags, package.json, index). Add `paths` entries for `-contract` and `-shared` only; deliberately omit `-internal` from `tsconfig.base.json` `paths`.
 
@@ -40,7 +40,7 @@ Scaffold empty `@sneat/extension-calendarius-contract`, `@sneat/extension-calend
 
 **Verifies:** extension-library-architecture#ac:contract-lib-runtime-light, extension-library-architecture#ac:di-token-inversion
 **Depends-On:** 1
-**Status:** done
+**Status:** complete
 
 Move calendarius pure types/interfaces/enums/DTOs (the bulk of `ext-calendarius-core`) into `extension-calendarius-contract`, keeping it runtime-light. Define `SCHEDULE_NAV_SERVICE` + `IScheduleNavService` (interface derived from how `contactus-shared` uses `ScheduleNavService`) and any other token needed for a genuinely cross-extension service. Repoint every reference repo-wide to the contract import; delete the moved symbols from `ext-calendarius-core`.
 
@@ -48,9 +48,9 @@ Move calendarius pure types/interfaces/enums/DTOs (the bulk of `ext-calendarius-
 
 ### Task 3: Internal cutover — move services/pages, provide tokens
 
-**Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:di-token-inversion
+**Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:di-token-inversion, extension-library-architecture#ac:internal-register-function
 **Depends-On:** 2
-**Status:** done
+**Status:** complete
 
 Move calendarius services (incl. `ScheduleNavService`), pages, dialogs, and private components into `extension-calendarius-internal`; bind each contract token to its concrete provider via a `provideCalendariusInternal(): Provider[]` factory (wired by the app at bootstrap). Drop the emptied `ext-calendarius-core`/`-main` libs as their contents migrate. No other extension imports this lib.
 
@@ -60,7 +60,7 @@ Move calendarius services (incl. `ScheduleNavService`), pages, dialogs, and priv
 
 **Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:shared-lib-no-internal
 **Depends-On:** 3
-**Status:** done
+**Status:** complete
 
 Move calendarius reusable components/pipes/modules (old `ext-calendarius-shared`, ~71 files — calendar, happening cards, slot components, etc.) into the new shared-tier lib (`ext-calendarius-shared-new`, dir `ui`, package `@sneat/extension-calendarius-shared-new`), refactoring any service access to contract tokens (zero `-internal` imports). Repoint intra-calendarius and consumer component imports to `@sneat/extension-calendarius-shared-new`; drop the emptied old `ext-calendarius-shared` lib (dir `shared`) and its `@sneat/extension-calendarius-shared` path entry.
 
@@ -70,7 +70,7 @@ Move calendarius reusable components/pipes/modules (old `ext-calendarius-shared`
 
 **Verifies:** extension-library-architecture#ac:di-token-inversion, extension-library-architecture#ac:shared-lib-no-internal
 **Depends-On:** 4
-**Status:** done
+**Status:** complete
 
 Reroute `contactus-shared`'s single calendarius dependency (`ScheduleNavService`) to inject `SCHEDULE_NAV_SERVICE` from `@sneat/extension-calendarius-contract` instead of importing `@sneat/extension-calendarius-core`. Then remove the `ext:calendarius` transitional allowance from the `type:shared` and `type:internal` constraints in `eslint.config.js`, so cross-extension calendarius coupling is only permitted through its contract.
 
@@ -80,7 +80,7 @@ Reroute `contactus-shared`'s single calendarius dependency (`ScheduleNavService`
 
 **Verifies:** extension-library-architecture#ac:nx-tag-enforcement, extension-library-architecture#ac:shared-lib-no-internal, extension-library-architecture#ac:internal-not-in-tsconfig-paths
 **Depends-On:** 5
-**Status:** done
+**Status:** complete
 
 Run the full `sneat-libs` CI (lint, build, test) and confirm green with zero cross-extension `-internal` imports and zero use of the removed `ext:calendarius` allowance. Confirm a deliberate forbidden edge (e.g. `extension-calendarius-contract` importing a `type:shared` lib, or `contactus-shared` importing `extension-calendarius-internal`) correctly fails lint.
 
@@ -90,7 +90,7 @@ Run the full `sneat-libs` CI (lint, build, test) and confirm green with zero cro
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition
 **Depends-On:** 6
-**Status:** done
+**Status:** complete
 
 Confirm the old `ext-calendarius-core`/`-main`/`-shared` libs and their `project.json`/`tsconfig` `paths` entries are gone (remove residue). **Rename the temporary shared lib to the clean name:** package `@sneat/extension-calendarius-shared-new` → `@sneat/extension-calendarius-shared`, its tsconfig path key, project name `ext-calendarius-shared-new` → `ext-calendarius-shared`, and (optionally) dir `ui` → `shared`; repoint the consumers that import `-shared-new`. Reconciling sweep: confirm every per-task worktree was removed and its branch deleted; prune stragglers, leaving only the plan branch.
 

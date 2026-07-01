@@ -28,7 +28,7 @@ Phases: (A) build the contract into `contactus-ext` — relocate the models [don
 
 **Verifies:** contactus-ext#ac:contactus-ext-repo
 **Depends-On:** —
-**Status:** done
+**Status:** complete
 
 Create `sneat-co/contactus-ext` per the `extension-contract-repo` convention: a `backend/` Go module `github.com/sneat-co/contactus-ext/backend` and a `frontend/` nx lib published as `@sneat/extension-contactus-contract`, plus the convention's dependency-invariant CI check. The repo starts empty of contract symbols and declares only foundational/core dependencies.
 
@@ -38,7 +38,7 @@ Create `sneat-co/contactus-ext` per the `extension-contract-repo` convention: a 
 
 **Verifies:** contactus-ext#ac:relocate-contactusmodels
 **Depends-On:** 1
-**Status:** done
+**Status:** complete
 
 Bring `briefs4contactus` and `const4contactus` into `contactus-ext/backend/contactusmodels` so the new module owns them and builds standalone (depends only on `sneat-go-core`; invariant check passes). This is the **relocation half** of `relocate-contactusmodels`; removing the old copy from `sneat-core-modules` and repointing importers happens post-publish in Tasks 6–8.
 
@@ -48,7 +48,7 @@ Bring `briefs4contactus` and `const4contactus` into `contactus-ext/backend/conta
 
 **Verifies:** contactus-ext#ac:relocate-frontend-contract
 **Depends-On:** 1
-**Status:** pending
+**Status:** planning
 
 Move the `@sneat/extension-contactus-contract` nx lib from `contactus/frontend/libs/extensions/contactus/contract` into `contactus-ext/frontend` (stand up the nx workspace there), and remove the old in-repo location and its workspace path entry from the `contactus` main repo.
 
@@ -58,7 +58,7 @@ Move the `@sneat/extension-contactus-contract` nx lib from `contactus/frontend/l
 
 **Verifies:** contactus-ext#ac:rehome-passing-contributors, contactus-ext#ac:bilateral-stays-consumer-owned
 **Depends-On:** 2
-**Status:** done
+**Status:** complete
 
 Classify each contributor interface against the convention's ownership test and **declare** the passing ones (`ContactusSpaceContributor`, plus `ContactusCountryUpdater` / linkage `DboFactory` if their signatures are contactus-own + core only) in `contactus-ext/backend` so they ship in the published contract. Explicitly leave the bilateral failing ones (`ContactusAccess`, which speaks `invitus`/`spaceus` types) in their consumer modules, and confirm `contactus-ext` imports neither `invitus` nor `spaceus`. Wiring the siblings to import these interfaces and `contactus` to register implementations happens during the consumer repoint (Tasks 6–7).
 
@@ -68,7 +68,7 @@ Classify each contributor interface against the convention's ownership test and 
 
 **Verifies:** contactus-ext#ac:contract-first-release
 **Depends-On:** 2, 3, 4
-**Status:** pending
+**Status:** planning
 
 Tag the `contactus-ext` Go module and publish the `@sneat/extension-contactus-contract` npm package as the **first** release in the sequence, and confirm the convention's dependency-invariant check passes on `contactus-ext` (no `@sneat/extension-*` or sibling-module implementation dependency). This unblocks consumers to switch onto a real pinned dependency. Requires repo creation/tagging/npm-publish credentials — coordinate before executing.
 
@@ -78,7 +78,7 @@ Tag the `contactus-ext` Go module and publish the `@sneat/extension-contactus-co
 
 **Verifies:** contactus-ext#ac:repoint-consumers, contactus-ext#ac:relocate-contactusmodels, contactus-ext#ac:rehome-passing-contributors
 **Depends-On:** 5
-**Status:** pending
+**Status:** planning
 
 Rewrite `sneat-core-modules`'s internal `contactusmodels` imports (including the `invitus`/`spaceus`/`userus`/`linkage` packages within it) to the published `contactus-ext`, **delete** the old `contactusmodels` packages, wire the sibling (`spaceus`) to import the re-homed contributor interface from `contactus-ext`, add a real pinned `require` on the tag, and republish `sneat-core-modules`.
 
@@ -88,7 +88,7 @@ Rewrite `sneat-core-modules`'s internal `contactusmodels` imports (including the
 
 **Verifies:** contactus-ext#ac:repoint-consumers, contactus-ext#ac:rehome-passing-contributors
 **Depends-On:** 6
-**Status:** pending
+**Status:** planning
 
 Repoint `github.com/sneat-co/contactus/backend` onto the republished `sneat-core-modules` + published `contactus-ext` (real pinned `require`s), register the re-homed contributor implementation(s) at bootstrap, build green, and republish.
 
@@ -98,7 +98,7 @@ Repoint `github.com/sneat-co/contactus/backend` onto the republished `sneat-core
 
 **Verifies:** contactus-ext#ac:repoint-consumers
 **Depends-On:** 7
-**Status:** pending
+**Status:** planning
 
 Repoint the leaf Go modules (`debtus/backend`, `logistus/backend`, `sneat-bots`, `sneat-go-backend`, `sneat-go`) onto the published versions with real pinned `require`s, and bump the frontend consumers (`calendarius`, `app`, `space-*`, `sneat-apps`, and the `contactus` main repo's own `internal`+`shared` tiers) onto the published `@sneat/extension-contactus-contract`. Verify repo-wide that no consumer imports a pre-extraction location and that each builds green.
 

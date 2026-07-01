@@ -43,6 +43,10 @@ The `internal` lib holds the extension's private services, dialogs, pages, and c
 
 A cross-extension runtime call is made through dependency inversion: the provider extension owns an `InjectionToken` plus interface in its own `contract` lib; the provider's `shared`/`internal` supplies the concrete implementation, wired by the app at bootstrap; the caller injects the interface and invokes it without importing any of the provider's `shared` or `internal` code. The contract libs therefore form a DAG with no `internal → internal` edges.
 
+#### REQ: internal-register-function
+
+The `internal` lib (the extension's implementation lib) exposes a **single registration function** — `provide<Name>Internal(): Provider[]` — that binds *every* one of the extension's `contract` `InjectionToken`s to its concrete implementation in one place. The app wires the whole extension by calling this one function at bootstrap; per-token wiring is never scattered across the app or across multiple `provide…` helpers. Adding a new capability means adding its `{ provide: <TOKEN>, useExisting: <Impl> }` binding to this function, so "is every contract token wired?" has a single, auditable answer site — and a consumer that injects a token can never hit an unbound-token runtime error because the token and its binding ship together from the provider extension.
+
 ### Naming
 
 #### REQ: lib-naming
@@ -100,6 +104,18 @@ Scenario: Cross-extension call uses a contract token, not the provider impl
 Given a consumer extension that needs a provider extension's behaviour
 When the consumer is built
 Then it imports only the provider's `contract` (the `InjectionToken` + interface) and contains no import of the provider's `shared` or `internal`, and the call resolves at runtime via the app-wired provider.
+
+### AC: internal-register-function
+
+Scenario: One register function binds every contract token
+Given an extension whose `contract` declares N `InjectionToken`s and whose `internal` lib exposes `provide<Name>Internal()`
+When that function's returned `Provider[]` is inspected
+Then it contains a binding to a concrete implementation for each of the N tokens, and the app wires the entire extension by calling that single function once at bootstrap.
+
+Scenario: A new capability is wired in the one register function
+Given a new `InjectionToken` added to an extension's `contract`
+When the extension is made functional
+Then the token's `{ provide, useExisting }` binding is added to `provide<Name>Internal()` rather than to app-level or per-token wiring.
 
 ### AC: lib-naming
 
