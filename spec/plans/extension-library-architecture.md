@@ -28,7 +28,7 @@ Sequenced by hard dependency (`**Depends-On:**` encodes the DAG `specstudio:impl
 
 **Verifies:** extension-library-architecture#ac:nx-tag-enforcement
 **Depends-On:** —
-**Status:** done
+**Status:** complete
 
 Create `feat/extension-library-architecture` off `origin/main`. Define the tier tags (`type:contract` | `type:shared` | `type:internal`), the `ext:<name>` convention, and `scope:foundation` on foundational libs (`core`, `space-models`, `ui`, `components`, …). Add the `@nx/eslint-plugin` `enforce-module-boundaries` rule with the tier dependency matrix in `eslint.config.js`, initially at `warn` so the pre-migration tree still builds.
 
@@ -38,7 +38,7 @@ Create `feat/extension-library-architecture` off `origin/main`. Define the tier 
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition, extension-library-architecture#ac:lib-naming, extension-library-architecture#ac:internal-not-in-tsconfig-paths
 **Depends-On:** 1
-**Status:** done
+**Status:** complete
 
 Scaffold empty `@sneat/extension-contactus-contract`, `@sneat/extension-contactus-shared`, and `@sneat/extension-contactus-internal` libs (project.json with tier + `ext:contactus` tags, package.json, index). Add `paths` entries for `-contract` and `-shared` only; deliberately omit `-internal` from `tsconfig.base.json` `paths`.
 
@@ -48,7 +48,7 @@ Scaffold empty `@sneat/extension-contactus-contract`, `@sneat/extension-contactu
 
 **Verifies:** extension-library-architecture#ac:contract-lib-runtime-light, extension-library-architecture#ac:di-token-inversion
 **Depends-On:** 2
-**Status:** done
+**Status:** complete
 
 Move interfaces/DTOs/enums from `contactus-core` (and types stranded in `-shared`/`-services`, e.g. `PersonTitle`, `MemberGroup`, `IUpdateContactRequest`) into `extension-contactus-contract`, and define the `InjectionToken`s + interfaces for the cross-extension services — at minimum `ContactService` and `ContactusSpaceService` (the ×29 / ×16 consumers) — keeping the lib runtime-light (no heavy `@sneat/*` peers). Repoint every reference repo-wide (contactus internals, `calendarius`, `app`, `space-*`) to the new contract import, and delete the moved symbols from `contactus-core`.
 
@@ -58,7 +58,7 @@ Move interfaces/DTOs/enums from `contactus-core` (and types stranded in `-shared
 
 **Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:di-token-inversion
 **Depends-On:** 3
-**Status:** done
+**Status:** complete
 
 Move services (`ContactService`, `ContactusSpaceService`, `MemberService`, `InviteService`, nav/group services), dialogs, pages, private components, and the runtime remainder of `contactus-core` into `extension-contactus-internal`; bind each contract token to its concrete provider. Repoint consumers (`calendarius`, `app`, `space-*`) to inject the cross-extension services via contract tokens instead of importing them, then drop the emptied `contactus-services` lib (and `-core` remainder). No other extension imports this lib.
 
@@ -68,7 +68,7 @@ Move services (`ContactService`, `ContactusSpaceService`, `MemberService`, `Invi
 
 **Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:shared-lib-no-internal
 **Depends-On:** 4
-**Status:** done
+**Status:** complete
 
 Move the ~9 externally-consumed reusable units (`ContactDetailsComponent`, `PersonWizardComponent`, `ContactsAsBadgesComponent`, `FamilyMembersComponent`, `LocationFormComponent`, `MembersSelectorModule`, `ContactsSelectorModule`, `ContactTitlePipe`, `SelectedContactsPipe`) into `extension-contactus-shared`, refactoring each to obtain services via Task 3 contract tokens (zero `-internal` imports). Repoint consumer component imports to `extension-contactus-shared`, then drop the emptied `contactus-shared` and `contactus-internal` libs. `calendarius → contactus` is the cross-extension PoC: after this task it imports only contactus `-contract` + `-shared`, never `-internal`.
 
@@ -76,11 +76,11 @@ Move the ~9 externally-consumed reusable units (`ContactDetailsComponent`, `Pers
 
 ### Task 6: Flip enforcement strict + wire providers + verify CI
 
-**Verifies:** extension-library-architecture#ac:nx-tag-enforcement, extension-library-architecture#ac:shared-lib-no-internal, extension-library-architecture#ac:internal-not-in-tsconfig-paths
+**Verifies:** extension-library-architecture#ac:nx-tag-enforcement, extension-library-architecture#ac:shared-lib-no-internal, extension-library-architecture#ac:internal-not-in-tsconfig-paths, extension-library-architecture#ac:internal-register-function
 **Depends-On:** 5
-**Status:** done
+**Status:** complete
 
-Wire the contract-token providers at app bootstrap. Flip `enforce-module-boundaries` from `warn` to `error`. Run the full `sneat-libs` CI (lint, build, test) and confirm it is green with zero cross-extension `-internal` imports and a deliberate violating import correctly failing lint.
+Wire the contract-token providers at app bootstrap via the extension's single `provide<Name>Internal()` register function, which binds every contract token to its concrete implementation in one place. Flip `enforce-module-boundaries` from `warn` to `error`. Run the full `sneat-libs` CI (lint, build, test) and confirm it is green with zero cross-extension `-internal` imports and a deliberate violating import correctly failing lint.
 
 **Notes:** Touches shared config — run solo.
 
@@ -88,7 +88,7 @@ Wire the contract-token providers at app bootstrap. Flip `enforce-module-boundar
 
 **Verifies:** extension-library-architecture#ac:three-lib-decomposition
 **Depends-On:** 6
-**Status:** done
+**Status:** complete
 
 Confirm all four old contactus libs (`-core`/`-services`/`-shared`/`-internal`) and their `project.json`/`tsconfig` `paths` entries are gone (remove any residue). Reconciling sweep: confirm every per-task worktree was already removed and its branch deleted; remove stragglers via `git worktree prune` + `git branch -d`, leaving only `feat/extension-library-architecture`.
 

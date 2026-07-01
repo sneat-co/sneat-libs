@@ -19,6 +19,44 @@ Each publishable library needs `"publishConfig": { "access": "public" }` and Nx
 release config before its first npm publish — see
 [`publish-sneat-extension.md`](https://github.com/sneat-co/backstage/blob/main/docs/howto/publish-sneat-extension.md).
 
+## Registering implementations — one register function per extension
+
+The **`internal`** lib (the extension's implementation lib) MUST expose a single
+registration function that binds **every** contract `InjectionToken` to its
+concrete implementation in one place:
+
+```ts
+// libs/extensions/<id>/internal/src/lib/provide-<id>-internal.ts
+export function provide<Name>Internal(): Provider[] {
+  return [
+    FooService,
+    { provide: FOO_SERVICE, useExisting: FooService },
+    BarService,
+    { provide: BAR_SERVICE, useExisting: BarService },
+    // …one binding per contract token — none omitted
+  ];
+}
+```
+
+Why one function that binds *all* tokens (see the
+[`extension-library-architecture`](../../spec/features/extension-library-architecture/README.md)
+`internal-register-function` REQ):
+
+- **Single wiring call.** The host app enables the whole extension by calling
+  `provide<Name>Internal()` once at bootstrap — no per-token wiring scattered
+  across the app or across several `provide…` helpers.
+- **Single audit site.** "Is every contract token wired?" has one answer: this
+  function. A new capability is a new `{ provide: TOKEN, useExisting: Impl }`
+  line here — nowhere else.
+- **No unbound-token crashes.** Because the token (in `contract`) and its binding
+  (here) ship from the same extension, a consumer that injects the token can
+  never resolve it to nothing.
+
+Consumers — including sibling extensions — depend only on the `contract` token +
+interface and never import the `internal`/`shared` implementation directly (the
+[`di-token-inversion`](../../spec/features/extension-library-architecture/README.md)
+rule; enforced by nx `enforce-module-boundaries`).
+
 ## The standalone app — `<ext-id>-app`
 
 Every extension ships an Nx **application** that hosts the extension in a minimal
