@@ -1,3 +1,14 @@
+## 0.17.0 (2026-07-01)
+
+### 🚀 Features
+
+- **core:** add isReservedPublicPath + root-mount routing standard ([#28](https://github.com/sneat-co/sneat-libs/pull/28))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8 (1M context)
+
 ## 0.16.0 (2026-07-01)
 
 ### 🚀 Features
