@@ -6,3 +6,5 @@ export * from './lib/services/space-context.service';
 export * from './lib/services/space-module.service';
 
 export * from './lib/components/with-space-input.directive';
+
+export * from './lib/guards/space-home-redirect.guard';
