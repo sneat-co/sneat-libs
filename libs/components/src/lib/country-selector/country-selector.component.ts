@@ -11,7 +11,13 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
+import {
+  IonButton,
+  IonItem,
+  IonLabel,
+  IonSegment,
+  IonSegmentButton,
+} from '@ionic/angular/standalone';
 import { ISelectItem, SelectFromListComponent } from '@sneat/ui';
 import { GeoRegion, ICountry } from './countries';
 import { CountriesLoaderService } from './countries-loader.service';
@@ -19,7 +25,15 @@ import { CountriesLoaderService } from './countries-loader.service';
 @Component({
   selector: 'sneat-country-selector',
   templateUrl: './country-selector.component.html',
-  imports: [FormsModule, SelectFromListComponent, IonSegment, IonSegmentButton],
+  imports: [
+    FormsModule,
+    SelectFromListComponent,
+    IonSegment,
+    IonSegmentButton,
+    IonItem,
+    IonLabel,
+    IonButton,
+  ],
 })
 export class CountrySelectorComponent implements OnInit, OnChanges {
   private readonly countriesLoader = inject(CountriesLoaderService);
@@ -50,6 +64,9 @@ export class CountrySelectorComponent implements OnInit, OnChanges {
   protected readonly allCountries = signal<readonly ICountry[]>([]);
   protected readonly unknownCountry = signal<ICountry | undefined>(undefined);
 
+  // True when the country list failed to load — surfaced in the UI with a Retry.
+  protected readonly loadFailed = this.countriesLoader.loadFailed;
+
   protected readonly countries = computed<readonly ISelectItem[]>(() => {
     const allCountries = this.allCountries();
     if (allCountries.length === 0) {
@@ -74,13 +91,21 @@ export class CountrySelectorComponent implements OnInit, OnChanges {
   });
 
   ngOnInit(): void {
-    // Load countries data
+    this.load();
+  }
+
+  private load(): void {
     this.countriesLoader.getCountries().then((countries) => {
       this.allCountries.set(countries);
     });
     this.countriesLoader.getUnknownCountry().then((unknown) => {
       this.unknownCountry.set(unknown);
     });
+  }
+
+  // Retry loading the country list after a failure (loadFailed()).
+  protected retry(): void {
+    this.countriesLoader.reload().then(() => this.load());
   }
 
   // protected geoRegion: GeoRegion | 'All' | 'Americas' = 'All';

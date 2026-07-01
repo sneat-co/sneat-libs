@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { GeoRegion, ICountry } from './countries';
@@ -19,6 +19,13 @@ export class CountriesLoaderService {
   private loadPromise?: Promise<void>;
 
   /**
+   * True when the last load attempt failed (countries.json couldn't be
+   * fetched/parsed). Consumers can read this to show an error in the UI. Reset
+   * to false on a successful (re)load. See `reload()` to retry.
+   */
+  readonly loadFailed = signal(false);
+
+  /**
    * Loads country data from JSON file.
    * Subsequent calls return the same promise (singleton pattern).
    */
@@ -33,8 +40,10 @@ export class CountriesLoaderService {
           this.countriesData = await firstValueFrom(
             this.http.get<CountriesData>('assets/data/countries.json'),
           );
+          this.loadFailed.set(false);
         } catch (error) {
           console.error('Failed to load countries:', error);
+          this.loadFailed.set(true);
           // Set to empty to avoid repeated failures
           this.countriesData = {
             countriesByID: {},
@@ -51,6 +60,16 @@ export class CountriesLoaderService {
     }
 
     return this.loadPromise;
+  }
+
+  /**
+   * Discards the cached data and re-attempts the load — used to retry after a
+   * failure (`loadFailed()` is true). Resolves once the reload settles.
+   */
+  async reload(): Promise<void> {
+    this.countriesData = undefined;
+    this.loadPromise = undefined;
+    await this.loadCountries();
   }
 
   /**

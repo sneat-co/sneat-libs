@@ -1,3 +1,12 @@
+@if (loadFailed()) {
+  <ion-item color="danger" lines="none">
+    <ion-label class="ion-text-wrap">
+      Couldn't load the list of countries. Check your connection and try again.
+    </ion-label>
+    <ion-button slot="end" fill="clear" (click)="retry()">Retry</ion-button>
+  </ion-item>
+}
+
 <sneat-select-from-list
   [value]="countryID || ''"
   [isFilterable]="true"
