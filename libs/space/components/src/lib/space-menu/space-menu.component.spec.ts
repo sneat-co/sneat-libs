@@ -92,4 +92,11 @@ describe('SpaceMenuComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('renders the Sizes menu item for the sizeus extension', () => {
+    const labels = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('ion-label'),
+    ).map((label) => label.textContent?.trim());
+    expect(labels).toContain('Sizes');
+  });
 });

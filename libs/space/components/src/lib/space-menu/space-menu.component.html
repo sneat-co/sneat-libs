@@ -154,6 +154,20 @@
     <ion-icon name="people-circle-outline" slot="start" />
     <ion-label>Members</ion-label>
   </ion-item>
+  <!-- Sizes — the sizeus extension (extension id: sizeus). The `sizes` space
+       route (space matrix + contact Sizes aspect) is registered by the
+       consuming app; frontend libs live in github.com/sneat-co/sizeus. -->
+  <ion-item
+    tappable
+    [routerLink]="spacePageUrl('sizes')"
+    routerDirection="root"
+    [disabled]="$disabled()"
+    [class.currentPage]="$currentPage() === 'sizes'"
+    (click)="goSpacePage($event, 'sizes')"
+  >
+    <ion-icon name="shirt-outline" slot="start" />
+    <ion-label>Sizes</ion-label>
+  </ion-item>
   <ion-item
     tappable
     [routerLink]="spacePageUrl('trackers')"
