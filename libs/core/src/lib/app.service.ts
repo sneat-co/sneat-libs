@@ -27,7 +27,10 @@ export type SneatApp =
   | 'parish'
   | 'renterra'
   | 'rsvp'
-  | 'sizechart'
+  // 'sizeus' was previously registered as 'sizechart'; the legacy literal is
+  // still accepted via the open `string & {}` arm below, so the rename is
+  // non-breaking for any caller that still passes 'sizechart'.
+  | 'sizeus'
   | 'splitus'
   | 'sportclubs'
   | 'template'
