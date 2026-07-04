@@ -1,3 +1,14 @@
+## 0.19.0 (2026-07-04)
+
+### 🚀 Features
+
+- **space-components:** add Sizes space-menu entry + reconcile sizechart app id to sizeus ([#31](https://github.com/sneat-co/sneat-libs/pull/31), [#3444](https://github.com/sneat-co/sneat-libs/issues/3444))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8 (1M context)
+
 ## 0.18.0 (2026-07-01)
 
 ### 🚀 Features
