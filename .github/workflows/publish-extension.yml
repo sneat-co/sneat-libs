@@ -10,9 +10,10 @@ name: Publish extension to npm
 # library, and runs `nx release publish` for it with sneat-libs' NPM_TOKEN.
 #
 # Private source repos: the default GITHUB_TOKEN can only read sneat-libs, so a
-# PRIVATE target (e.g. sneat-co/requoter) needs the REPO_CHECKOUT_TOKEN secret — a
-# PAT / fine-grained token with Contents:read on that repo. Public targets don't
-# need it (checkout falls back to the default token when the secret is unset).
+# PRIVATE target (e.g. sneat-co/requoter) needs the SNEAT_CI_READWRITE_TOKEN
+# secret — the ecosystem-wide fine-grained CI PAT (Contents R/W, all sneat-co
+# repos). Public targets don't need it (checkout falls back to the default token
+# when the secret is unset).
 #
 # Reusable across repos via inputs — run on demand ("Run workflow"):
 #   repository: sneat-co/eventus   project: ext-eventus
@@ -71,10 +72,11 @@ jobs:
           fetch-depth: 0
           # PRIVATE source repos (e.g. sneat-co/requoter) can't be checked out with
           # this repo's default GITHUB_TOKEN — it's scoped to sneat-libs only. Set
-          # the REPO_CHECKOUT_TOKEN secret to a PAT / fine-grained token with
-          # Contents:read on the private source repo(s). Public repos need nothing:
-          # the expression falls back to the default token when the secret is unset.
-          token: ${{ secrets.REPO_CHECKOUT_TOKEN || github.token }}
+          # the ecosystem SNEAT_CI_READWRITE_TOKEN secret (fine-grained PAT, all
+          # sneat-co repos) on this repo to publish a private-source extension.
+          # Public repos need nothing: the expression falls back to the default
+          # token when the secret is unset.
+          token: ${{ secrets.SNEAT_CI_READWRITE_TOKEN || github.token }}
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ inputs.pnpm-version }}
