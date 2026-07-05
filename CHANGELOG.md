@@ -1,3 +1,14 @@
+## 0.20.0 (2026-07-05)
+
+### 🚀 Features
+
+- **api:** repoint ecosystem API base URL to api.sneat.co (Cloud Run) ([#33](https://github.com/sneat-co/sneat-libs/pull/33))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.19.0 (2026-07-04)
 
 ### 🚀 Features
