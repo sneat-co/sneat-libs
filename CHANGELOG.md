@@ -1,3 +1,14 @@
+## 0.21.0 (2026-07-06)
+
+### 🚀 Features
+
+- **api:** repoint ecosystem API base URL to api.sneat.cloud ([#34](https://github.com/sneat-co/sneat-libs/pull/34))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.20.0 (2026-07-05)
 
 ### 🚀 Features
