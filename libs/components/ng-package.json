@@ -5,6 +5,7 @@
     "entryFile": "src/index.ts"
   },
   "assets": [
-    "src/**/*.scss"
+    "src/**/*.scss",
+    "src/assets/**/*"
   ]
 }
