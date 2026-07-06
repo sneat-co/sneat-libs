@@ -17,13 +17,16 @@ export const SneatApiAuthTokenProvider = new InjectionToken(
   'SneatApiAuthTokenProvider',
 );
 export const SneatApiBaseUrl = new InjectionToken('SneatApiBaseUrl');
-// Ecosystem API base URL. Points at api.sneat.co, which fronts the Cloud Run
-// deployment of sneat-go (the deploy target that actually ships every backend
-// change — the legacy GAE deploy behind api.sneat.ws was serving a stale binary,
-// missing schoolus and everything since the requoter module was added). All apps
-// using getStandardSneatProviders() inherit this, so it is the single repoint
-// seam for the whole ecosystem.
-export const DefaultSneatAppApiBaseUrl = 'https://api.sneat.co/v0/';
+// Ecosystem API base URL. Points at api.sneat.cloud — the dedicated API zone
+// (its own Cloudflare zone, so the API's analytics/WAF/rate-limits are decoupled
+// from the landings on sneat.co). It fronts the Cloud Run deployment of sneat-go
+// (the deploy target that actually ships every backend change — the legacy GAE
+// deploy behind api.sneat.ws served a stale binary, missing schoolus and
+// everything since the requoter module). A Cloudflare Worker (sneat-api-proxy)
+// rewrites Host so Cloud Run routes correctly. All apps using
+// getStandardSneatProviders() inherit this, so it is the single repoint seam for
+// the whole ecosystem.
+export const DefaultSneatAppApiBaseUrl = 'https://api.sneat.cloud/v0/';
 
 @Injectable({ providedIn: 'root' }) // Should it be in root? Probably it is OK.
 export class SneatApiService implements ISneatApiService, OnDestroy {
