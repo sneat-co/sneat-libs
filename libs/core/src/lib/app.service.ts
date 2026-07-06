@@ -34,6 +34,8 @@ export type SneatApp =
   | 'tournament'
   | 'trackus'
   | 'datatug'
+  | 'motorius'
+  | 'yachtius'
   // Open arm: accept any appId (e.g. third-party apps) while keeping the
   // literal suggestions above. Do not remove — this is what makes the union
   // extensible without a platform release per new app.
