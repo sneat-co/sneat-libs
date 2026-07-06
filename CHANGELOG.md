@@ -1,3 +1,14 @@
+## 0.21.1 (2026-07-06)
+
+### 🩹 Fixes
+
+- **components:** ship src/assets in the published package (countries.json) ([#35](https://github.com/sneat-co/sneat-libs/pull/35))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.21.0 (2026-07-06)
 
 ### 🚀 Features
