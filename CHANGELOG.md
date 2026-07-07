@@ -1,3 +1,14 @@
+## 0.22.0 (2026-07-07)
+
+### 🚀 Features
+
+- **space-services:** add spaceHomeRedirectGuard(page) factory ([e634507](https://github.com/sneat-co/sneat-libs/commit/e634507))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8 (1M context)
+
 ## 0.21.1 (2026-07-06)
 
 ### 🩹 Fixes
