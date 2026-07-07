@@ -7,6 +7,7 @@ import {
 } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { FireAnalyticsService } from './fire-analytics.service';
+import { GtagAnalyticsService } from './gtag-analytics.service';
 import { MultiAnalyticsService } from './multi-analytics.service';
 import { PosthogAnalyticsService } from './posthog-analytics.service';
 import { Provider } from '@angular/core';
@@ -14,6 +15,9 @@ import { Provider } from '@angular/core';
 export interface IAnalyticsConfig {
   addPosthog?: boolean;
   addFirebaseAnalytics?: boolean;
+  // GA4 measurement ID for the app's own per-domain property (the same stream
+  // its marketing landing uses). When set, a gtag-based GA4 backend is added.
+  googleAnalyticsMeasurementId?: string;
 }
 
 function getAnalyticsConfig(
@@ -23,6 +27,7 @@ function getAnalyticsConfig(
     location.host === 'sneat.app' || location.protocol === 'https:';
 
   const firebaseMeasurementId = environmentConfig.firebaseConfig?.measurementId;
+  const gaMeasurementId = environmentConfig.googleAnalytics?.measurementId;
 
   return {
     addPosthog: useAnalytics && !!environmentConfig.posthog?.token,
@@ -30,6 +35,7 @@ function getAnalyticsConfig(
       useAnalytics &&
       !!firebaseMeasurementId &&
       firebaseMeasurementId !== 'G-PROVIDE_IF_NEEDED',
+    googleAnalyticsMeasurementId: useAnalytics ? gaMeasurementId : undefined,
   };
 }
 
@@ -48,6 +54,9 @@ export function provideSneatAnalytics(
       const as: IAnalyticsService[] = [];
       if (config?.addPosthog) {
         as.push(new PosthogAnalyticsService());
+      }
+      if (config?.googleAnalyticsMeasurementId) {
+        as.push(new GtagAnalyticsService(config.googleAnalyticsMeasurementId));
       }
       if (config?.addFirebaseAnalytics) {
         const analytics: Analytics = fbApp && getAnalytics(fbApp); // Ideally we would want to get it from the DI

@@ -40,10 +40,18 @@ export interface IPosthogSettings {
   >;
 }
 
+export interface IGoogleAnalyticsSettings {
+  // GA4 measurement ID (G-XXXXXXXX) for this app's own per-domain property —
+  // the same property/stream its marketing landing uses. When set, a gtag-based
+  // GA4 backend is added to the analytics fan-out (see provideSneatAnalytics).
+  readonly measurementId: string;
+}
+
 export interface IEnvironmentConfig {
   production: boolean;
   useNgrok?: boolean;
   posthog?: IPosthogSettings;
+  googleAnalytics?: IGoogleAnalyticsSettings;
   sentry?: BrowserOptions;
   agents: Record<string, string>;
   firebaseConfig: IFirebaseConfig;
