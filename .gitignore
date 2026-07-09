@@ -8,3 +8,4 @@ coverage
 .nx/workspace-data
 specscore.local.yaml
 .specscore/
+.DS_Store
