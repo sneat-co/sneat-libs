@@ -1,6 +1,6 @@
 {
   "name": "@sneat/extension-calendarius-shared",
-  "version": "0.22.0",
+  "version": "0.22.1",
   "publishConfig": {
     "access": "public"
   },
