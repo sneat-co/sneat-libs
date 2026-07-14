@@ -1,3 +1,18 @@
+## 0.23.0 (2026-07-14)
+
+### 🚀 Features
+
+- **core:** register motorius + yachtius as first-party SneatApp literals ([bfdb7d4](https://github.com/sneat-co/sneat-libs/commit/bfdb7d4))
+
+### 🩹 Fixes
+
+- stop calendar listeners when spaces clear ([e5a0c62](https://github.com/sneat-co/sneat-libs/commit/e5a0c62))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 4.8 (1M context)
+
 ## 0.22.1 (2026-07-12)
 
 This was a version bump only, there were no code changes.
