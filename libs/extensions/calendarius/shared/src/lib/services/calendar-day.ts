@@ -99,9 +99,8 @@ export class CalendarDay {
     runInInjectionContext(injector, () => {
       this.effectRef = effect(() => {
         const inputs = $inputs();
+        this.unsubscribeFromInputs();
         inputs.forEach((input) => {
-          this.subscriptions.forEach((s) => s.unsubscribe());
-          this.subscriptions.length = 0;
           this.processSpaceID(input.spaceID);
           this.subscribeForRecurrings(input.recurringSlots$);
         });
@@ -111,8 +110,14 @@ export class CalendarDay {
 
   public destroy(): void {
     this.effectRef?.destroy();
+    this.unsubscribeFromInputs();
     this.destroyed$.next();
     this.destroyed$.complete();
+  }
+
+  private unsubscribeFromInputs(): void {
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+    this.subscriptions.length = 0;
   }
 
   private readonly processSpaceID = (spaceID: string | undefined) => {
