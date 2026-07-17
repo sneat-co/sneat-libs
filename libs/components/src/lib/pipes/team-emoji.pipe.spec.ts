@@ -15,7 +15,6 @@ describe('SpaceEmojiPipe', () => {
       { type: 'realtor', emoji: '🏘️' },
       { type: 'parish', emoji: '⛪' },
       { type: 'personal', emoji: '🕶️' },
-      { type: 'private', emoji: '🕶️' },
       { type: 'unknown', emoji: undefined },
     ];
 
