@@ -1,8 +1,10 @@
 export const SpaceTypeFamily = 'family';
+export const SpaceTypePersonal = 'personal';
 
 export type SpaceType =
   | 'family'
-  | 'private'
+  | 'personal'
+  | 'private' // reserved for future restricted-visibility spaces — do not use for personal/home spaces
   | 'company'
   | 'team'
   | 'parish'

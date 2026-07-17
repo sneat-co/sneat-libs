@@ -31,13 +31,13 @@ describe('spaceHomeRedirectGuard', () => {
   });
 
   it('fast-paths to the remembered active space + page segment', async () => {
-    writeCurrentSpace({ id: 's2', type: 'private' });
+    writeCurrentSpace({ id: 's2', type: 'personal' });
     const result = await run('requoter', {
       status: 'authenticated',
       record: { spaces: {} },
     });
-    expect(parseUrl).toHaveBeenCalledWith('/space/private/s2/requoter');
-    expect((result as { url: string }).url).toBe('/space/private/s2/requoter');
+    expect(parseUrl).toHaveBeenCalledWith('/space/personal/s2/requoter');
+    expect((result as { url: string }).url).toBe('/space/personal/s2/requoter');
   });
 
   it('redirects to the family space + page when no active space', async () => {
@@ -46,7 +46,7 @@ describe('spaceHomeRedirectGuard', () => {
       record: {
         spaces: {
           fam: { type: 'family', title: 'Family' },
-          me: { type: 'private', title: 'Me' },
+          me: { type: 'personal', title: 'Me' },
         },
       },
     });
@@ -56,7 +56,7 @@ describe('spaceHomeRedirectGuard', () => {
   it('renders the fallback (returns true) when there is no family space', async () => {
     const result = await run('requoter', {
       status: 'authenticated',
-      record: { spaces: { me: { type: 'private', title: 'Me' } } },
+      record: { spaces: { me: { type: 'personal', title: 'Me' } } },
     });
     expect(result).toBe(true);
     expect(parseUrl).not.toHaveBeenCalled();

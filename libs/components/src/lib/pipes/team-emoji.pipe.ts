@@ -17,6 +17,8 @@ export class SpaceEmojiPipe implements PipeTransform {
         return '🏘️';
       case 'parish':
         return '⛪';
+      case 'personal':
+        return '🕶️';
       case 'private':
         return '🕶️';
       default:

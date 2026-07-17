@@ -60,7 +60,7 @@ export class SpacesMenuComponent extends SneatBaseComponent {
         ? userSpaces?.filter((t) => t.type === this.spaceType)
         : userSpaces) || [];
     if (!this.spaceType) {
-      const addPseudoSpace = (type: 'family' | 'private'): void => {
+      const addPseudoSpace = (type: 'family' | 'personal'): void => {
         if (!spaces.some((t) => t.type === type)) {
           spaces.push({
             id: '',
@@ -75,11 +75,11 @@ export class SpacesMenuComponent extends SneatBaseComponent {
         }
       };
       addPseudoSpace('family');
-      addPseudoSpace('private');
+      addPseudoSpace('personal');
     }
     const sortOrder: Record<string, number> = {
       family: 1,
-      private: 2,
+      personal: 2,
     };
     spaces.sort((a: ISpaceContext, b: ISpaceContext) => {
       // Determine the sorting priority (lower values mean higher priority)
