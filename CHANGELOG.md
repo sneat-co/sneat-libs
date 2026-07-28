@@ -1,3 +1,15 @@
+## 0.24.0 (2026-07-28)
+
+### 🚀 Features
+
+- **core:** introduce SpaceType 'personal' for personal/home spaces ([acd5961](https://github.com/sneat-co/sneat-libs/commit/acd5961))
+- **core:** support Circleus group spaces ([#39](https://github.com/sneat-co/sneat-libs/pull/39))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.23.0 (2026-07-14)
 
 ### 🚀 Features
