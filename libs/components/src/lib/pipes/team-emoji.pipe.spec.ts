@@ -9,6 +9,7 @@ describe('SpaceEmojiPipe', () => {
   const testCases: { type: SpaceType | 'unknown'; emoji: string | undefined }[] =
     [
       { type: 'family', emoji: '👨‍👩‍👧‍👦' },
+      { type: 'group', emoji: '🤝' },
       { type: 'cohabit', emoji: '🤝' },
       { type: 'sport_club', emoji: '⚽' },
       { type: 'educator', emoji: '💃' },

@@ -1,17 +1,18 @@
 import { ISpaceRef } from './interfaces';
-import { SpaceType } from './team-type';
+import { parseSpaceType } from './team-type';
 
 const CURRENT_SPACE_STORAGE_KEY = 'sneat.currentSpace';
 
 /** Persists the user's current space so it can be restored after login. */
 export function writeCurrentSpace(space: ISpaceRef): void {
-  if (!space.id || !space.type) {
+  const type = parseSpaceType(space.type);
+  if (!space.id || !type) {
     return;
   }
   try {
     localStorage.setItem(
       CURRENT_SPACE_STORAGE_KEY,
-      JSON.stringify({ id: space.id, type: space.type }),
+      JSON.stringify({ id: space.id, type }),
     );
   } catch {
     // Ignore storage errors (e.g. disabled/full storage in private mode).
@@ -34,9 +35,14 @@ export function readCurrentSpace(): ISpaceRef | undefined {
     if (!value) {
       return undefined;
     }
-    const parsed = JSON.parse(value) as Partial<ISpaceRef>;
-    return parsed.id && parsed.type
-      ? { id: parsed.id, type: parsed.type as SpaceType }
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== 'object') {
+      return undefined;
+    }
+    const { id, type } = parsed as Record<string, unknown>;
+    const parsedType = parseSpaceType(type);
+    return typeof id === 'string' && id && parsedType
+      ? { id, type: parsedType }
       : undefined;
   } catch {
     return undefined;

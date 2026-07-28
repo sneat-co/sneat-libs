@@ -1,3 +1,4 @@
+import { TitleCasePipe } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UserRequiredFieldsService } from '@sneat/auth-ui';
@@ -38,7 +39,10 @@ describe('SpacesListComponent', () => {
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
       .overrideComponent(SpacesListComponent, {
-        set: { imports: [], schemas: [CUSTOM_ELEMENTS_SCHEMA] },
+        set: {
+          imports: [TitleCasePipe],
+          schemas: [CUSTOM_ELEMENTS_SCHEMA],
+        },
       })
       .compileComponents();
     fixture = TestBed.createComponent(SpacesListComponent);
@@ -47,5 +51,17 @@ describe('SpacesListComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('renders the personal-space icon without treating a removed private type as valid', () => {
+    fixture.componentRef.setInput('spaces', [
+      { id: 'home-1', type: 'personal', brief: { title: 'Home' } },
+    ]);
+    fixture.detectChanges();
+
+    const icon = fixture.nativeElement.querySelector('ion-icon[slot="start"]') as {
+      name: string;
+    };
+    expect(icon.name).toBe('person-circle-outline');
   });
 });
