@@ -5,13 +5,14 @@ const CURRENT_SPACE_STORAGE_KEY = 'sneat.currentSpace';
 
 /** Persists the user's current space so it can be restored after login. */
 export function writeCurrentSpace(space: ISpaceRef): void {
-  if (!space.id || !space.type) {
+  const type = parseSpaceType(space.type);
+  if (!space.id || !type) {
     return;
   }
   try {
     localStorage.setItem(
       CURRENT_SPACE_STORAGE_KEY,
-      JSON.stringify({ id: space.id, type: space.type }),
+      JSON.stringify({ id: space.id, type }),
     );
   } catch {
     // Ignore storage errors (e.g. disabled/full storage in private mode).

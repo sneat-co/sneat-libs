@@ -5,6 +5,7 @@ import {
   readCurrentSpace,
   writeCurrentSpace,
 } from './current-space-storage';
+import type { ISpaceRef } from './interfaces';
 
 const storage = new Map<string, string>();
 
@@ -25,6 +26,18 @@ describe('current space storage', () => {
     expect(readCurrentSpace()).toEqual({ id: 'circle-1', type: 'group' });
     expect(currentSpacePath()).toBe('/space/group/circle-1');
   });
+
+  it.each(['unknown', 'private', 'friends', 'not-a-space-type'])(
+    'does not overwrite the current space with forged type %j',
+    (type) => {
+      writeCurrentSpace({ id: 'circle-1', type: 'group' });
+
+      writeCurrentSpace({ id: 'forged', type } as unknown as ISpaceRef);
+
+      expect(readCurrentSpace()).toEqual({ id: 'circle-1', type: 'group' });
+      expect(currentSpacePath()).toBe('/space/group/circle-1');
+    },
+  );
 
   it.each([
     [
