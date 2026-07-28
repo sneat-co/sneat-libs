@@ -3,7 +3,7 @@ import { ParamMap } from '@angular/router';
 import { distinctUntilChanged, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ISpaceContext } from '@sneat/space-models';
-import { SpaceType } from '@sneat/core';
+import { parseSpaceType } from '@sneat/core';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +29,7 @@ export function trackSpaceIdAndTypeFromRouteParameter(
   return paramMap$.pipe(
     map((params) => {
       const id = params.get('spaceID'),
-        type = params.get('spaceType') as SpaceType;
+        type = parseSpaceType(params.get('spaceType'));
       // console.log('trackSpaceIdAndTypeFromRouteParameter', params, id, type);
       const spaceContext: ISpaceContext | undefined = id
         ? { id: id, type: type || undefined }

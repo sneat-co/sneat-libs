@@ -9,6 +9,8 @@ export class SpaceEmojiPipe implements PipeTransform {
         return '👨‍👩‍👧‍👦';
       case 'cohabit':
         return '🤝';
+      case 'group':
+        return '🤝';
       case 'sport_club':
         return '⚽';
       case 'educator':

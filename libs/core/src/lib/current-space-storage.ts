@@ -1,5 +1,5 @@
 import { ISpaceRef } from './interfaces';
-import { SpaceType } from './team-type';
+import { parseSpaceType } from './team-type';
 
 const CURRENT_SPACE_STORAGE_KEY = 'sneat.currentSpace';
 
@@ -34,9 +34,14 @@ export function readCurrentSpace(): ISpaceRef | undefined {
     if (!value) {
       return undefined;
     }
-    const parsed = JSON.parse(value) as Partial<ISpaceRef>;
-    return parsed.id && parsed.type
-      ? { id: parsed.id, type: parsed.type as SpaceType }
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== 'object') {
+      return undefined;
+    }
+    const { id, type } = parsed as Record<string, unknown>;
+    const parsedType = parseSpaceType(type);
+    return typeof id === 'string' && id && parsedType
+      ? { id, type: parsedType }
       : undefined;
   } catch {
     return undefined;
