@@ -1,22 +1,13 @@
+import { SpaceType } from '@sneat/core-public';
+
+export type { SpaceType } from '@sneat/core-public';
+
 export const SpaceTypeFamily = 'family';
 export const SpaceTypePersonal = 'personal';
 export const SpaceTypeGroup = 'group';
 
 // A restricted-visibility space type may be introduced later if a real use
 // case arises; it was intentionally left out to avoid confusion with 'personal'.
-export type SpaceType =
-  | 'family'
-  | 'personal'
-  | 'group'
-  | 'company'
-  | 'team'
-  | 'parish'
-  | 'educator'
-  | 'realtor'
-  | 'sport_club'
-  | 'cohabit'
-  | 'unknown';
-
 const concreteSpaceTypes = new Set<Exclude<SpaceType, 'unknown'>>([
   SpaceTypeFamily,
   SpaceTypePersonal,

@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { ISneatApiService } from './sneat-api-service.interface';
+import { ISneatApiService, SneatApiService } from '@sneat/api-public';
 import { parseStoreRef } from '@sneat/core';
-import { SneatApiService } from './sneat-api-service';
 
 export const getStoreUrl = (storeId: string): string => {
   if (storeId === 'firestore') {

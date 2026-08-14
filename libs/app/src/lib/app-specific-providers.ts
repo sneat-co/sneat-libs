@@ -3,14 +3,7 @@ import {
   CONTACT_ROLES_BY_TYPE,
   ContactRolesByType,
 } from './contact-extensions';
-import { APP_INFO, IAppInfo } from '@sneat/core';
-
-export function provideAppInfo(appInfo: IAppInfo): Provider {
-  return {
-    provide: APP_INFO,
-    useValue: appInfo,
-  };
-}
+export { provideAppInfo } from '@sneat/app-public';
 
 export function provideRolesByType(
   contactRolesByType: ContactRolesByType | undefined,

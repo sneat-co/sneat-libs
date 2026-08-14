@@ -1,0 +1,13 @@
+{
+  "name": "@sneat/app-ionic",
+  "version": "0.25.0",
+  "publishConfig": { "access": "public" },
+  "peerDependencies": {
+    "@angular/core": ">=21.0.0",
+    "@angular/platform-browser": ">=21.0.0",
+    "@angular/router": ">=21.0.0",
+    "@ionic/angular": ">=8.0.0"
+  },
+  "dependencies": { "tslib": "2.8.1" },
+  "sideEffects": false
+}

@@ -1,0 +1,41 @@
+{
+  "name": "app-public",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/app-public/src",
+  "targets": {
+    "build": { "executor": "@nx/angular:ng-packagr-lite", "outputs": ["{workspaceRoot}/dist/libs/app-public"], "options": { "project": "libs/app-public/ng-package.json", "tsConfig": "libs/app-public/tsconfig.lib.json" } },
+    "test": { "executor": "@nx/vitest:test", "outputs": ["{workspaceRoot}/coverage/libs/app-public"], "options": { "tsConfig": "libs/app-public/tsconfig.spec.json" } },
+    "lint": { "executor": "@nx/eslint:lint" },
+    "verify-bootstrap-boundaries": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": [
+            "api-public",
+            "api-firebase-auth",
+            "api",
+            "app-auth",
+            "app-public",
+            "auth-core",
+            "auth-models",
+            "core-public",
+            "core",
+            "dto",
+            "logging"
+          ],
+          "target": "build"
+        }
+      ],
+      "options": {
+        "commands": [
+          "node tools/verify-public-bootstrap-graph.mjs",
+          "node tools/verify-public-consumer.mjs",
+          "node tools/verify-authenticated-consumer.mjs"
+        ],
+        "parallel": false
+      }
+    }
+  },
+  "tags": ["scope:app", "runtime:public"]
+}

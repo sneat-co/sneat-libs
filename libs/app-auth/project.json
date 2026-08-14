@@ -1,0 +1,12 @@
+{
+  "name": "app-auth",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/app-auth/src",
+  "targets": {
+    "build": { "executor": "@nx/angular:ng-packagr-lite", "outputs": ["{workspaceRoot}/dist/libs/app-auth"], "options": { "project": "libs/app-auth/ng-package.json", "tsConfig": "libs/app-auth/tsconfig.lib.json" } },
+    "test": { "executor": "@nx/vitest:test", "outputs": ["{workspaceRoot}/coverage/libs/app-auth"], "options": { "tsConfig": "libs/app-auth/tsconfig.spec.json" } },
+    "lint": { "executor": "@nx/eslint:lint" }
+  },
+  "tags": ["scope:app", "runtime:authenticated"]
+}

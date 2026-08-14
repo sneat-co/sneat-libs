@@ -207,7 +207,37 @@ importers:
         specifier: 2.8.1
         version: 2.8.1
 
+  libs/api-firebase-auth:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/api-public:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
   libs/app:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/app-auth:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/app-ionic:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/app-public:
     dependencies:
       tslib:
         specifier: 2.8.1
@@ -238,6 +268,12 @@ importers:
         version: 2.8.1
 
   libs/core:
+    dependencies:
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+
+  libs/core-public:
     dependencies:
       tslib:
         specifier: 2.8.1

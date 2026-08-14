@@ -1,0 +1,12 @@
+{
+  "name": "app-ionic",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/app-ionic/src",
+  "targets": {
+    "build": { "executor": "@nx/angular:ng-packagr-lite", "outputs": ["{workspaceRoot}/dist/libs/app-ionic"], "options": { "project": "libs/app-ionic/ng-package.json", "tsConfig": "libs/app-ionic/tsconfig.lib.json" } },
+    "test": { "executor": "@nx/vitest:test", "outputs": ["{workspaceRoot}/coverage/libs/app-ionic"], "options": { "tsConfig": "libs/app-ionic/tsconfig.spec.json" } },
+    "lint": { "executor": "@nx/eslint:lint" }
+  },
+  "tags": ["scope:app", "runtime:ionic-island"]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "api-firebase-auth",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/api-firebase-auth/src",
+  "targets": {
+    "build": { "executor": "@nx/angular:ng-packagr-lite", "outputs": ["{workspaceRoot}/dist/libs/api-firebase-auth"], "options": { "project": "libs/api-firebase-auth/ng-package.json", "tsConfig": "libs/api-firebase-auth/tsconfig.lib.json" } },
+    "test": { "executor": "@nx/vitest:test", "outputs": ["{workspaceRoot}/coverage/libs/api-firebase-auth"], "options": { "tsConfig": "libs/api-firebase-auth/tsconfig.spec.json" } },
+    "lint": { "executor": "@nx/eslint:lint" }
+  },
+  "tags": ["scope:foundation", "runtime:authenticated"]
+}

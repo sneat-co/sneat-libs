@@ -30,6 +30,9 @@
       "@sneat/core": [
         "libs/core/src/index.ts"
       ],
+      "@sneat/core-public": [
+        "libs/core-public/src/index.ts"
+      ],
       "@sneat/core/testing": [
         "libs/core/src/lib/testing/test-setup.ts"
       ],
@@ -53,6 +56,9 @@
       ],
       "@sneat/api": [
         "libs/api/src/index.ts"
+      ],
+      "@sneat/api-public": [
+        "libs/api-public/src/index.ts"
       ],
       "@sneat/logging": [
         "libs/logging/src/index.ts"
@@ -83,6 +89,18 @@
       ],
       "@sneat/app": [
         "libs/app/src/index.ts"
+      ],
+      "@sneat/app-public": [
+        "libs/app-public/src/index.ts"
+      ],
+      "@sneat/app-auth": [
+        "libs/app-auth/src/index.ts"
+      ],
+      "@sneat/app-ionic": [
+        "libs/app-ionic/src/index.ts"
+      ],
+      "@sneat/api-firebase-auth": [
+        "libs/api-firebase-auth/src/index.ts"
       ],
       "@sneat/space-components": [
         "libs/space/components/src/index.ts"

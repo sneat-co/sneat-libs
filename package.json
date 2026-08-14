@@ -6,7 +6,8 @@
   "scripts": {
     "build": "nx run-many -t build --all",
     "test": "nx run-many -t test --all",
-    "lint": "nx run-many -t lint --all"
+    "lint": "nx run-many -t lint --all",
+    "verify:bootstrap-boundaries": "nx run app-public:verify-bootstrap-boundaries"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "~2.3.1",

@@ -18,3 +18,4 @@ jobs:
           node-version: 22
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx run-many -t build,test,lint --all
+      - run: pnpm run verify:bootstrap-boundaries

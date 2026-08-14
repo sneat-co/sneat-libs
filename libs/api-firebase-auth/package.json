@@ -1,0 +1,14 @@
+{
+  "name": "@sneat/api-firebase-auth",
+  "version": "0.25.0",
+  "publishConfig": { "access": "public" },
+  "peerDependencies": {
+    "@angular/common": ">=21.0.0",
+    "@angular/core": ">=21.0.0",
+    "@angular/fire": ">=20",
+    "firebase": "*",
+    "@sneat/api-public": "^0.25.0"
+  },
+  "dependencies": { "tslib": "2.8.1" },
+  "sideEffects": false
+}

@@ -1,0 +1,12 @@
+{
+  "name": "api-public",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/api-public/src",
+  "targets": {
+    "build": { "executor": "@nx/angular:ng-packagr-lite", "outputs": ["{workspaceRoot}/dist/libs/api-public"], "options": { "project": "libs/api-public/ng-package.json", "tsConfig": "libs/api-public/tsconfig.lib.json" } },
+    "test": { "executor": "@nx/vitest:test", "outputs": ["{workspaceRoot}/coverage/libs/api-public"], "options": { "tsConfig": "libs/api-public/tsconfig.spec.json" } },
+    "lint": { "executor": "@nx/eslint:lint" }
+  },
+  "tags": ["scope:foundation", "runtime:public"]
+}
