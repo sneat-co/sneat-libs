@@ -1,3 +1,13 @@
+## 0.25.0 (2026-08-15)
+
+### 🚀 Features
+
+- **app:** split public and authenticated bootstrap ([4e9b7f7](https://github.com/sneat-co/sneat-libs/commit/4e9b7f7))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.24.0 (2026-07-28)
 
 ### 🚀 Features
