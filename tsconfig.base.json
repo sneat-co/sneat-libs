@@ -110,6 +110,12 @@
       ],
       "@sneat/extension-calendarius-shared": [
         "libs/extensions/calendarius/shared/src/index.ts"
+      ],
+      "@sneat/space-nav-ionic": [
+        "libs/space/nav-ionic/src/index.ts"
+      ],
+      "@sneat/space-nav-router": [
+        "libs/space/nav-router/src/index.ts"
       ]
     }
   },

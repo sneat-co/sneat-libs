@@ -14,6 +14,20 @@ import { ISpaceContext } from '@sneat/space-models';
 
 export type ScrumPageTab = 'team' | 'my' | 'risks' | 'qna';
 
+/**
+ * @deprecated Concrete, Ionic-coupled nav service. Kept for backward
+ * compatibility — a currently-published dependency of this monorepo
+ * (`@sneat/extension-contactus-shared@0.12.3`) still imports this class and
+ * `WithSpaceInput` directly from `@sneat/space-services`, so it cannot be
+ * removed from this package's public entry point without breaking that
+ * consumer; see the PR description for the full trade-off.
+ *
+ * New code should depend on `ISpaceNavService` (the `SPACE_NAV_SERVICE`
+ * injection token, also exported from this package) and have the app
+ * provide an implementation via `provideSpaceNavIonicInternal()` from
+ * `@sneat/space-nav-ionic`, or `provideSpaceNavRouterInternal()` from
+ * `@sneat/space-nav-router` for non-Ionic apps.
+ */
 @Injectable({
   providedIn: 'root',
 })

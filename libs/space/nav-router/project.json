@@ -1,0 +1,41 @@
+{
+  "name": "space-nav-router",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/space/nav-router/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": [
+        "{workspaceRoot}/dist/libs/space/nav-router"
+      ],
+      "options": {
+        "project": "libs/space/nav-router/ng-package.json",
+        "tsConfig": "libs/space/nav-router/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/space/nav-router/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": [
+        "{workspaceRoot}/coverage/libs/space/nav-router"
+      ],
+      "options": {
+        "tsConfig": "libs/space/nav-router/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  },
+  "tags": [
+    "scope:foundation"
+  ]
+}
