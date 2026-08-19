@@ -26,7 +26,7 @@ Sequenced by hard dependency (`**Depends-On:**` encodes the DAG `specstudio:impl
 
 ### Task 1: Branch + nx tag taxonomy and enforce-module-boundaries scaffold
 
-**Verifies:** extension-library-architecture#ac:nx-tag-enforcement
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library
 **Depends-On:** —
 **Status:** complete
 
@@ -36,7 +36,7 @@ Create `feat/extension-library-architecture` off `origin/main`. Define the tier 
 
 ### Task 2: Scaffold the three contactus libs
 
-**Verifies:** extension-library-architecture#ac:three-lib-decomposition, extension-library-architecture#ac:lib-naming, extension-library-architecture#ac:internal-not-in-tsconfig-paths
+**Verifies:** extension-library-architecture#ac:lean-extension, extension-library-architecture#ac:single-contract-home, extension-library-architecture#ac:runtime-import-rejected-in-library
 **Depends-On:** 1
 **Status:** complete
 
@@ -46,7 +46,7 @@ Scaffold empty `@sneat/extension-contactus-contract`, `@sneat/extension-contactu
 
 ### Task 3: Contract cutover — move types + tokens, repoint all references
 
-**Verifies:** extension-library-architecture#ac:contract-lib-runtime-light, extension-library-architecture#ac:di-token-inversion
+**Verifies:** extension-library-architecture#ac:single-contract-home, extension-library-architecture#ac:runtime-import-rejected-in-library
 **Depends-On:** 2
 **Status:** complete
 
@@ -56,7 +56,7 @@ Move interfaces/DTOs/enums from `contactus-core` (and types stranded in `-shared
 
 ### Task 4: Internal cutover — move services/pages, provide tokens, repoint consumers
 
-**Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:di-token-inversion
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:runtime-import-rejected-in-library
 **Depends-On:** 3
 **Status:** complete
 
@@ -66,7 +66,7 @@ Move services (`ContactService`, `ContactusSpaceService`, `MemberService`, `Invi
 
 ### Task 5: Shared cutover — move reusable components, repoint consumers
 
-**Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:shared-lib-no-internal
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:reusable-ui-extension
 **Depends-On:** 4
 **Status:** complete
 
@@ -76,7 +76,7 @@ Move the ~9 externally-consumed reusable units (`ContactDetailsComponent`, `Pers
 
 ### Task 6: Flip enforcement strict + wire providers + verify CI
 
-**Verifies:** extension-library-architecture#ac:nx-tag-enforcement, extension-library-architecture#ac:shared-lib-no-internal, extension-library-architecture#ac:internal-not-in-tsconfig-paths, extension-library-architecture#ac:internal-register-function
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:reusable-ui-extension, extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:runtime-import-allowed-at-composition-root
 **Depends-On:** 5
 **Status:** complete
 
@@ -86,11 +86,16 @@ Wire the contract-token providers at app bootstrap via the extension's single `p
 
 ### Task 7: Final lib removal + worktree/branch sweep
 
-**Verifies:** extension-library-architecture#ac:three-lib-decomposition
+**Verifies:** extension-library-architecture#ac:lean-extension
 **Depends-On:** 6
 **Status:** complete
 
 Confirm all four old contactus libs (`-core`/`-services`/`-shared`/`-internal`) and their `project.json`/`tsconfig` `paths` entries are gone (remove any residue). Reconciling sweep: confirm every per-task worktree was already removed and its branch deleted; remove stragglers via `git worktree prune` + `git branch -d`, leaving only `feat/extension-library-architecture`.
+
+## Deferred AC Coverage
+
+- extension-library-architecture#ac:packed-package-smoke-test — add the clean
+  consumer tarball fixture as the implementation packages move to their own repos.
 
 ## Open Questions
 

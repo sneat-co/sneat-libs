@@ -28,7 +28,7 @@ Same hard-cutover model as the contactus plan: move, never copy; one definition 
 
 ### Task 1: Scaffold the three calendarius libs
 
-**Verifies:** extension-library-architecture#ac:three-lib-decomposition, extension-library-architecture#ac:lib-naming, extension-library-architecture#ac:internal-not-in-tsconfig-paths
+**Verifies:** extension-library-architecture#ac:lean-extension, extension-library-architecture#ac:single-contract-home, extension-library-architecture#ac:runtime-import-rejected-in-library
 **Depends-On:** —
 **Status:** complete
 
@@ -38,7 +38,7 @@ Scaffold empty `@sneat/extension-calendarius-contract`, `@sneat/extension-calend
 
 ### Task 2: Contract cutover — move types + define ScheduleNavService token
 
-**Verifies:** extension-library-architecture#ac:contract-lib-runtime-light, extension-library-architecture#ac:di-token-inversion
+**Verifies:** extension-library-architecture#ac:single-contract-home, extension-library-architecture#ac:runtime-import-rejected-in-library
 **Depends-On:** 1
 **Status:** complete
 
@@ -48,7 +48,7 @@ Move calendarius pure types/interfaces/enums/DTOs (the bulk of `ext-calendarius-
 
 ### Task 3: Internal cutover — move services/pages, provide tokens
 
-**Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:di-token-inversion, extension-library-architecture#ac:internal-register-function
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:runtime-import-allowed-at-composition-root
 **Depends-On:** 2
 **Status:** complete
 
@@ -58,7 +58,7 @@ Move calendarius services (incl. `ScheduleNavService`), pages, dialogs, and priv
 
 ### Task 4: Shared cutover — move reusable components
 
-**Verifies:** extension-library-architecture#ac:internal-lib-private, extension-library-architecture#ac:shared-lib-no-internal
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:reusable-ui-extension
 **Depends-On:** 3
 **Status:** complete
 
@@ -68,7 +68,7 @@ Move calendarius reusable components/pipes/modules (old `ext-calendarius-shared`
 
 ### Task 5: Reroute contactus-shared + remove ext:calendarius allowance
 
-**Verifies:** extension-library-architecture#ac:di-token-inversion, extension-library-architecture#ac:shared-lib-no-internal
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:reusable-ui-extension
 **Depends-On:** 4
 **Status:** complete
 
@@ -78,7 +78,7 @@ Reroute `contactus-shared`'s single calendarius dependency (`ScheduleNavService`
 
 ### Task 6: Verify CI green + violation fails
 
-**Verifies:** extension-library-architecture#ac:nx-tag-enforcement, extension-library-architecture#ac:shared-lib-no-internal, extension-library-architecture#ac:internal-not-in-tsconfig-paths
+**Verifies:** extension-library-architecture#ac:runtime-import-rejected-in-library, extension-library-architecture#ac:reusable-ui-extension, extension-library-architecture#ac:runtime-import-rejected-in-library
 **Depends-On:** 5
 **Status:** complete
 
@@ -88,11 +88,16 @@ Run the full `sneat-libs` CI (lint, build, test) and confirm green with zero cro
 
 ### Task 7: Final lib removal + worktree/branch sweep
 
-**Verifies:** extension-library-architecture#ac:three-lib-decomposition
+**Verifies:** extension-library-architecture#ac:lean-extension
 **Depends-On:** 6
 **Status:** complete
 
 Confirm the old `ext-calendarius-core`/`-main`/`-shared` libs and their `project.json`/`tsconfig` `paths` entries are gone (remove residue). **Rename the temporary shared lib to the clean name:** package `@sneat/extension-calendarius-shared-new` → `@sneat/extension-calendarius-shared`, its tsconfig path key, project name `ext-calendarius-shared-new` → `ext-calendarius-shared`, and (optionally) dir `ui` → `shared`; repoint the consumers that import `-shared-new`. Reconciling sweep: confirm every per-task worktree was removed and its branch deleted; prune stragglers, leaving only the plan branch.
+
+## Deferred AC Coverage
+
+- extension-library-architecture#ac:packed-package-smoke-test — run after the
+  Calendarius runtime and UI packages are published from the implementation repo.
 
 ## Open Questions
 

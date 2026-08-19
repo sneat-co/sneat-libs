@@ -1,141 +1,120 @@
-# Frontend Apps & Libraries
+# Frontend Apps & Packages
 
-How an extension's frontend is structured: publishable **tier libraries** plus a
-standalone **`<ext-id>-app`** that doubles as the end-to-end test harness.
+An extension frontend consists of a separately owned contract, one host-facing
+runtime package, an optional reusable UI package, and a standalone Ionic app used
+as its end-to-end harness.
 
-## Library tiers
+## Package model
 
-Per the
-[`extension-library-architecture`](../../spec/features/extension-library-architecture/README.md)
-convention, an extension's frontend ships as three Nx libraries:
+| Artifact | Package | Home | Purpose |
+| --- | --- | --- | --- |
+| Contract | `@sneat/extension-<id>-contract` | `sneat-co/ext-<id>` | Public types, DTOs, tokens and interfaces. |
+| Runtime | `@sneat/extension-<id>` | `<id>/frontend/libs/extensions/<id>/runtime` | Providers, routes, pages and implementations used by host apps. |
+| UI | `@sneat/extension-<id>-ui` | `<id>/frontend/libs/extensions/<id>/ui` | Optional components/pipes intentionally reused by other source libraries. |
 
-| Library | Package | Purpose |
-| --- | --- | --- |
-| Contract | `@sneat/extension-<id>-contract` | Public types/tokens — the TS side of the wire contract. |
-| Shared | `@sneat/extension-<id>-shared` | Components/services other apps may reuse. |
-| Internal | `@sneat/extension-<id>-internal` | Internals not meant for external reuse. |
+The contract and runtime are required. Create the UI package only after another
+extension or app library needs reusable UI. Otherwise pages and components stay in
+runtime; speculative packages are not generated.
 
-Each publishable library needs `"publishConfig": { "access": "public" }` and Nx
-release config before its first npm publish — see
-[`publish-sneat-extension.md`](https://github.com/sneat-co/backstage/blob/main/docs/howto/publish-sneat-extension.md).
+Every publishable package has `publishConfig.access=public`. Runtime plus UI form a
+fixed Nx release group and share a version. The contract repository releases
+independently and first.
 
-## Registering implementations — one register function per extension
+## Runtime public API
 
-The **`internal`** lib (the extension's implementation lib) MUST expose a single
-registration function that binds **every** contract `InjectionToken` to its
-concrete implementation in one place:
+Although runtime is a public npm package, it is an application integration surface,
+not a sibling-extension API. Its root entrypoint exports only:
+
+- `provide<Name>(): Provider[]`,
+- the extension route definitions,
+- documented host registration metadata when needed.
+
+Concrete services, pages and private components are not exported. Only application
+bootstrap and application routing may import another extension's runtime package.
+Libraries call extension behaviour through contract tokens.
 
 ```ts
-// libs/extensions/<id>/internal/src/lib/provide-<id>-internal.ts
-export function provide<Name>Internal(): Provider[] {
+// libs/extensions/<id>/runtime/src/lib/provide-<id>.ts
+export function provide<Name>(): Provider[] {
   return [
     FooService,
     { provide: FOO_SERVICE, useExisting: FooService },
     BarService,
     { provide: BAR_SERVICE, useExisting: BarService },
-    // …one binding per contract token — none omitted
   ];
 }
 ```
 
-Why one function that binds *all* tokens (see the
-[`extension-library-architecture`](../../spec/features/extension-library-architecture/README.md)
-`internal-register-function` REQ):
-
-- **Single wiring call.** The host app enables the whole extension by calling
-  `provide<Name>Internal()` once at bootstrap — no per-token wiring scattered
-  across the app or across several `provide…` helpers.
-- **Single audit site.** "Is every contract token wired?" has one answer: this
-  function. A new capability is a new `{ provide: TOKEN, useExisting: Impl }`
-  line here — nowhere else.
-- **No unbound-token crashes.** Because the token (in `contract`) and its binding
-  (here) ship from the same extension, a consumer that injects the token can
-  never resolve it to nothing.
-
-Consumers — including sibling extensions — depend only on the `contract` token +
-interface and never import the `internal`/`shared` implementation directly (the
-[`di-token-inversion`](../../spec/features/extension-library-architecture/README.md)
-rule; enforced by nx `enforce-module-boundaries`).
-
-### Root register function vs. lazy, route-scoped providers
-
-`provide<Name>Internal()` is the **app-root** wiring: it runs once at bootstrap, so
-everything it binds is instantiated for **every** user of the app. That is correct
-for an extension's always-on capabilities (its core services, cheap tokens). It is
-the **wrong** place for a capability that:
-
-- is only reached on a **specific route** (a details page, a wizard, a report), and
-- pulls in a **heavy or cross-module dependency** (e.g. another extension's
-  `AssetService`, a charting engine, a map SDK) that a user who never opens that
-  route should not pay for.
-
-For those, ship a **route-scoped provider bundle** instead. Angular route
-`providers` create a child injector for that route's subtree, so the services are
-constructed **only when the route is activated** and torn down with it — never at
-app root:
+Heavy route-only capabilities use route-scoped providers so activating an unrelated
+route does not instantiate them:
 
 ```ts
-// libs/extensions/<id>/internal/src/lib/provide-<id>-<feature>.ts
-export function provide<Name><Feature>(): Provider[] {
-  return [
-    HeavyDep,                                     // e.g. a sibling AssetService, not providedIn:'root'
-    <Feature>Service,
-    { provide: <FEATURE>_SERVICE, useExisting: <Feature>Service },
-  ];
-}
-
-// Ship the route with its providers baked in, so a host mounts it in one line.
-// `internal` may import `shared`, so the route can lazy-load the shared page.
-export const <name><Feature>Routes: Route[] = [
+export const nameRoutes: Route[] = [
   {
-    path: '<feature>/:id',
-    providers: [...provide<Name><Feature>()],
+    path: 'feature/:id',
+    providers: [...provideNameFeature()],
     loadComponent: () =>
-      import('@sneat/extension-<id>-shared').then((m) => m.<Feature>PageComponent),
+      import('./pages/feature/feature-page.component').then(
+        (m) => m.FeaturePageComponent,
+      ),
   },
 ];
 ```
 
-The host mounts `...<name><Feature>Routes` under its shell; the same export serves
-every host (standalone `<ext-id>-app` and the main Sneat app). The page still
-injects **only** the `contract` token — the impl and its heavy dependency are
-resolved from the route injector, so the boundary and `di-token-inversion` rules
-are unchanged.
+## Optional UI package
 
-Rule of thumb: **bind in `provide<Name>Internal()` by default; move a binding to a
-route-scoped bundle when it (a) is only used on one route and (b) drags in a heavy
-or cross-extension dependency.** Prefer this over `providedIn: 'root'` for such
-services so nothing eagerly loads a sibling extension at startup.
+UI may depend on foundational UI packages, contracts and explicitly approved UI
+packages. It never imports runtime. Behaviour required by reusable components is
+injected through contract tokens.
 
-## The standalone app — `<ext-id>-app`
+Keep its public API explicit. Do not recursively export folders or expose internal
+base classes merely because they are convenient inside the extension.
 
-Every extension ships an Nx **application** that hosts the extension in a minimal
-Ionic shell. It is named after the extension id:
+## Boundary enforcement
 
-```
+Nx tags protect local projects:
+
+- `domain:<id>` identifies ownership,
+- `layer:contract|ui|runtime|app|e2e` identifies dependency weight.
+
+Nx does not see the projects behind installed npm packages. Each workspace must also
+lint package patterns so library files cannot import:
+
+- another extension's unsuffixed runtime package,
+- any legacy `@sneat/extension-*-internal` package,
+- legacy concrete service packages such as `@sneat/contactus-services`.
+
+App bootstrap and app route files are the explicit exception.
+
+## Standalone app
+
+Every extension has an Ionic application and Playwright project:
+
+```text
 frontend/apps/
-├── <ext-id>-app/        # standalone Ionic app (e.g. listus-app)
-└── <ext-id>-app-e2e/    # its end-to-end test project (e.g. listus-app-e2e)
+├── <id>-app/
+└── <id>-app-e2e/
 ```
 
-(Confirmed live: `listus/frontend/apps/listus-app` + `listus-app-e2e`.)
+The app imports `provide<Name>()` and routes from the runtime and provides the real
+contract implementation. It is both a standalone product surface and the extension's
+end-to-end harness.
 
-**Why it exists:** the `<ext-id>-app` is the **e2e harness**. It lets the
-extension be served and tested in isolation — without depending on a host app —
-so end-to-end tests run against a real Ionic shell that mounts only this
-extension's libraries.
+## Release verification
 
-### Common Nx tasks
+Before publishing, CI must build and pack each package, compare emitted external
+imports with the package manifest, install the tarballs in a clean Angular consumer,
+and run a production build. This catches dependency metadata errors that a monorepo
+source build can hide.
+
+## Common Nx tasks
 
 ```bash
-pnpm exec nx serve <ext-id>-app            # run the app locally
-pnpm exec nx e2e   <ext-id>-app-e2e        # run end-to-end tests
-pnpm exec nx build extension-<id>-shared   # build a publishable tier library
-pnpm exec nx run-many -t lint test build
+pnpm nx serve <id>-app
+pnpm nx e2e <id>-app-e2e
+pnpm nx build ext-<id>-runtime
+pnpm nx build ext-<id>-ui       # when present
+pnpm nx run-many -t lint test build
 ```
 
-## Stack
-
-**Nx 22 · Angular 21 · Ionic 8 · pnpm.** New extensions inherit this by scaffolding
-from `sneat-ext-template` — see
-[`creating-a-new-extension.md`](./creating-a-new-extension.md).
+New workspaces use Nx 22, Angular 21, Ionic 8 and pnpm.
