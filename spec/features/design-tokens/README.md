@@ -72,7 +72,189 @@ and PrimeNG has no way to look like one product.
 
 ## Behavior
 
-TODO: How does this feature work?
+### Token layer is the single source of truth
+
+#### REQ: token-single-source
+
+`@sneat/design-tokens` defines every color/semantic role, spacing step,
+radius, typography scale, elevation (shadow) and motion (duration/easing)
+value the platform's shared surfaces use, as plain CSS custom properties on
+`:root` (or `:where(:root)` where zero-specificity defaults are required, per
+the `@sneat/astro` precedent). No component library, app, or adapter defines
+a competing color/spacing/radius value outside this package; they consume the
+token or override its value, never invent a parallel one.
+
+#### REQ: token-taxonomy
+
+The taxonomy is layered, not a flat color list:
+
+- **Primitive tier** (optional, internal): raw scale values (e.g. a neutral
+  ramp) that only the semantic tier may reference.
+- **Semantic tier** (the public contract): role-named tokens consumers bind
+  to — `--color-bg`, `--color-bg-2`, `--color-surface`, `--color-border`,
+  `--color-text`, `--color-text-muted`, `--color-accent`,
+  `--color-accent-strong`, `--color-accent-soft`, `--color-accent-text`,
+  `--color-danger`, `--color-warning`, `--color-success`, plus
+  `--font-sans`/`--font-display`/`--font-body`, `--radius`/`--radius-sm`/
+  `--radius-pill`, `--shadow`/`--shadow-sm`, `--ease`/`--duration-*`, and the
+  `--space-1`…`--space-6` scale. This tier is deliberately the existing
+  `@sneat/astro` `--color-*`/`--font-*`/`--radius*`/`--shadow*`/`--space-*`
+  vocabulary, formalised and versioned as its own package rather than
+  reinvented — see `## Migration`.
+- No third "component" tier ships in this package: a component-shaped token
+  (e.g. "button background") is an adapter's concern, not the core's.
+
+#### REQ: token-runtime-neutral
+
+The published package contains CSS custom-property declarations (and
+documentation) only. It has no `peerDependencies`, `dependencies`, or runtime
+import on Angular, `@ionic/angular`, `@ionic/core`, PrimeNG, or any other UI
+runtime. A consumer with zero JavaScript framework (a static `<link>` or a
+`.astro` import) can use the token layer standalone, exactly as
+`@sneat/astro` sites do today.
+
+### Two thin adapter layers, never one merged theme
+
+#### REQ: two-adapter-packages
+
+Framework binding ships as exactly two adapter packages, each mapping the
+semantic tokens onto one target's own variable surface. There is no merged
+"Ionic+PrimeNG theme" artifact: a merged theme would force every consumer to
+carry both frameworks' mapping logic and would re-couple the two stacks the
+founder has explicitly declined to couple.
+
+#### REQ: ionic-adapter
+
+`@sneat/design-tokens-ionic` maps semantic tokens onto Ionic's `--ion-*`
+custom properties (`--ion-color-primary(-rgb|-contrast|-contrast-rgb|-shade|
+-tint)`, `--ion-background-color`, `--ion-text-color`, `--ion-border-color`,
+`--ion-font-family`, etc.), including the derived `-rgb`/`-shade`/`-tint`
+variants Ionic's own component internals expect. It replaces, rather than
+supplements, the unmodified Ionic starter palette currently checked in at
+`libs/components/src/theme/variables.scss`. It is pure CSS (plus a
+color-derivation build step, not a runtime dependency), so it applies equally
+to Angular Ionic (`sneat-libs`, `@ionic/angular`) and non-Angular Ionic
+(`gametable/web`, `@ionic/core` web components).
+
+#### REQ: primeng-adapter-requires-unstyled
+
+`@sneat/design-tokens-primeng` targets PrimeNG's **unstyled-mode**
+design-token/CSS-variable surface only, and documents `unstyled: true` (as
+Competios already configures via `providePrimeNG({ unstyled: true })` plus
+its `PrimeNgExternalBaseStyle` override that suppresses PrimeNG's injected
+base `<style>`) as a precondition for using it. Styled-mode PrimeNG ships its
+own preset design system (Aura/Lara/etc.) as compiled component CSS that
+tokens cannot cleanly override without fighting specificity; unstyled mode is
+what makes a token-driven PrimeNG surface tractable at all — every visual
+rule becomes a CSS variable or a slot the adapter's stylesheet fills in, so
+this package's token values are the only source of PrimeNG's appearance.
+
+#### REQ: primeng-adapter-mapping
+
+`@sneat/design-tokens-primeng` maps semantic tokens onto the PrimeNG
+CSS-variable names its unstyled components read (the `--p-*` namespace, e.g.
+`--p-primary-color`, `--p-content-background`, `--p-text-color`,
+`--p-border-radius`) and supplies the minimal structural CSS unstyled
+components need (layout/spacing rules with no baked-in color), analogous to
+what Competios currently hand-rolls in `styles.scss` for `.p-hidden-accessible`
+/ `.p-overflow-hidden` and its bespoke `--paper-*` values.
+
+### Zero dependency on either UI library in the core package
+
+#### REQ: core-zero-ui-dependency
+
+`@sneat/design-tokens` (the core package) ships zero lines of Ionic- or
+PrimeNG-specific code and declares no dependency, `peerDependency`, or
+`optionalDependency` on either. This is enforced the same way
+`extension-library-architecture`'s `runtime-import-rejected-in-library`
+requirement is enforced today: lint fails on any Ionic/PrimeNG import inside
+the core package's source, including transitively via `node_modules`.
+
+#### REQ: adapters-separate-published-entry-points
+
+`@sneat/design-tokens-ionic` and `@sneat/design-tokens-primeng` are
+independently published packages (or, at minimum, separate `exports` entry
+points with independent `peerDependencies`), each declaring exactly one
+framework as a peer dependency (`@ionic/angular` / `@ionic/core` for the
+Ionic adapter, `primeng` for the PrimeNG adapter). An Ionic-only app's
+install never resolves PrimeNG, and vice versa — following the same
+contract-only import discipline `sneat-extension-contract-only-imports`
+already establishes for extensions.
+
+### Light/dark and per-product brand theming
+
+#### REQ: light-dark-tokens
+
+Every semantic color token has a defined light value and a defined dark
+value, switched by a single mechanism (a `data-theme` attribute or
+`prefers-color-scheme`, mirroring `@sneat/astro`'s existing dark-mode
+approach) applied once at the document root. Adapters do not define their
+own separate dark-mode logic; they inherit whichever value the core layer
+currently resolves to.
+
+#### REQ: brand-retheme-via-tokens-only
+
+A product (GameTable.space, Competios, Sneat.app, or any future brand) is
+re-themed entirely by overriding the semantic token *values* in its own
+`:root` block — never by forking, overriding, or `!important`-patching
+component-level CSS (Ionic's `.md`/`.ios` mode styles, PrimeNG's per-
+component classes, or ad hoc rules like `gametable/web`'s current
+`ion-card.table-ion-card { … !important }` block). A brand's palette is a
+token file, not a stylesheet fork.
+
+### Coexistence: Ionic and PrimeNG on the same page
+
+#### REQ: coexistence-scoping-strategy
+
+The spec documents a concrete reset/scoping strategy so an Ionic-hosted page
+can embed a PrimeNG-Angular subtree (the GameTable venue-page/tournament-
+bracket case) without either library's global reset or base styles leaking
+into the other's DOM region: which selectors each adapter's base stylesheet
+is scoped under (e.g. Ionic's own shadow-DOM encapsulation for `ion-*`
+elements vs. a scoping class/host boundary around the PrimeNG-unstyled
+subtree), and which global resets (box-sizing, margin resets, focus rings)
+are asserted at most once for the whole page rather than by both adapters.
+
+#### REQ: coexistence-specificity-budget
+
+The two adapters' stylesheets are documented to stay within a bounded,
+non-overlapping specificity budget (attribute/class selectors only, no ID
+selectors, no unscoped element selectors that could match the other
+library's elements, no `!important` except where a target framework's own
+internals force it and that exception is named). This is what removes the
+need for the `!important` fights currently present in `gametable/web`'s
+`style.css`.
+
+#### REQ: coexistence-page-layout-ownership
+
+For any page that mixes both stacks, the spec/adapter documentation states
+which stack owns page-level layout (the outer shell, safe-area insets,
+scroll container) — the founder's forcing case (Ionic shell hosting a
+PrimeNG bracket) implies Ionic owns the page chrome and PrimeNG owns only the
+embedded subtree's internal layout, but this is documented per-page-pattern,
+not hard-coded into either adapter, since the founder may later choose the
+opposite composition for a different product.
+
+### Migration: incremental adoption, no big-bang
+
+#### REQ: migration-step-zero
+
+An existing Ionic app (starting with `sneat-libs`'s own `libs/components`
+theme) adopts `@sneat/design-tokens` + `@sneat/design-tokens-ionic` as a
+drop-in replacement for `libs/components/src/theme/variables.scss`, producing
+**pixel-equivalent output** (the current unmodified Ionic starter palette,
+reproduced as token values) before any brand value changes. Step zero proves
+the plumbing with zero visual regression; rebranding is a separate, later
+step of changing token values only.
+
+#### REQ: migration-astro-contract-alignment
+
+`@sneat/astro`'s existing `src/styles/contract.css` is treated as the
+reference semantic vocabulary this package formalises, not a second
+competing contract. Reconciling the two (whether `@sneat/astro` ends up
+depending on `@sneat/design-tokens`, mirrors its token names, or the two stay
+independently versioned but name-aligned) is resolved during implementation
+planning — see `## Open Questions`.
 
 ## Acceptance Criteria
 
