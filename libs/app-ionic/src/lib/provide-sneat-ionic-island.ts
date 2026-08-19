@@ -8,14 +8,16 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 
-/** Route-level Ionic setup for specialist islands (calendar and legacy forms).
+/** Route-level Ionic setup for a lazily-loaded Ionic island (e.g. calendar,
+ * or a form not yet ported to PrimeNG) inside an otherwise PrimeNG app.
  * Do not install this in a PrimeNG public/cockpit root provider list. */
 export function provideSneatIonicIsland(): EnvironmentProviders {
   return makeEnvironmentProviders([provideIonicAngular()]);
 }
 
-/** Legacy full-Ionic shell compatibility. Public/PrimeNG callers must use the
- * island provider only on a lazy route. */
+/** Full Ionic shell: the current, supported provider set for authenticated
+ * app roots. Public/PrimeNG callers must not install this shell — use the
+ * island provider instead, and only on a lazy route. */
 export function provideSneatIonicShell(): EnvironmentProviders {
   const providers: (Provider | EnvironmentProviders)[] = [
     provideIonicAngular(),
