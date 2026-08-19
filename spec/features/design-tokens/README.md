@@ -136,30 +136,115 @@ color-derivation build step, not a runtime dependency), so it applies equally
 to Angular Ionic (`sneat-libs`, `@ionic/angular`) and non-Angular Ionic
 (`gametable/web`, `@ionic/core` web components).
 
-#### REQ: primeng-adapter-requires-unstyled
+#### REQ: primeng-adapter-uses-styled-preset
 
-`@sneat/design-tokens-primeng` targets PrimeNG's **unstyled-mode**
-design-token/CSS-variable surface only, and documents `unstyled: true` (as
-Competios already configures via `providePrimeNG({ unstyled: true })` plus
-its `PrimeNgExternalBaseStyle` override that suppresses PrimeNG's injected
-base `<style>`) as a precondition for using it. Styled-mode PrimeNG ships its
-own preset design system (Aura/Lara/etc.) as compiled component CSS that
-tokens cannot cleanly override without fighting specificity; unstyled mode is
-what makes a token-driven PrimeNG surface tractable at all — every visual
-rule becomes a CSS variable or a slot the adapter's stylesheet fills in, so
-this package's token values are the only source of PrimeNG's appearance.
+`@sneat/design-tokens-primeng` targets PrimeNG's **styled mode** with a custom
+preset built from this package's tokens — `definePreset(...)` passed to
+`providePrimeNG({ theme: { preset } })`. It MUST NOT require `unstyled: true`.
+
+PrimeNG generates every component's CSS from the preset's token values, so the
+adapter supplies values rather than hand-authoring component stylesheets. This
+scales with adoption instead of against it: an unstyled adapter must
+hand-write CSS for each new PrimeNG component ever used, while a preset styles
+components nobody has touched yet, including their states, variants and focus
+treatments.
+
+Founder decision, 2026-08-19, on spike evidence: *"I'd like to go option B if
+we can use both PrimeNG and Ionic theming with our own design tokens on the
+same page."* The spike answered YES — see
+`#req:primeng-preset-accepts-token-references` for what it proved and
+`#req:primeng-shade-ramp-generated-at-build-time` for the one constraint it
+found.
+
+Competios today runs `providePrimeNG({ unstyled: true })` with a
+`PrimeNgExternalBaseStyle` override suppressing PrimeNG's injected base
+`<style>`. That predates this decision and is not evidence for unstyled mode:
+measurement showed only **4 of 141** top-level rule blocks in its
+`styles.scss` target `.p-*` selectors at all, three of them being the base
+rules it had to reimplement after the suppression. Competios has barely
+adopted PrimeNG components, so unstyled mode has never been tested at the
+scale PrimeNG was chosen for (brackets, org charts, dense tables). Migrating
+Competios to the preset is a follow-up, not a precondition.
+
+Any adapter that suppresses PrimeNG's injected base CSS MUST reimplement
+`.p-hidden-accessible` and `.p-overflow-hidden`. `.p-hidden-accessible` is the
+screen-reader-only pattern; suppressing it without reimplementation is an
+accessibility regression, not a styling choice.
+
+#### REQ: primeng-preset-accepts-token-references
+
+A preset value MAY be the literal string `var(--token-name)`. PrimeNG treats
+preset values as opaque strings and threads them unchanged into the generated
+`--p-*` custom properties, producing a live multi-hop `var()` chain resolved
+by the browser rather than a colour computed when the preset is defined.
+
+Verified 2026-08-19 by spike, reading PrimeNG's own runtime-injected `<style>`
+element in Chrome:
+
+```css
+--p-primary-500: var(--color-accent);
+--p-button-primary-background: var(--p-primary-color);
+--p-button-primary-hover-background: var(--p-primary-hover-color);
+```
+
+Computed styles on the live DOM confirmed Ionic and PrimeNG controls both
+resolving to the same brand value from one token, with **no `!important`** and
+**no `@layer`/`cssLayer` configuration required**. Ionic's components are
+Shadow DOM and are therefore structurally immune to PrimeNG's light-DOM global
+CSS; the adapters MUST NOT rely on specificity fights to keep the two apart.
+
+This requirement records a capability, not the default authoring mode — see
+`#req:primeng-shade-ramp-generated-at-build-time`.
+
+#### REQ: primeng-shade-ramp-generated-at-build-time
+
+PrimeNG's `primary` palette has eleven slots (`50`…`950`) plus semantic
+aliases. Its normal mechanism derives all eleven from one seed colour by
+colour arithmetic, which requires a real colour value; a `var()` reference is
+unresolved at preset-definition time and cannot be computed on.
+
+The adapter MUST therefore **generate the eleven shades at build time** from
+the product's brand token and emit literal values into the preset, producing
+two ramps where light and dark differ and selecting between them with
+PrimeNG's `darkModeSelector`.
+
+Founder decision, 2026-08-19. Asked whether any product needs to change its
+brand colour without a rebuild, the founder answered: *"No, as far as I know
+right now."* Every product owns its own colours and rebuilds to deploy, so
+build-time generation costs nothing that is currently needed and restores the
+full tonal ramp.
+
+The alternative — pinning all eleven slots to two or three token references —
+remains supported by `#req:primeng-preset-accepts-token-references` and is the
+only option where a colour must change at runtime without a rebuild. Its cost
+is that slots intended to differ collapse: a selected table row and a hovered
+one become the same value, as do hover and active button states, losing the
+depth cues those slots exist to provide. Venue- or vendor-level runtime
+branding is explicitly OUT OF SCOPE for v1 (founder, 2026-08-19); should it
+arrive, the runtime mechanism is already specified and need not be invented.
 
 #### REQ: primeng-adapter-mapping
 
-`@sneat/design-tokens-primeng` maps semantic tokens onto the PrimeNG
-CSS-variable names its unstyled components read (the `--p-*` namespace, e.g.
+`@sneat/design-tokens-primeng` maps semantic tokens onto the PrimeNG preset
+token names that generate the `--p-*` namespace (e.g.
 `--p-primary-color`, `--p-content-background`, `--p-text-color`,
-`--p-border-radius`) and supplies the minimal structural CSS unstyled
-components need (layout/spacing rules with no baked-in color), analogous to
-what Competios currently hand-rolls in `styles.scss` for `.p-hidden-accessible`
-/ `.p-overflow-hidden` and its bespoke `--paper-*` values.
+`--p-border-radius`). In styled mode PrimeNG emits the component CSS itself,
+so the adapter supplies token VALUES and MUST NOT hand-author per-component
+stylesheets — that hand-authoring is the cost this decision exists to avoid.
 
 ### Zero dependency on either UI library in the core package
+
+#### REQ: ionic-rgb-triplet-token-form
+
+Ionic consumes its primary colour internally as
+`rgba(var(--ion-color-primary-rgb), <alpha>)`, which requires a bare
+comma-separated triplet (`124, 58, 237`), not a nested `var()` reference. The
+taxonomy MUST therefore define an accompanying `-rgb` form for every token
+Ionic consumes with alpha, and the Ionic adapter MUST map it.
+
+Verified by spike, 2026-08-19. This is a constraint of Ionic's own CSS, not a
+limitation of the token approach, and it means no product is ever purely
+runtime-themed even under `#req:primeng-preset-accepts-token-references`.
 
 #### REQ: core-zero-ui-dependency
 
@@ -343,12 +428,15 @@ extension packages that import another extension's runtime.
   future decision on primacy is the founder's to make and does not require
   re-specifying this feature; it may add requirements (e.g. "new surfaces
   default to stack X") but should not remove either adapter.
-- **Should `unstyled: true` become a required platform-wide convention for
-  every future PrimeNG consumer**, or does the PrimeNG adapter also need to
-  cope with styled-mode PrimeNG for a consumer that can't or won't disable
-  presets? Competios already chose unstyled; whether that becomes a fleet
-  rule (like the existing contract-only-imports rule) is a founder call, not
-  assumed here.
+- ~~**Should `unstyled: true` become a required platform-wide convention?**~~
+  **RESOLVED, founder, 2026-08-19: NO — the platform uses PrimeNG in STYLED
+  mode with a custom preset built from these tokens.** Settled by spike
+  evidence that a preset value may be a `var()` reference and that Ionic and
+  PrimeNG coexist on one page with no `!important` and no `@layer`
+  configuration. See `#req:primeng-adapter-uses-styled-preset`. Measured cost
+  of shipping both libraries: **204.8 KiB gzipped** initial bundle, a marginal
+  **+52.8 KiB** to add PrimeNG to an Ionic app (Ionic alone is 152.0 KiB,
+  PrimeNG alone 98.7 KiB; framework overhead is shared, not duplicated).
 - **Relationship to `@sneat/astro`'s existing `--color-*` contract.** This
   spec treats that contract as the reference vocabulary to formalise, but
   does not decide the mechanics: does `@sneat/astro` come to depend on
@@ -357,14 +445,15 @@ extension packages that import another extension's runtime.
   `@sneat/design-tokens` re-export/alias the `@sneat/astro` contract? Left
   for implementation planning; whichever answer is chosen, the ~40 landings
   currently consuming `@sneat/astro` must see no breaking token rename.
-- **Publishing/versioning model.** `@sneat/design-tokens` must be consumed by
-  at least three different build systems that don't share a release
-  cadence: the Nx/Angular workspace (`sneat-libs`), Vite/vanilla
-  (`gametable/web`), and Astro (`sneat-astro` sites, transitively). `@sneat/
-  astro` was deliberately kept out of `sneat-libs`' lockstep Angular release
-  for the same reason. Whether `@sneat/design-tokens` and its adapters live
-  in `sneat-libs`' Nx workspace with independent (non-lockstep) versioning,
-  or move to their own repo the way `@sneat/astro` did, is not decided here.
+- ~~**Publishing/versioning model.**~~ **RESOLVED, founder, 2026-08-19:
+  `@sneat/design-tokens` and its adapters live in THEIR OWN REPOSITORY**, not
+  in `sneat-libs`' lockstep Angular release — matching the precedent already
+  set by `@sneat/astro`, which was kept out for exactly this reason. Decisive
+  fact, in the founder's words: *"each website/repo it's own styles."* Because
+  every site overrides token VALUES, the shared package is a CONTRACT of token
+  names and meanings plus the two adapters, not a palette. A contract changes
+  far more rarely than the Angular libraries and must not be forced to ride
+  their release cadence.
 - **Full Ionic CSS-variable inventory is unknown until implementation.**
   Ionic components read additional `--ion-*` variables per component beyond
   the documented palette (`-rgb`/`-shade`/`-tint` derivatives, component-
