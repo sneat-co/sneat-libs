@@ -57,9 +57,9 @@
     "projectsRelationship": "fixed",
     "releaseTagPattern": "v{version}",
     "git": {
-      "commit": true,
-      "tag": true,
-      "push": true
+      "commit": false,
+      "tag": false,
+      "push": false
     },
     "version": {
       "conventionalCommits": true,
