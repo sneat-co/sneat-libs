@@ -334,7 +334,44 @@ extension packages that import another extension's runtime.
 
 ## Open Questions
 
-None at this time.
+- **Ionic-vs-PrimeNG primacy is explicitly NOT decided by this spec.** The
+  founder has an outstanding architectural decision on which stack is
+  primary overall, or whether primacy is assigned per product/surface class.
+  This feature is designed to be correct under either outcome — the core
+  token layer and both adapters exist regardless of which stack "wins," and
+  no requirement here assumes one is more important than the other. Any
+  future decision on primacy is the founder's to make and does not require
+  re-specifying this feature; it may add requirements (e.g. "new surfaces
+  default to stack X") but should not remove either adapter.
+- **Should `unstyled: true` become a required platform-wide convention for
+  every future PrimeNG consumer**, or does the PrimeNG adapter also need to
+  cope with styled-mode PrimeNG for a consumer that can't or won't disable
+  presets? Competios already chose unstyled; whether that becomes a fleet
+  rule (like the existing contract-only-imports rule) is a founder call, not
+  assumed here.
+- **Relationship to `@sneat/astro`'s existing `--color-*` contract.** This
+  spec treats that contract as the reference vocabulary to formalise, but
+  does not decide the mechanics: does `@sneat/astro` come to depend on
+  `@sneat/design-tokens` and drop its own `contract.css`, do the two stay
+  independently versioned with names kept in sync by convention, or does
+  `@sneat/design-tokens` re-export/alias the `@sneat/astro` contract? Left
+  for implementation planning; whichever answer is chosen, the ~40 landings
+  currently consuming `@sneat/astro` must see no breaking token rename.
+- **Publishing/versioning model.** `@sneat/design-tokens` must be consumed by
+  at least three different build systems that don't share a release
+  cadence: the Nx/Angular workspace (`sneat-libs`), Vite/vanilla
+  (`gametable/web`), and Astro (`sneat-astro` sites, transitively). `@sneat/
+  astro` was deliberately kept out of `sneat-libs`' lockstep Angular release
+  for the same reason. Whether `@sneat/design-tokens` and its adapters live
+  in `sneat-libs`' Nx workspace with independent (non-lockstep) versioning,
+  or move to their own repo the way `@sneat/astro` did, is not decided here.
+- **Full Ionic CSS-variable inventory is unknown until implementation.**
+  Ionic components read additional `--ion-*` variables per component beyond
+  the documented palette (`-rgb`/`-shade`/`-tint` derivatives, component-
+  specific overrides). Whether the v1 Ionic adapter's mapped surface (the
+  documented global palette) is sufficient, or a per-component audit is
+  needed before `libs/components` can fully retire its current
+  `variables.scss`, is to be scoped during planning.
 
 ---
 *This document follows the https://specscore.md/feature-specification*
