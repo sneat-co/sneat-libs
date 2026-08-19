@@ -258,7 +258,79 @@ planning — see `## Open Questions`.
 
 ## Acceptance Criteria
 
-TODO: Define acceptance criteria.
+### AC: core-package-has-no-ui-framework-import
+
+Given the published `@sneat/design-tokens` package source and manifest
+When its `package.json` and source tree are scanned for Angular, `@ionic/*`,
+or `primeng` imports and dependency declarations
+Then none are found — the package resolves and can be imported into a plain
+`<link rel="stylesheet">` or a non-Angular build with no framework installed.
+
+### AC: ionic-only-app-never-installs-primeng
+
+Given an Ionic-only application that depends on `@sneat/design-tokens` and
+`@sneat/design-tokens-ionic` only
+When its dependency tree is resolved
+Then `primeng` and `@sneat/design-tokens-primeng` do not appear anywhere in
+the install, and vice versa for a PrimeNG-only application.
+
+### AC: primeng-adapter-documents-unstyled-precondition
+
+Given a team adopting `@sneat/design-tokens-primeng`
+When they read the adapter's setup documentation
+Then it states `providePrimeNG({ unstyled: true })` (plus suppressing
+PrimeNG's injected base stylesheet, as Competios's
+`PrimeNgExternalBaseStyle` does) as a required precondition, and explains
+that styled-mode PrimeNG presets are out of scope because their compiled
+component CSS cannot be cleanly token-overridden.
+
+### AC: step-zero-no-visual-regression
+
+Given `sneat-libs`'s `libs/components` theme migrated from
+`libs/components/src/theme/variables.scss` onto
+`@sneat/design-tokens` + `@sneat/design-tokens-ionic`
+When the app is rendered before and after the migration with no token value
+changes
+Then a visual diff of the shared component surfaces shows no pixel
+regression — the migration step is plumbing-only.
+
+### AC: brand-reskin-changes-tokens-only
+
+Given three products — GameTable.space, Competios, and Sneat.app — each with
+its own brand palette expressed as `@sneat/design-tokens` value overrides
+When each product's `:root` token file is swapped for another product's
+Then each product visually re-skins correctly with no changes to any
+component template, adapter stylesheet, or `!important` override — proving
+the brand lives entirely in token values.
+
+### AC: same-page-ionic-primeng-coexistence
+
+Given the GameTable.space venue page rendering an Ionic page shell around an
+embedded Competios PrimeNG tournament-bracket component (the founder's
+forcing case)
+When the composed page is inspected
+Then neither library's base reset or component styles bleed into the other's
+DOM region, both read the same semantic token values (so colors, radii, and
+type match), and no `!important` override is required to keep them from
+colliding — replacing the `!important`-laden Ionic overrides currently in
+`gametable/web/src/style.css`.
+
+### AC: dark-mode-switches-both-stacks-together
+
+Given a page with both an Ionic surface and a PrimeNG-unstyled surface on
+screen, themed via `@sneat/design-tokens`
+When the document's dark-mode switch (attribute or `prefers-color-scheme`)
+toggles
+Then both surfaces switch color together, from the same token update, with no
+separate dark-mode logic in either adapter.
+
+### AC: adapter-import-rejected-in-core-lint
+
+Given source inside `@sneat/design-tokens` (core) that imports from
+`@ionic/angular`, `@ionic/core`, or `primeng`
+When lint runs
+Then lint fails, the same way `runtime-import-rejected-in-library` fails
+extension packages that import another extension's runtime.
 
 ## Open Questions
 
