@@ -1,56 +1,49 @@
 # Creating a New Extension
 
-New Sneat extensions start from the **`sneat-ext-template`** repo — a ready-made
-Nx workspace wired to the house conventions — rather than scaffolding from
-scratch.
+Every extension is represented by two repositories:
 
-## What the template gives you
+- `sneat-co/<id>` — implementation, runtime, optional UI and standalone app,
+- `sneat-co/ext-<id>` — the frozen frontend/backend contract surface.
 
-`sneat-ext-template` is an Nx workspace (**Nx 22 · Angular 21 · Ionic 8 · pnpm**)
-pre-built with:
+## Implementation repository
 
-- the standalone **`template-app`** (Ionic shell) + its `template-app-e2e` project,
-- the three publishable tier libraries
-  `@sneat/extension-template-{contract,shared,internal}`
-  (see [`frontend-apps.md`](./frontend-apps.md)),
-- the extension-library-architecture layout and Nx targets
-  (`serve`, `build`, `lint`, `test`, `e2e`).
+Create `sneat-co/<id>` from `sneat-ext-template`, then run:
 
-## Steps
+```bash
+./customize.sh <id>
+pnpm install
+pnpm nx run-many -t lint test build
+pnpm nx e2e <id>-app-e2e
+```
 
-1. **Create the new repo from the template** (`sneat-co/<ext>`), keeping the
-   `org/repo` layout.
-2. **Rename `template` → `<ext>`** by running the bundled `customize.sh` from the
-   repo root:
+The template contains:
 
-   ```bash
-   ./customize.sh <ext>     # e.g. ./customize.sh gameboard
-   ```
+- `<id>-app` and `<id>-app-e2e`,
+- `@sneat/extension-<id>` as the required runtime package,
+- no duplicate contract source,
+- no UI package by default.
 
-   The `<ext>` id must be a single lowercase token (`[a-z][a-z0-9]*`). The script
-   renames the placeholder `template` extension across the whole Nx workspace —
-   the app (`template-app` → `<ext>-app`), the library triad
-   (`@sneat/extension-template-*` → `@sneat/extension-<ext>-*`,
-   `ext-template-*` → `ext-<ext>-*`), symbols (`TemplateHomePage`,
-   `TEMPLATE_SERVICE`, …), the appId, and titles. The replacement is **targeted**,
-   so it never corrupts Angular keywords like `templateUrl`, inline `template:`,
-   or `<ng-template>`. It does **not** touch `pnpm-lock.yaml` (reconciled by the
-   `pnpm install` in the next step), and it **deletes itself** when done.
+Add `libs/extensions/<id>/ui` and publish
+`@sneat/extension-<id>-ui` only when an external source library has a concrete
+reusable-UI requirement.
 
-3. **Install & verify:**
-   ```bash
-   pnpm install   # reconcile the renamed workspace packages
-   pnpm exec nx run-many -t lint test build
-   pnpm exec nx e2e <ext>-app-e2e
-   ```
-4. **Add the contract surface** in the `*-ext` repo (TypeSpec `.tsp` + Go/TS
-   bindings) — see [`extension-contract-repo`](../../spec/features/extension-contract-repo/README.md).
-5. **Wire the backend** into `sneat-go` — see [`backend-wiring.md`](./backend-wiring.md).
-6. **Follow the UX conventions** — see [`frontend-ux/`](./frontend-ux/README.md).
+## Contract repository
+
+Create `sneat-co/ext-<id>` from `sneat-ext-contract-template`. It is the only publisher of
+`@sneat/extension-<id>-contract` and the corresponding Go contract. The
+implementation repository consumes the published contract and never mirrors or
+re-declares it.
+
+Release contract changes first, then bump and release the implementation packages.
 
 ## Naming
 
-- Repo: `sneat-co/<ext>` (impl), `sneat-co/<ext>-ext` (contract surface).
-- App: `<ext>-app` + `<ext>-app-e2e`.
-- Libraries: `@sneat/extension-<ext>-{contract,shared,internal}`.
-- Backend route prefix: `/v0/api4<ext>/`.
+- repositories: `<id>` and `ext-<id>`,
+- app projects: `<id>-app` and `<id>-app-e2e`,
+- runtime project/package: `ext-<id>-runtime` / `@sneat/extension-<id>`,
+- optional UI project/package: `ext-<id>-ui` / `@sneat/extension-<id>-ui`,
+- contract project/package: `ext-<id>-contract` / `@sneat/extension-<id>-contract`,
+- backend route prefix: `/v0/api4<id>/`.
+
+See [frontend-apps.md](./frontend-apps.md) for boundaries and release checks and
+[backend-wiring.md](./backend-wiring.md) for backend integration.

@@ -3,7 +3,7 @@ format: https://specscore.md/feature-specification
 status: Stable
 ---
 
-# Feature: Extension library architecture convention
+# Feature: Extension frontend package architecture
 
 > [SpecScore.**Studio**](https://specscore.studio): | [Explore](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=explore) | [Edit](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=edit) | [Ask question](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=ask) | [Request change](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-library-architecture?op=request-change) |
 **Status:** Stable
@@ -11,138 +11,165 @@ status: Stable
 
 ## Summary
 
-The contract/shared/internal three-lib-per-extension decomposition, cross-extension DI-token rule, and nx module-boundary enforcement that keep the extension dependency graph a DAG.
-
-## Problem
-
-Extensions today import each other's runtime implementations sideways (e.g. `contactus` reached into the published `@sneat/extension-assetus`), which produces two failures: circular dependencies between extensions, and the prebuilt-bundle peer-resolution wall (a published Angular library's `fesm2022` bundle cannot resolve its `@sneat/*` peers when those peers are workspace *source* libs in `sneat-libs`). There is no sanctioned, reusable pattern for one extension to call another's behaviour, so each cross-extension need is solved with an ad-hoc workaround. This Feature defines the **convention** — a reusable standard — that any extension follows; it does not itself reshape any existing extension (that is a separate implementation Feature).
+Every frontend extension has an independently released contract and one host-facing runtime package. An additional UI package exists only when another extension or app reuses implementation-level UI. Angular DI tokens keep behavioural dependencies on the contract, while Nx boundaries and package-aware linting protect both workspace and cross-repository imports.
 
 ## Behavior
 
-### Library decomposition
+### Required contract package
 
-#### REQ: three-lib-decomposition
+#### REQ: single-contract-owner
 
-Every extension is decomposed into three libraries along two orthogonal axes — *runtime weight* and *visibility*: a public runtime-light `contract`, a public reusable-implementation `shared`, and a private `internal`. The load-bearing rule is *public contract/shared vs private internal*; a finer internal layering is permitted but not required.
+`@sneat/extension-<name>-contract` is published only by `sneat-co/ext-<name>`.
+The implementation repository contains no second contract project or package.
 
-#### REQ: contract-lib-runtime-light
+#### REQ: contract-runtime-light
 
-The `contract` lib contains only TypeScript interfaces, DTO/model types, enums, and Angular `InjectionToken`s. It contains no components and no service implementations, and it must not pull heavy `@sneat/*` runtime peers — so any other extension can depend on it (type-only for shapes, the token for runtime calls) without triggering the prebuilt-bundle peer-resolution wall.
+The contract contains interfaces, DTO/model types, enums, pure helpers and Angular
+`InjectionToken`s. It contains no components, routes, pages or service
+implementations and depends only on foundational packages, never another extension.
 
-#### REQ: shared-lib-no-internal
+### Required runtime package
 
-The `shared` lib holds reusable implementation (components, pipes, and services) that other extensions may consume. It may depend on any `contract` lib and on other `shared` libs, but it must never import any `internal` lib. When a `shared` unit needs a service, it obtains it through a `contract`-defined `InjectionToken`, not by importing the implementation.
+#### REQ: one-runtime-package
 
-#### REQ: internal-lib-private
+The implementation repository publishes `@sneat/extension-<name>` from
+`libs/extensions/<name>/runtime`. It contains routes, pages, private components and
+service implementations. Its supported public API is intentionally small: provider
+registration, route definitions and documented host-integration metadata.
 
-The `internal` lib holds the extension's private services, dialogs, pages, and components. No other extension may import it; only the extension itself and the app (at bootstrap) consume it.
+#### REQ: runtime-host-only
 
-### Cross-extension invocation
+Only application composition roots and application routing may import another
+extension's runtime package. Extension libraries call behaviour through the
+provider's contract tokens and never import its concrete services, modules or
+routes.
 
-#### REQ: di-token-inversion
+#### REQ: runtime-register-function
 
-A cross-extension runtime call is made through dependency inversion: the provider extension owns an `InjectionToken` plus interface in its own `contract` lib; the provider's `shared`/`internal` supplies the concrete implementation, wired by the app at bootstrap; the caller injects the interface and invokes it without importing any of the provider's `shared` or `internal` code. The contract libs therefore form a DAG with no `internal → internal` edges.
+The runtime exposes `provide<Name>(): Provider[]`, which binds every always-on
+contract token in one auditable location. Heavy route-only capabilities use
+route-scoped providers exported through the runtime's routes.
 
-#### REQ: internal-register-function
+### Optional reusable UI package
 
-The `internal` lib (the extension's implementation lib) exposes a **single registration function** — `provide<Name>Internal(): Provider[]` — that binds *every* one of the extension's `contract` `InjectionToken`s to its concrete implementation in one place. The app wires the whole extension by calling this one function at bootstrap; per-token wiring is never scattered across the app or across multiple `provide…` helpers. Adding a new capability means adding its `{ provide: <TOKEN>, useExisting: <Impl> }` binding to this function, so "is every contract token wired?" has a single, auditable answer site — and a consumer that injects a token can never hit an unbound-token runtime error because the token and its binding ship together from the provider extension.
+#### REQ: ui-package-is-demand-driven
 
-### Naming
+`@sneat/extension-<name>-ui` exists only when at least one source library outside
+the extension consumes a reusable component, pipe or UI-specific service. Extensions
+without such a consumer keep their UI and pages in the runtime package.
 
-#### REQ: lib-naming
+#### REQ: ui-never-imports-runtime
 
-Each extension's libs are named `extension-<name>-contract`, `extension-<name>-shared`, and `extension-<name>-internal` (npm scope `@sneat/`), so the tier is legible from the package name and a non-compliant import is visually obvious.
+The UI package may depend on contracts, foundational UI packages and explicitly
+approved UI packages. It never imports any runtime package. Behaviour required by
+reusable UI is obtained through contract-defined tokens.
+
+#### REQ: explicit-public-api
+
+The UI and runtime entrypoints explicitly export supported symbols. Recursive
+wildcard barrels and exports of private base classes, page internals or concrete
+behavioural services are not allowed.
+
+### Naming and project layout
+
+#### REQ: package-naming
+
+The artifacts are named:
+
+- contract repo: `sneat-co/ext-<name>`
+- contract package: `@sneat/extension-<name>-contract`
+- runtime package: `@sneat/extension-<name>`
+- optional UI package: `@sneat/extension-<name>-ui`
+
+Nx project directories are `contract`, `runtime` and optional `ui`; project names
+use `ext-<name>-contract`, `ext-<name>-runtime` and `ext-<name>-ui`.
 
 ### Enforcement
 
-#### REQ: nx-tag-enforcement
+#### REQ: nx-two-axis-tags
 
-Every project carries two nx tags — a tier tag (`type:contract` | `type:shared` | `type:internal`) and an extension tag (`ext:<name>`) — and `@nx/eslint-plugin`'s `enforce-module-boundaries` encodes the dependency matrix: `type:contract` may depend only on `type:contract` and foundational libs; `type:shared` may depend on `type:contract`, `type:shared`, and foundational libs but never `type:internal`; `type:internal` may depend on any public tier plus foundational and internal libs. A violating import fails lint.
+Projects carry `domain:<name>` and one `layer:contract|ui|runtime|app|e2e` tag.
+Nx module boundaries enforce local workspace edges: contract to foundation only;
+UI to contracts/foundation/approved UI; runtime to its contract, its UI and
+foundation; app to every tier as the composition root.
 
-#### REQ: internal-not-in-tsconfig-paths
+#### REQ: cross-repository-import-enforcement
 
-Because nx tags cannot express "an `internal` may depend only on its *own* extension's `internal`", each `internal` lib is excluded from the workspace tsconfig `paths`, so another extension cannot resolve an import of it at all.
+Library source is checked with package-pattern restrictions because installed npm
+packages are invisible to the consumer's Nx graph. Imports matching another
+extension's runtime package, legacy `*-internal` packages or legacy concrete service
+packages fail lint outside app composition/routing files.
+
+#### REQ: published-manifest-verification
+
+CI builds and packs every publishable package, verifies that all emitted external
+imports are declared in `dependencies` or `peerDependencies`, installs the tarballs
+in a clean Angular consumer, and builds that consumer. Test tools are dev
+dependencies and never published peers.
+
+### Release model
+
+#### REQ: release-groups
+
+The contract repository versions independently. Runtime and optional UI packages in
+the implementation repository are a fixed release group and share a version.
 
 ## Acceptance Criteria
 
-### AC: three-lib-decomposition
+### AC: lean-extension
 
-Scenario: A compliant extension exposes exactly the three tiers
-Given an extension that follows this convention
-When its libraries are listed
-Then there is one `*-contract`, one `*-shared`, and one `*-internal` lib, and every source file belongs to exactly one of them.
+Given an extension with no external UI consumer
+When its publishable frontend projects are listed
+Then it has one contract package in `ext-<name>` and one runtime package in the
+implementation repository, with no empty or speculative UI package.
 
-### AC: contract-lib-runtime-light
+### AC: reusable-ui-extension
 
-Scenario: Contract lib stays free of heavy peers
-Given an `extension-<name>-contract` lib
-When its sources and dependency graph are inspected
-Then it declares no component or service implementation and pulls no heavy `@sneat/*` runtime peer, so importing it does not load any prebuilt extension bundle.
+Given an extension whose UI is consumed by another source library
+When its packages are listed
+Then it additionally publishes `@sneat/extension-<name>-ui`, and that UI package
+contains no import from any runtime package.
 
-### AC: shared-lib-no-internal
+### AC: single-contract-home
 
-Scenario: Shared importing internal is rejected
-Given a `type:shared` lib with an import from any `type:internal` lib
-When `enforce-module-boundaries` lint runs
-Then the import is reported as an error and the build fails.
+Given any `@sneat/extension-<name>-contract` package name
+When package manifests across Sneat repositories are scanned
+Then exactly one publishable manifest owns it and that manifest is in `ext-<name>`.
 
-Scenario: Shared importing contract is allowed
-Given a `type:shared` lib that imports only `type:contract` and foundational libs
+### AC: runtime-import-rejected-in-library
+
+Given extension library source importing another extension's runtime or a legacy
+`*-internal` package
 When lint runs
-Then no module-boundary violation is reported.
+Then lint fails even when the imported package comes from `node_modules` rather than
+the local Nx workspace.
 
-### AC: internal-lib-private
+### AC: runtime-import-allowed-at-composition-root
 
-Scenario: Another extension cannot resolve a private internal lib
-Given extension A attempts to import from extension B's `internal` lib
-When the workspace resolves the import
-Then resolution fails because B's `internal` lib is absent from the tsconfig `paths`.
+Given an app bootstrap or app routing file importing provider registration or routes
+from a runtime package
+When lint runs
+Then the import is allowed.
 
-### AC: di-token-inversion
+### AC: packed-package-smoke-test
 
-Scenario: Cross-extension call uses a contract token, not the provider impl
-Given a consumer extension that needs a provider extension's behaviour
-When the consumer is built
-Then it imports only the provider's `contract` (the `InjectionToken` + interface) and contains no import of the provider's `shared` or `internal`, and the call resolves at runtime via the app-wired provider.
+Given a release candidate for a contract, runtime or UI package
+When CI packs and installs it in the clean consumer fixture
+Then dependency resolution, TypeScript compilation and the Angular production build
+all succeed without undeclared peer imports.
 
-### AC: internal-register-function
+## Migration
 
-Scenario: One register function binds every contract token
-Given an extension whose `contract` declares N `InjectionToken`s and whose `internal` lib exposes `provide<Name>Internal()`
-When that function's returned `Provider[]` is inspected
-Then it contains a binding to a concrete implementation for each of the N tokens, and the app wires the entire extension by calling that single function once at bootstrap.
+Legacy package names map as follows:
 
-Scenario: A new capability is wired in the one register function
-Given a new `InjectionToken` added to an extension's `contract`
-When the extension is made functional
-Then the token's `{ provide, useExisting }` binding is added to `provide<Name>Internal()` rather than to app-level or per-token wiring.
+- `@sneat/extension-<name>-internal` -> `@sneat/extension-<name>`
+- `@sneat/extension-<name>-shared` -> `@sneat/extension-<name>-ui` when reusable,
+  otherwise merge into `@sneat/extension-<name>`
 
-### AC: lib-naming
-
-Scenario: Lib names encode their tier
-Given the three libs of an extension named `<name>`
-When their package names are read
-Then they are exactly `@sneat/extension-<name>-contract`, `@sneat/extension-<name>-shared`, and `@sneat/extension-<name>-internal`.
-
-### AC: nx-tag-enforcement
-
-Scenario: Every extension lib is tagged on both axes
-Given any extension lib project
-When its nx project tags are read
-Then it carries exactly one tier tag (`type:contract` | `type:shared` | `type:internal`) and one `ext:<name>` tag, and `enforce-module-boundaries` is configured with the tier dependency matrix.
-
-### AC: internal-not-in-tsconfig-paths
-
-Scenario: Internal libs are not path-mapped
-Given the workspace tsconfig `paths` map
-When it is inspected
-Then no `*-internal` lib has an entry, while every `*-contract` and `*-shared` lib does.
+Migration is complete only after concrete cross-extension service/module imports
+have moved to contract tokens and obsolete package names are absent from source and
+manifests.
 
 ## Open Questions
 
-- Where do *genuinely cross-cutting* primitives (a base space-item context type, the optional extension bus) live — a small new shared lib, or an existing low-level lib such as `space-models`? (Deferred; does not block the convention.)
-- Does the typed extension bus and route-based invocation become part of this convention later, or stay separate complementary patterns? (Deferred until a real many-to-many / page-hop case appears.)
-- Where does the `contract` tier physically *live* once an extension is its own repo — an in-repo lib, or a separately-published per-extension `<name>-ext` repo? Refined by the `per-extension-contract-repo` idea (Approved): the three-tier split here is unchanged; only the `-contract` tier's home/publication changes. (Deferred to that idea's Features.)
-
----
-*This document follows the https://specscore.md/feature-specification*
+None. The remaining work is rollout sequencing, not a change to the package model.

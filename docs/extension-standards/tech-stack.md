@@ -17,16 +17,16 @@ two in agreement.
   See [`backend-wiring.md`](./backend-wiring.md) for the exact injection points.
 - **The load-bearing rule:** an extension backend depends **only on
   foundational/core code — never on another extension.** This keeps the
-  dependency graph acyclic (enforced in `*-ext` repos by
+  dependency graph acyclic (enforced in `ext-*` repos by
   `scripts/check-no-extension-deps.sh`).
 
 ## Frontend — Nx · Angular · Ionic
 
 - **Stack:** **Nx 22 · Angular 21 · Ionic 8 · pnpm.**
-- **Library tiers** (extension-library-architecture convention):
-  - `@sneat/extension-<id>-contract` — the public contract surface (types/tokens).
-  - `@sneat/extension-<id>-shared` — shared components/services for the extension.
-  - `@sneat/extension-<id>-internal` — internals not meant for reuse.
+- **Packages** (extension-library-architecture convention):
+  - `@sneat/extension-<id>-contract` — types/tokens, published only by `ext-<id>`.
+  - `@sneat/extension-<id>` — providers, routes and implementation for host apps.
+  - `@sneat/extension-<id>-ui` — optional reusable components/pipes.
 - **Standalone app:** every extension ships an Nx app named **`<ext-id>-app`**
   (the Ionic shell) plus **`<ext-id>-app-e2e`** for end-to-end tests. See
   [`frontend-apps.md`](./frontend-apps.md).
@@ -34,7 +34,7 @@ two in agreement.
 
 ## Contract — TypeSpec
 
-- The `*.tsp` files in the `*-ext` repo's `typespec/` dir are the **frozen wire
+- The `*.tsp` files in the `ext-<id>` repo's `typespec/` dir are the **frozen wire
   contract and the single source of truth.**
 - **No emitters.** The Go (`backend/`) and TS (`frontend/`) sides
   **hand-implement matching types** against the `.tsp`. Parity / shape tests keep
@@ -48,4 +48,4 @@ two in agreement.
 | --- | --- | --- |
 | Backend | Go, GAE, Firestore (dalgo), Firebase Auth | `<ext>/backend/` + `sneat-go/pkg/modules/<ext>/` |
 | Frontend | Nx 22, Angular 21, Ionic 8, pnpm | `<ext>/frontend/` (libs + `<ext-id>-app`) |
-| Contract | TypeSpec (`.tsp`, no emitters) | `<ext>-ext/typespec/` |
+| Contract | TypeSpec (`.tsp`, no emitters) | `ext-<id>/typespec/` |
