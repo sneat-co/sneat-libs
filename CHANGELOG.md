@@ -1,3 +1,19 @@
+## 0.26.0 (2026-08-20)
+
+### 🚀 Features
+
+- **core:** add 'community-center' space type (NoticeBoard.cc) ([#46](https://github.com/sneat-co/sneat-libs/pull/46))
+
+### 🩹 Fixes
+
+- **app:** default authDomain to shared auth.sneat.co (fixes Google sign-in on Cloudflare) ([#47](https://github.com/sneat-co/sneat-libs/pull/47))
+- **auth-ui:** show a spinner while authenticating instead of flashing the form ([#48](https://github.com/sneat-co/sneat-libs/pull/48))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.25.0 (2026-08-15)
 
 ### 🚀 Features

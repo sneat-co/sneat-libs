@@ -1,6 +1,6 @@
 {
   "name": "@sneat/space-nav-router",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "publishConfig": {
     "access": "public"
   },
