@@ -9,4 +9,5 @@ export type SpaceType =
   | 'realtor'
   | 'sport_club'
   | 'cohabit'
+  | 'community-center'
   | 'unknown';
