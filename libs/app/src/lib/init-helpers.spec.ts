@@ -36,14 +36,14 @@ describe('appEnvironmentConfig (fail-safe env selection)', () => {
     );
   });
 
-  it('defaults authDomain to the current origin when omitted', () => {
+  it('defaults authDomain to the shared auth.sneat.co when omitted', () => {
     setHostname('listus.app');
     const noAuthDomain = {
       ...PROD,
       firebaseConfig: { ...PROD.firebaseConfig, authDomain: undefined },
     } as IEnvironmentConfig;
     expect(appEnvironmentConfig(noAuthDomain).firebaseConfig.authDomain).toBe(
-      'listus.app',
+      'auth.sneat.co',
     );
   });
 

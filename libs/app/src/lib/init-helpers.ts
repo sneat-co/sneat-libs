@@ -31,20 +31,30 @@ export function isLocalhost(): boolean {
 // Apps should define a single environment.ts:
 //   export const fooEnvironmentConfig = appEnvironmentConfig({ ...prod config });
 // and drop environment.prod.ts + the production fileReplacements entirely.
+/**
+ * The shared, Firebase-hosted auth domain that serves Google OAuth's
+ * /__/auth/handler for every Sneat product (an authorized OAuth redirect
+ * domain). Used as the default authDomain so sign-in works on Cloudflare-served
+ * product domains, which do not serve /__/auth/handler themselves.
+ */
+export const SHARED_SNEAT_AUTH_DOMAIN = 'auth.sneat.co';
+
 export function appEnvironmentConfig(
   prod: IEnvironmentConfig,
 ): IEnvironmentConfig {
   if (isLocalhost()) {
     return appSpecificConfig(emulatorEnvironmentConfig);
   }
-  // Default authDomain to the current origin so the OAuth redirect stays
-  // same-origin / first-party. Serving an app at one domain (e.g. listus.app)
-  // while authenticating against another (listus-app.web.app) triggers a
-  // cross-domain redirect that browsers flag as a look-alike and that breaks
-  // first-party auth storage. Apps override by setting firebaseConfig.authDomain.
+  // Default authDomain to the shared, Firebase-hosted auth.sneat.co so Google
+  // OAuth completes at /__/auth/handler no matter where the app is served. Most
+  // Sneat products run on Cloudflare Workers, which do NOT serve Firebase's
+  // /__/auth/handler, so the previous current-origin default sent the redirect
+  // to <app-domain>/__/auth/handler and the Angular SPA swallowed it (NG04002).
+  // auth.sneat.co is an authorized OAuth redirect domain shared across products.
+  // Apps on Firebase Hosting (or wanting a same-origin authDomain) override by
+  // setting firebaseConfig.authDomain.
   const authDomain =
-    prod.firebaseConfig.authDomain ||
-    (typeof location !== 'undefined' ? location.hostname : undefined);
+    prod.firebaseConfig.authDomain || SHARED_SNEAT_AUTH_DOMAIN;
   return {
     ...prod,
     firebaseConfig: { ...prod.firebaseConfig, authDomain },
