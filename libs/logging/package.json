@@ -11,7 +11,7 @@
     "@angular/fire": ">=20",
     "@ionic/angular": ">=8.0.0",
     "@sentry/angular": "*",
-    "@sneat/core": "^0.25.0",
+    "@sneat/core": "^0.26.0",
     "firebase": "*",
     "posthog-js": "*",
     "rxjs": ">=7.8.0"

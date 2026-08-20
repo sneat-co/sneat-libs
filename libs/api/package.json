@@ -9,8 +9,8 @@
     "@angular/core": ">=21.0.0",
     "firebase": "*",
     "@angular/fire": ">=20",
-    "@sneat/api-public": "^0.25.0",
-    "@sneat/core": "^0.25.0",
+    "@sneat/api-public": "^0.26.0",
+    "@sneat/core": "^0.26.0",
     "rxjs": ">=7.8.0"
   },
   "dependencies": {
