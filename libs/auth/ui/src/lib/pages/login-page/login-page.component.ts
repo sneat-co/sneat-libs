@@ -126,6 +126,12 @@ export class LoginPageComponent extends SneatBaseComponent {
   protected readonly isAuthenticated = computed(
     () => this.authStatus() === 'authenticated',
   );
+  // While Firebase is still resolving the session — the initial state, and the
+  // brief window right after a signInWithRedirect return — show a "signing you
+  // in" spinner instead of flashing the sign-in form before we navigate onward.
+  protected readonly isAuthenticating = computed(
+    () => this.authStatus() === 'authenticating',
+  );
   private readonly authStatus = toSignal(this.authStateService.authStatus);
   private readonly authUser = toSignal(this.authStateService.authUser);
   protected readonly signedInAs = computed(() => {
