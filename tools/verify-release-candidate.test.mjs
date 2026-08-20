@@ -19,6 +19,17 @@ test('accepts staged and committed fixed release candidates', () => {
   assert.equal(run(staged, '--committed').stdout.trim(), '0.26.0');
 });
 
+test('accepts a release candidate that also refreshes pnpm-lock.yaml', () => {
+  // `nx release` runs a lockfile-only install after bumping versions, so a
+  // real release candidate always touches pnpm-lock.yaml alongside the
+  // manifests. That is an expected, derived change, not scope creep.
+  const directory = fixture();
+  prepareCandidate(directory, '0.26.0');
+  writeFileSync(join(directory, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+  git(directory, ['add', 'pnpm-lock.yaml']);
+  assert.equal(run(directory, '--cached').stdout.trim(), '0.26.0');
+});
+
 test('skips an ordinary manifest-only source change', () => {
   const directory = fixture();
   writeManifest(directory, 'libs/alpha/package.json', '@sneat/alpha', '0.25.0', {

@@ -32,8 +32,12 @@ if (!changedFiles.includes('CHANGELOG.md')) {
 }
 
 const manifestPattern = /^libs\/(?:[^/]+\/)+package\.json$/;
+// `nx release` re-syncs pnpm-lock.yaml after bumping manifest versions (a
+// `pnpm install --lockfile-only` pass), so it is an expected, derived part of
+// every release candidate, not scope creep.
+const allowedExtraFiles = new Set(['CHANGELOG.md', 'pnpm-lock.yaml']);
 const disallowedFiles = changedFiles.filter(
-  file => file !== 'CHANGELOG.md' && !manifestPattern.test(file),
+  file => !allowedExtraFiles.has(file) && !manifestPattern.test(file),
 );
 if (disallowedFiles.length > 0) {
   fail(`Release candidate changes non-release files: ${disallowedFiles.join(', ')}`);

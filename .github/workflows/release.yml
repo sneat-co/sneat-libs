@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git add CHANGELOG.md ':(glob)libs/**/package.json'
+          git add CHANGELOG.md pnpm-lock.yaml ':(glob)libs/**/package.json'
           git diff --quiet || {
             echo 'Nx release changed tracked files outside the release candidate:' >&2
             git diff --name-only >&2
