@@ -19,6 +19,8 @@ const concreteSpaceTypes = new Set<Exclude<SpaceType, 'unknown'>>([
   'realtor',
   'sport_club',
   'cohabit',
+  // NoticeBoard.cc — a community centre / local venue space.
+  'community-center',
 ]);
 
 /** Returns whether a value is a concrete space type accepted at an external boundary. */
