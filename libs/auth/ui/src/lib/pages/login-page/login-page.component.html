@@ -32,7 +32,14 @@
     </ion-text>
   </p>
 
-  @if (isAuthenticated()) {
+  @if (isAuthenticating()) {
+    <ion-card>
+      <ion-card-content class="ion-text-center ion-padding">
+        <ion-spinner name="lines" />
+        <p class="ion-no-margin ion-padding-top">Signing you in…</p>
+      </ion-card-content>
+    </ion-card>
+  } @else if (isAuthenticated()) {
     <ion-card color="success">
       <ion-card-content>
         <p>
