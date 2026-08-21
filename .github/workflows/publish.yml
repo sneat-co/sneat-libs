@@ -1,19 +1,123 @@
 name: Publish
 
 on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: Git ref (branch or tag) to publish from (default - the default branch)
-        required: false
-        default: ""
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sneat-libs-release-publish
+  cancel-in-progress: false
 
 jobs:
+  candidate:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.candidate.outputs.release }}
+      sha: ${{ steps.candidate.outputs.sha }}
+      version: ${{ steps.candidate.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Bind publication to the checked main revision
+        id: candidate
+        shell: bash
+        env:
+          CHECKED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          head_sha="$(git rev-parse HEAD)"
+          main_sha="$(git rev-parse origin/main)"
+          [ "${head_sha}" = "${CHECKED_SHA}" ] || {
+            echo "Checked workflow SHA ${CHECKED_SHA} is not checkout ${head_sha}" >&2
+            exit 1
+          }
+          [ "${head_sha}" = "${main_sha}" ] || {
+            echo "Checked SHA ${head_sha} is no longer main ${main_sha}" >&2
+            exit 1
+          }
+          version="$(node tools/verify-release-candidate.mjs --committed --version)"
+          if [ -z "${version}" ]; then
+            {
+              echo "release=false"
+              echo "sha=${head_sha}"
+            } >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          {
+            echo "release=true"
+            echo "sha=${head_sha}"
+            echo "version=${version}"
+          } >> "${GITHUB_OUTPUT}"
+
   publish:
-    uses: sneat-co/cicd/.github/workflows/npm-publish.yml@main
+    needs: candidate
+    if: needs.candidate.outputs.release == 'true'
+    permissions:
+      contents: read
+    uses: sneat-co/cicd/.github/workflows/npm-publish.yml@dbdae22aef3805ed592f34ce72119c65b220e20f
     with:
       working-directory: .
-      ref: ${{ inputs.ref }}
-      build-command: pnpm nx run-many -t build --all
+      ref: ${{ needs.candidate.outputs.sha }}
+      build-command: pnpm nx run-many -t build --all --skip-nx-cache
       publish-command: pnpm nx release publish
+      pnpm-version: "10.30.3"
     secrets: inherit
+
+  tag:
+    needs: [candidate, publish]
+    if: needs.candidate.outputs.release == 'true'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.candidate.outputs.sha }}
+          persist-credentials: false
+      - name: Tag the exact published and checked main revision
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.candidate.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          tag="v${VERSION}"
+          git fetch origin --tags --force
+          if git rev-parse --verify --quiet "refs/tags/${tag}" >/dev/null; then
+            tag_commit="$(git rev-list --max-count=1 "refs/tags/${tag}")"
+            head_commit="$(git rev-parse HEAD)"
+            [ "${tag_commit}" = "${head_commit}" ] || {
+              echo "${tag} resolves to ${tag_commit}, not checked release ${head_commit}" >&2
+              exit 1
+            }
+            exit 0
+          fi
+          latest_tag="$(git tag --list 'v[0-9]*' --sort=-version:refname | head -n 1)"
+          node -e '
+            const parse = value => value.replace(/^v/, "").split(".").map(Number);
+            const current = parse(process.argv[1]);
+            const latest = parse(process.argv[2]);
+            for (let index = 0; index < 3; index += 1) {
+              if (current[index] > latest[index]) process.exit(0);
+              if (current[index] < latest[index]) process.exit(1);
+            }
+            process.exit(1);
+          ' "${VERSION}" "${latest_tag}" || {
+            echo "Untagged version ${VERSION} does not advance ${latest_tag}" >&2
+            exit 1
+          }
+          git config user.email "ci@sneat.co"
+          git config user.name "Sneat CI"
+          git tag --annotate "${tag}" --message "chore(release): publish ${VERSION}" HEAD
+          git push origin "refs/tags/${tag}"

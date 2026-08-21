@@ -1,43 +1,90 @@
-name: Release
+name: Prepare release
+
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: SemVer change for the fixed Sneat libraries release
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: release
+  group: sneat-libs-release-prepare
   cancel-in-progress: false
 
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - name: Configure git identity for release commit
+      - name: Prepare version and changelog
+        run: pnpm nx release "${{ inputs.bump }}" --skip-publish
+      - name: Validate the staged release candidate
+        id: candidate
+        shell: bash
         run: |
-          git config --global user.email "ci@sneat.co"
-          git config --global user.name "Sneat CI"
-      - name: Release
-        run: pnpm nx release --yes
+          set -euo pipefail
+          git add CHANGELOG.md pnpm-lock.yaml ':(glob)libs/**/package.json'
+          git diff --quiet || {
+            echo 'Nx release changed tracked files outside the release candidate:' >&2
+            git diff --name-only >&2
+            exit 1
+          }
+          untracked="$(git ls-files --others --exclude-standard)"
+          [ -z "${untracked}" ] || {
+            echo 'Nx release created untracked files outside the release candidate:' >&2
+            printf '%s\n' "${untracked}" >&2
+            exit 1
+          }
+          version="$(node tools/verify-release-candidate.mjs --cached --version)"
+          [ -n "${version}" ] || {
+            echo "Release preparation produced no candidate" >&2
+            exit 1
+          }
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+      - name: Open the protected release pull request
+        shell: bash
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Push release commit and tag
+          # A normal GitHub token deliberately does not trigger required checks
+          # after its own push. The organisation CI token does.
+          GH_TOKEN: ${{ secrets.SNEAT_CI_READWRITE_TOKEN }}
+          VERSION: ${{ steps.candidate.outputs.version }}
         run: |
-          git pull --rebase origin main
-          git push --follow-tags origin main
+          set -euo pipefail
+          gh auth setup-git
+          existing="$(gh pr list --base main --state open --json headRefName --jq '[.[] | select(.headRefName | startswith("release/sneat-libs-"))] | length')"
+          [ "${existing}" = "0" ] || {
+            echo "An open Sneat libraries release pull request already exists" >&2
+            exit 1
+          }
+          branch="release/sneat-libs-${VERSION}-${GITHUB_RUN_ID}"
+          git config user.email "ci@sneat.co"
+          git config user.name "Sneat CI"
+          git switch --create "${branch}"
+          git diff --cached --quiet && {
+            echo "Release preparation produced no tracked changes" >&2
+            exit 1
+          }
+          git commit --message "chore(release): prepare ${VERSION}"
+          git push --set-upstream origin "${branch}"
+          gh pr create \
+            --base main \
+            --head "${branch}" \
+            --title "chore(release): prepare ${VERSION}" \
+            --body "Versions the fixed Sneat libraries release on a protected branch. Merging publishes and tags the exact CI-checked main revision; the publish job never mutates main."
