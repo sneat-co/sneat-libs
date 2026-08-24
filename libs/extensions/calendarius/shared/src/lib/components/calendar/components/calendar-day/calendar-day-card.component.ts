@@ -3,7 +3,6 @@ import {
   Component,
   EventEmitter,
   input,
-  Input,
   OnInit,
   Output,
   inject,
@@ -59,12 +58,7 @@ export class CalendarDayCardComponent
 
   @Output() readonly goNew = new EventEmitter<NewHappeningParams>();
 
-  // TODO: Skipped for migration because:
-  //  Accessor inputs cannot be migrated as they are too complex.
-  @Input() set activeDayPlus(value: number) {
-    this.shiftDays = value;
-    // console.log('set activeDayPlus()', value, 'shiftDays=', this.shiftDays);
-  }
+  public readonly activeDayPlus = input(0);
 
   public constructor() {
     const scheduleSateService = inject(CalendarStateService);
@@ -73,6 +67,7 @@ export class CalendarDayCardComponent
   }
 
   public ngOnInit(): void {
+    this.shiftDays = this.activeDayPlus();
     if (this.shiftDays < 0) {
       throw new Error('shiftDays < 0');
     }
@@ -82,8 +77,8 @@ export class CalendarDayCardComponent
   private createSlides(): void {
     const spaceDaysProvider = this.$spaceDaysProvider();
     const current = getToday();
-    if (this.activeDayPlus) {
-      current.setDate(current.getDate() + this.activeDayPlus);
+    if (this.shiftDays) {
+      current.setDate(current.getDate() + this.shiftDays);
     }
     this.$date.set(current);
     const next = new Date();
