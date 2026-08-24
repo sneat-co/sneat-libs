@@ -2,12 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   input,
-  Input,
   OnChanges,
   OnDestroy,
   signal,
   SimpleChanges,
-  inject,
+  inject
 } from '@angular/core';
 import {
   IonButton,
@@ -17,7 +16,7 @@ import {
   IonItemDivider,
   IonLabel,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { dateToIso } from '@sneat/core';
 import { ISlotUIContext, jsDayToWeekday, NewHappeningParams, sortSlotItems, WeekdayNumber, IScheduleNavService, SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
@@ -64,8 +63,8 @@ export class CalendarDayComponent
 
   public readonly $weekday = input.required<Weekday | undefined>();
 
-  @Input({ required: false }) hideAddButtons = false;
-  @Input() hideLastBorder = false;
+  readonly hideAddButtons = input(false);
+  readonly hideLastBorder = input(false);
 
   protected readonly $isToday = signal<boolean>(false);
   protected readonly $isTomorrow = signal<boolean>(false);

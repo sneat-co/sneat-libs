@@ -8,7 +8,7 @@ import {
   effect,
   inject,
 } from '@angular/core';
-import { IonBadge, IonLabel } from '@ionic/angular/standalone';
+import { IonBadge, IonLabel } from '@ionic/angular';
 import { PersonNamesPipe } from '@sneat/auth-ui';
 import {
   CONTACTUS_SPACE_SERVICE,

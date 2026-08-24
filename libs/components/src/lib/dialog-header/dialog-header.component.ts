@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, input } from '@angular/core';
 import {
   ModalController,
   IonButton,
@@ -6,17 +6,18 @@ import {
   IonIcon,
   IonItem,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 @Component({
   selector: 'sneat-dialog-header',
   templateUrl: './dialog-header.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonItem, IonLabel, IonButtons, IonButton, IonIcon],
 })
 export class DialogHeaderComponent {
   private readonly modalController = inject(ModalController);
 
-  @Input() dialogTitle = 'Dialog';
+  readonly dialogTitle = input('Dialog');
 
   close(event: Event): void {
     event.stopPropagation();

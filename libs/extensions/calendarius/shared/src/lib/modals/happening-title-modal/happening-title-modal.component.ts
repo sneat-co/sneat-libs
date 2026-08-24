@@ -1,11 +1,11 @@
 import {
   Component,
   inject,
-  Input,
   OnInit,
   ViewChild,
   signal,
   ChangeDetectionStrategy,
+  input
 } from '@angular/core';
 import {
   FormControl,
@@ -27,7 +27,7 @@ import {
   IonTextarea,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   HappeningService,
   HappeningServiceModule,
@@ -63,7 +63,7 @@ export class HappeningTitleModalComponent
   extends SneatBaseModalComponent
   implements OnInit
 {
-  @Input({ required: true }) happening?: IHappeningContext;
+  readonly happening = input.required<IHappeningContext | undefined>();
 
   @ViewChild('titleInput', { static: true }) titleInput?: IonInput;
 
@@ -85,15 +85,16 @@ export class HappeningTitleModalComponent
   }
 
   ngOnInit(): void {
-    const h = this.happening || { id: '', space: { id: '' } };
+    const h = this.happening() || { id: '', space: { id: '' } };
     this.title.setValue(h?.dbo?.title || h?.brief?.title || h.id);
   }
 
   protected readonly $isSubmitting = signal(false);
 
   protected submit(): void {
-    const spaceID = this.happening?.space?.id;
-    const happeningID = this.happening?.id;
+    const happening = this.happening();
+    const spaceID = happening?.space?.id;
+    const happeningID = happening?.id;
     if (!spaceID) {
       throw new Error('space ID is not defined');
     }

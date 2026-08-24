@@ -4,7 +4,7 @@ import {
   input,
   inject,
 } from '@angular/core';
-import { IonButton, IonButtons, IonIcon } from '@ionic/angular/standalone';
+import { IonButton, IonButtons, IonIcon } from '@ionic/angular';
 import { HappeningType, WeekdayCode2, NewHappeningParams, IScheduleNavService, SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';

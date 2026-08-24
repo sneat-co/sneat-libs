@@ -23,7 +23,7 @@ import {
   IonSkeletonText,
   IonSpinner,
   ToastController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { AnalyticsService, IAnalyticsService } from '@sneat/core';
 import { IUserSpaceBrief } from '@sneat/auth-models';
 import { IIdAndBrief } from '@sneat/core';

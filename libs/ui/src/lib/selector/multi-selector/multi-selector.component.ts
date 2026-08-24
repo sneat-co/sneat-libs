@@ -5,6 +5,8 @@ import {
   OnChanges,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy,
+  input
 } from '@angular/core';
 import {
   IonButton,
@@ -16,7 +18,7 @@ import {
   IonLabel,
   IonList,
   ModalController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ClassName } from '../../components';
 import { ISelectItem, ISelectItemEvent } from '../selector-interfaces';
 import {
@@ -37,6 +39,7 @@ import {
     IonIcon,
     IonList,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: ClassName,
@@ -52,10 +55,14 @@ export class MultiSelectorComponent<T = ISelectItem>
   extends SelectorBaseComponent<T>
   implements OnChanges
 {
-  @Input() title = 'Select';
+  readonly title = input('Select');
 
-  @Input() canRemove = false;
+  readonly canRemove = input(false);
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() public allItems?: ISelectItem[];
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() public selectedIDs?: readonly string[];
 
   @Output() readonly removeItems = new EventEmitter<ISelectItemEvent[]>();

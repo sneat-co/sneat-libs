@@ -16,7 +16,7 @@ import {
   IonLabel,
   IonList,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
 import { AuthProviderID, SneatUserService } from '@sneat/auth-core';
 import { IUserRecord } from '@sneat/auth-models';

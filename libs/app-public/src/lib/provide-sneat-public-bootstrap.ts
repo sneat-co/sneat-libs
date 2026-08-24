@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import {
   ErrorHandler,
   EnvironmentProviders,
@@ -22,7 +22,7 @@ export function provideSneatPublicBootstrap(
   config: ISneatPublicBootstrapConfig = {},
 ): EnvironmentProviders {
   const providers: (Provider | EnvironmentProviders)[] = [
-    provideHttpClient(),
+    provideHttpClient(withXhr()),
     { provide: ErrorHandler, useClass: ErrorHandler },
     { provide: TitleStrategy, useClass: SneatTitleStrategy },
     {

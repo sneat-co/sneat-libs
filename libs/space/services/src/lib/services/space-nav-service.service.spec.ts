@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { SpaceNavService } from './space-nav.service';
 import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService } from '@sneat/core';
-import { NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular/lazy';
 
 describe('SpaceNavService', () => {
   beforeEach(() =>

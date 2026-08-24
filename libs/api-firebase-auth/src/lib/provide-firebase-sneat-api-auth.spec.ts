@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -30,7 +30,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
   it('unblocks a root-created API client only after delayed getIdToken resolves', async () => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: Auth, useValue: {} },
         FirebaseSneatApiAuthAdapter,
@@ -65,7 +65,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
   it('fails pending calls closed when Firebase resolves signed out', async () => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: Auth, useValue: {} },
         FirebaseSneatApiAuthAdapter,
@@ -85,7 +85,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
   it('keeps the newest Firebase token when an older lookup resolves late', async () => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: Auth, useValue: {} },
         FirebaseSneatApiAuthAdapter,
@@ -132,7 +132,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       .mockImplementation(() => undefined);
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: Auth, useValue: {} },
         FirebaseSneatApiAuthAdapter,
@@ -161,7 +161,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       .mockImplementation(() => undefined);
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: Auth, useValue: {} },
         provideFirebaseSneatApiAuth(),

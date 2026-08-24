@@ -1,6 +1,6 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ModalController, PopoverController } from '@ionic/angular/standalone';
+import { ModalController, PopoverController } from '@ionic/angular';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { HappeningService } from '../../services/happening.service';

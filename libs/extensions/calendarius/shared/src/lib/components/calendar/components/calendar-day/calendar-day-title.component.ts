@@ -11,6 +11,9 @@ import { Weekday } from '../../weekday';
   imports: [WdToWeekdayPipe, LongMonthNamePipe],
 })
 export class CalendarDayTitleComponent {
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input({ required: true }) weekday?: Weekday;
 
   protected get date(): Date | undefined {

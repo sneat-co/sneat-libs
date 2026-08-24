@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { ModalController, NavController } from '@ionic/angular/standalone';
+import { ModalController, NavController } from '@ionic/angular';
 import { Firestore } from '@angular/fire/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService, SneatUserService } from '@sneat/auth-core';

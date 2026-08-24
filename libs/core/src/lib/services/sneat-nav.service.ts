@@ -6,7 +6,7 @@ import {
   Router,
   UrlTree,
 } from '@angular/router';
-import { NavController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root',

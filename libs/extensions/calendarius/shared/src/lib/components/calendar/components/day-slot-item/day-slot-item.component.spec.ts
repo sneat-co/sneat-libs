@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { PopoverController } from '@ionic/angular/standalone';
+import { PopoverController } from '@ionic/angular';
 import { CalendarNavService } from '../../../../services';
 import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import { of } from 'rxjs';

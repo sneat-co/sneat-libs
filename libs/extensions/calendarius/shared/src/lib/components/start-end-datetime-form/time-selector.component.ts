@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, inject, ChangeDetectionStrategy, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonButton,
@@ -12,7 +12,7 @@ import {
   IonSegment,
   IonSegmentButton,
   ModalController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 const morningHours: string[] = [
   '00',
@@ -53,6 +53,7 @@ const eveningHours: string[] = [
 @Component({
   selector: 'sneat-time-selector',
   templateUrl: './time-selector.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     IonItem,
@@ -70,7 +71,7 @@ const eveningHours: string[] = [
 export class TimeSelectorComponent {
   private readonly modalController = inject(ModalController);
 
-  @Input() hideHeader = false;
+  readonly hideHeader = input(false);
   @Output() readonly selected = new EventEmitter<string>();
 
   tab: 'morning' | 'day' | 'evening' = 'day';

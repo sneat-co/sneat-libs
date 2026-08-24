@@ -1,7 +1,7 @@
 import { MultiSelectorService } from './multi-selector.service';
 import { ISelectItem } from '../selector-interfaces';
 import { ErrorLogger } from '@sneat/core';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 
 describe('MultiSelectorService', () => {
   let service: MultiSelectorService;

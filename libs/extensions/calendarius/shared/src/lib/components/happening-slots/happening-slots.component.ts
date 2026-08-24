@@ -17,7 +17,7 @@ import {
   IonLabel,
   IonSpinner,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { Numeral2Pipe } from '@sneat/components';
 import { WdToWeekdayPipe } from '../../pipes/wd-to-weekday.pipe';
 import { IHappeningSlot, WeekdayCode2, IHappeningContext, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';

@@ -7,11 +7,11 @@
   </ion-item>
 }
 
-@if (mode === "dropdown") {
+@if (mode() === "dropdown") {
   <ion-item class="sneat-tiny-end-padding" lines="none">
     <ion-select
       interface="popover"
-      [label]="label"
+      [label]="label()"
       [(ngModel)]="countryID"
       (ionChange)="onCountryChanged()"
     >
@@ -22,7 +22,7 @@
         </ion-select-option>
       }
     </ion-select>
-    @if (countryID && canReset) {
+    @if (countryID && canReset()) {
       <ion-buttons slot="end">
         <ion-button color="medium" (click)="reset($event)">
           <ion-icon name="close-outline" />
@@ -36,8 +36,8 @@
   <sneat-select-from-list
     [value]="countryID"
     [isFilterable]="true"
-    [filterLabel]="label"
-    [label]="label"
+    [filterLabel]="label()"
+    [label]="label()"
     [items]="countries()"
     (valueChange)="onListValueChanged($event)"
     [filterItem]="filterCountryByCode"

@@ -117,7 +117,12 @@
       "@sneat/space-nav-router": [
         "libs/space/nav-router/src/index.ts"
       ]
-    }
+    },
+    "noUncheckedSideEffectImports": false,
+    "types": [
+      "*"
+    ],
+    "ignoreDeprecations": "6.0"
   },
   "exclude": [
     "node_modules",

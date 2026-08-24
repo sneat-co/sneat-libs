@@ -10,7 +10,7 @@
     }
     @if (day?.date) {
       , {{ day?.date?.getDate() }}
-      {{ day?.date?.getMonth() | shortMonthName }}
+      {{ $safeNavigationMigration(day?.date?.getMonth()) | shortMonthName }}
     }
   </ion-label>
   @if (day?.$isLoading()) {

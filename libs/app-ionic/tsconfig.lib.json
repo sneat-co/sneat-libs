@@ -1,1 +1,10 @@
-{ "extends": "../../tsconfig.lib.base.json", "exclude": ["src/**/*.spec.ts", "src/test-setup.ts"] }
+{
+  "extends": "../../tsconfig.lib.base.json",
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/test-setup.ts"
+  ],
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0"
+  }
+}

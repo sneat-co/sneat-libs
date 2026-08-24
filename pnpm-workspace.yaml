@@ -1,2 +1,21 @@
 packages:
   - 'libs/**'
+peerDependencyRules:
+  ignoreMissing:
+    - '@sneat/*'
+    - '@ionic/angular'
+    - firebase
+    - '@angular/fire'
+    - '@sentry/angular'
+    - posthog-js
+    - '@sneat/random'
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@swc/core'
+  - esbuild
+  - less
+  - lmdb
+  - msgpackr-extract
+  - nx
+  - oxc-resolver
+  - unrs-resolver

@@ -16,7 +16,7 @@ import {
   IonLabel,
   IonPopover,
   PopoverController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { dateToIso, isoStringsToDate } from '@sneat/core';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';

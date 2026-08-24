@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 
 @Component({
   selector: 'sneat-day-tasks',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './day-tasks.component.html',
 })
 export class DayTasksComponent {

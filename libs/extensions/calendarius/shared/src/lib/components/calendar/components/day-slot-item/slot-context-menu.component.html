@@ -10,7 +10,7 @@
 
 <ion-item-group>
   <ion-item-divider color="light">
-    <ion-label>Adjust single for {{ dateID }}</ion-label>
+    <ion-label>Adjust single for {{ dateID() }}</ion-label>
   </ion-item-divider>
   @if (isCancelled) {
     <ion-item
@@ -43,7 +43,7 @@
       >
         <ion-icon slot="start" name="calendar-outline" />
         <ion-label
-          >Adjust time for {{ dateID }} &#64;
+          >Adjust time for {{ dateID() }} &#64;
           {{ slotContext?.timing?.start?.time }}
         </ion-label>
       </ion-item>
@@ -72,7 +72,7 @@
         <ion-spinner slot="end" />
       } @else {
         <ion-label>
-          Cancel 1 on {{ dateID }} "&#64;{{ slotContext?.timing?.start?.time }}
+          Cancel 1 on {{ dateID() }} "&#64;{{ slotContext?.timing?.start?.time }}
         </ion-label>
       }
     </ion-item>

@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, input } from '@angular/core';
 import {
   NavController,
   MenuController,
   IonIcon,
   IonItem,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SpacesListComponent } from '../spaces-list';
 import { SpacesMenuComponent } from './spaces-menu.component';
 import { ErrorLogger } from '@sneat/core';
@@ -19,11 +19,12 @@ import { Firestore } from '@angular/fire/firestore';
 @Component({
   selector: 'sneat-spaces-list',
   template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
 class SpacesListStubComponent {
-  @Input() spaces?: unknown[];
-  @Input() pathPrefix = '/space';
+  readonly spaces = input<unknown[]>();
+  readonly pathPrefix = input('/space');
 }
 
 describe('SpacesMenuComponent', () => {

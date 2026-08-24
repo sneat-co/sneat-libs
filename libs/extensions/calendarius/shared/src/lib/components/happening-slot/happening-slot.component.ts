@@ -3,6 +3,7 @@ import {
   Component,
   Input,
   inject,
+  input
 } from '@angular/core';
 import {
   IonBadge,
@@ -11,7 +12,7 @@ import {
   IonIcon,
   IonItem,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { WdToWeekdayPipe } from '../../pipes/wd-to-weekday.pipe';
 import { emptyHappeningSlot, IHappeningContext, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { HappeningSlotModalService } from '../happening-slot-form/happening-slot-modal.service';
@@ -36,22 +37,26 @@ export class HappeningSlotComponent {
     HappeningSlotModalService,
   );
 
-  @Input({ required: true }) public happening?: IHappeningContext;
+  public readonly happening = input.required<IHappeningContext | undefined>();
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input({ required: true }) public slot: IHappeningSlotWithID =
     emptyHappeningSlot;
 
   protected deleting = false;
 
   protected async editHappeningSlot(event: Event): Promise<void> {
-    if (!this.happening) {
+    const happening = this.happening();
+    if (!happening) {
       return Promise.reject('no happening');
     }
-    if (!this.happening) {
+    if (!happening) {
       return Promise.reject('no happening');
     }
     await this.happeningSlotModalService.editSingleHappeningSlot(
       event,
-      this.happening,
+      happening,
       undefined,
       this.slot,
     );

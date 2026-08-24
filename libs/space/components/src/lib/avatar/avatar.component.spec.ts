@@ -22,6 +22,7 @@ describe('AvatarComponent', () => {
 
     fixture = TestBed.createComponent(AvatarComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('avatar', undefined);
     fixture.detectChanges();
   }));
 

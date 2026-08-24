@@ -1,12 +1,13 @@
-import { Component, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 
 @Component({
   selector: 'sneat-calendar-card-header',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: 'calendar-card-header.component.html',
 })
 export class CalendarCardHeaderComponent {
-  @Input() date = new Date();
-  @Input() tab?: 'day' | 'week';
+  readonly date = input(new Date());
+  readonly tab = input<'day' | 'week'>();
 
   // isCurrentWeek(): boolean {
   // 	const monday = this.activeWeek && this.activeWeek.startDate;

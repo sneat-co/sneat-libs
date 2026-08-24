@@ -1,6 +1,6 @@
 @if ($weekday(); as weekday) {
   @if (!weekday.day?.slots?.length) {
-    <ion-item [lines]="hideLastBorder ? 'none' : 'full'">
+    <ion-item [lines]="hideLastBorder() ? 'none' : 'full'">
       @if (!weekday.day || weekday.day.$isLoading()) {
         <ion-spinner name="lines-small" color="medium" slot="start" />
         <ion-label color="medium">Loading...</ion-label>
@@ -31,12 +31,12 @@
     @for (slot of slots(); track slot.slot.id) {
       <sneat-day-slot-item
         [$space]="$space()"
-        [dateID]="weekday.day?.dateID"
+        [dateID]="$safeNavigationMigration(weekday.day?.dateID)"
         [$slotContext]="slot"
       />
     }
   }
-  @if (!hideAddButtons) {
+  @if (!hideAddButtons()) {
     <ion-item lines="none">
       <ion-button
         slot="end"

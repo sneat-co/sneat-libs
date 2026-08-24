@@ -3,16 +3,15 @@ import {
   Component,
   EventEmitter,
   input,
-  Input,
   OnChanges,
   OnDestroy,
   Output,
   signal,
   SimpleChanges,
-  inject,
+  inject
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IonSegment, IonSegmentButton } from '@ionic/angular/standalone';
+import { IonSegment, IonSegmentButton } from '@ionic/angular';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { ISlotUIEvent } from '@sneat/extension-calendarius-contract';
 import { IHappeningContext } from '@sneat/extension-calendarius-contract';
@@ -59,7 +58,7 @@ export class SinglesTabComponent
 
   @Output() readonly slotClicked = new EventEmitter<ISlotUIEvent>();
 
-  @Input() onDateSelected?: (date: Date) => void;
+  readonly onDateSelected = input<(date: Date) => void>();
 
   public readonly $contactusSpace = input.required<
     IContactusSpaceDboAndID | undefined

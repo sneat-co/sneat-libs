@@ -4,7 +4,7 @@ import {
   computed,
   input,
 } from '@angular/core';
-import { IonText } from '@ionic/angular/standalone';
+import { IonText } from '@ionic/angular';
 import { ISlotAdjustment, ITiming } from '@sneat/extension-calendarius-contract';
 
 @Component({

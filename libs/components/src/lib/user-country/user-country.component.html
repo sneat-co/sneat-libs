@@ -1,7 +1,7 @@
 @let userCountryID = $userCountryID();
 @let userHasCountry = $userHasCountry();
 
-@if (doNotHide || ($ipCountry() && !userHasCountry)) {
+@if (doNotHide() || ($ipCountry() && !userHasCountry)) {
   <ion-card>
     @if (userHasCountry || !$ipCountry()) {
       <ion-card-content>

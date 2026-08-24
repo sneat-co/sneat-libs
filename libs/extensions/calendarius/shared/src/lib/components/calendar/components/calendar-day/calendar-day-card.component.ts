@@ -15,7 +15,7 @@ import {
   IonIcon,
   IonItem,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { virtualSliderAnimations } from '@sneat/components';
 import { ClassName } from '@sneat/ui';
 import { CalendarDayComponent } from './calendar-day.component';
@@ -59,6 +59,8 @@ export class CalendarDayCardComponent
 
   @Output() readonly goNew = new EventEmitter<NewHappeningParams>();
 
+  // TODO: Skipped for migration because:
+  //  Accessor inputs cannot be migrated as they are too complex.
   @Input() set activeDayPlus(value: number) {
     this.shiftDays = value;
     // console.log('set activeDayPlus()', value, 'shiftDays=', this.shiftDays);

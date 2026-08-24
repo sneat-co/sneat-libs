@@ -11,6 +11,7 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   FormControl,
@@ -33,7 +34,7 @@ import {
   IonSelectOption,
   IonSpinner,
   ModalController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ClassName, ISelectItem, SelectFromListComponent } from '@sneat/ui';
 import { emptyTiming, IHappeningSlot, ITiming, MonthlyMode, SlotLocation, WeekdayCode2, IHappeningContext, Month, RepeatPeriod, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { newRandomId } from '@sneat/random';
@@ -82,6 +83,7 @@ export interface IHappeningSlotFormComponentInputs {
     HappeningService,
   ],
   selector: 'sneat-happening-slot-form',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './happening-slot-form.component.html',
 })
 /*
@@ -102,10 +104,25 @@ export class HappeningSlotFormComponent
     () => this.$happening().brief?.type,
   );
 
+  // TODO: Skipped for migration because:
+  //  This input overrides a field from a superclass, while the superclass field
+  //  is not migrated.
   @Input({ required: true }) mode?: HappeningSlotFormMode;
+  // TODO: Skipped for migration because:
+  //  This input overrides a field from a superclass, while the superclass field
+  //  is not migrated.
   @Input() slot?: IHappeningSlotWithID;
+  // TODO: Skipped for migration because:
+  //  This input overrides a field from a superclass, while the superclass field
+  //  is not migrated.
   @Input() wd?: WeekdayCode2;
+  // TODO: Skipped for migration because:
+  //  This input overrides a field from a superclass, while the superclass field
+  //  is not migrated.
   @Input() date?: string;
+  // TODO: Skipped for migration because:
+  //  This input overrides a field from a superclass, while the superclass field
+  //  is not migrated.
   @Input() isToDo = false;
 
   @Output() readonly slotAdded = new EventEmitter<IHappeningSlot>();

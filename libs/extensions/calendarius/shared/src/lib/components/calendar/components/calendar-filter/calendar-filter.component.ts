@@ -1,4 +1,4 @@
-import { Component, computed, Input, signal, inject } from '@angular/core';
+import { Component, computed, signal, inject, ChangeDetectionStrategy, input } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   IonAccordion,
@@ -17,8 +17,8 @@ import {
   IonItemGroup,
   IonLabel,
   IonRow,
-} from '@ionic/angular/standalone';
-import { ContactTitlePipe } from '@sneat/extension-contactus-shared';
+} from '@ionic/angular';
+import { ContactTitlePipe } from '@sneat/extension-contactus-ui';
 import { IContactWithBriefAndSpace } from '@sneat/extension-contactus-contract';
 import { WeekdayCode2 } from '@sneat/extension-calendarius-contract';
 import { ISpaceContext } from '@sneat/space-models';
@@ -55,6 +55,7 @@ import { ClassName } from '@sneat/ui';
   ],
   providers: [{ provide: ClassName, useValue: 'CalendarFilterComponent' }],
   selector: 'sneat-calendar-filter',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: 'calendar-filter.component.html',
 })
 export class CalendarFilterComponent extends WeekdaysFormBase {
@@ -64,9 +65,9 @@ export class CalendarFilterComponent extends WeekdaysFormBase {
   public accordionValue?: string;
   private resetting = false;
 
-  @Input({ required: true }) space?: ISpaceContext;
-  @Input() showWeekdays = false;
-  @Input() showRepeats = false;
+  readonly space = input.required<ISpaceContext | undefined>();
+  readonly showWeekdays = input(false);
+  readonly showRepeats = input(false);
 
   readonly text = new FormControl<string>('');
 

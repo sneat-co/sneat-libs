@@ -36,7 +36,7 @@ import {
   IonSelect,
   IonSelectOption,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { NEVER, Observable, Subject, takeUntil } from 'rxjs';
 import { ISelectItem } from '../selector-interfaces';
@@ -77,40 +77,50 @@ export class SelectFromListComponent
 {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() value: string | undefined = '';
   @Output() readonly valueChange = new EventEmitter<string>();
 
-  @Input() filterLabel = 'Find';
-  @Input() label = 'Please choose';
-  @Input() listLabel?: 'divider';
-  @Input() listLabelColor?:
-    | 'light'
-    | 'medium'
-    | 'primary'
-    | 'secondary'
-    | 'tertiary';
-  @Input() isFilterable?: boolean;
-  @Input() isLoading?: boolean;
+  readonly filterLabel = input('Find');
+  readonly label = input('Please choose');
+  readonly listLabel = input<'divider'>();
+  readonly listLabelColor = input<'light' | 'medium' | 'primary' | 'secondary' | 'tertiary'>();
+  readonly isFilterable = input<boolean>();
+  readonly isLoading = input<boolean>();
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() items?: readonly ISelectItem[];
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() items$: Observable<ISelectItem[]> = NEVER;
 
   private $items = signal<undefined | readonly ISelectItem[]>(undefined);
 
-  @Input() lastItemLines?: 'none' | 'inset' | 'full';
+  readonly lastItemLines = input<'none' | 'inset' | 'full'>();
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() labelPlacement?: 'start' | 'end' | 'fixed' | 'stacked';
-  @Input() justify?: 'start' | 'end' | 'space-between';
-  @Input() other: 'top' | 'bottom' | 'none' = 'none';
-  @Input() canAdd = false;
+  readonly justify = input<'start' | 'end' | 'space-between'>();
+  readonly other = input<'top' | 'bottom' | 'none'>('none');
+  readonly canAdd = input(false);
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() filterItem?: (item: ISelectItem, filter: string) => boolean;
 
   @Output() readonly filterChanged = new EventEmitter<string>();
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() selectMode: 'single' | 'multiple' = 'single';
 
-  @Input() isReadonly = false;
+  readonly isReadonly = input(false);
 
   public $isProcessing = input<boolean>();
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() sortBy?: 'title' | 'id';
 
   // @Input() ngModel?: string;

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 import { UserRequiredFieldsModalComponent } from './user-required-fields-modal.component';
 
 // providedIn:'root' so every consumer resolves it without a local provider.

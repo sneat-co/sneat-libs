@@ -18,7 +18,7 @@ import {
   IonItemDivider,
   IonItemGroup,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SneatUserService } from '@sneat/auth-core';
 import {
   ContactsChecklistComponent,
@@ -26,7 +26,7 @@ import {
   ContactsSelectorModule,
   ICheckChangedArgs,
   IContactSelectorProps,
-} from '@sneat/extension-contactus-shared';
+} from '@sneat/extension-contactus-ui';
 import { AnalyticsService } from '@sneat/core';
 import {
   addRelatedItem,

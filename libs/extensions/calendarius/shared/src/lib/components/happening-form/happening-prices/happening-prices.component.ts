@@ -19,7 +19,7 @@ import {
   IonLabel,
   IonSpinner,
   ModalController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { Decimal64p2Pipe } from '@sneat/components';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { IHappeningBrief, IHappeningContext, IHappeningPrice } from '@sneat/extension-calendarius-contract';
@@ -52,6 +52,8 @@ export class HappeningPricesComponent {
   private readonly modalCtrl = inject(ModalController);
   private readonly happeningService = inject(HappeningService);
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) happening?: IHappeningContext;
   @Output() readonly happeningChange = new EventEmitter<IHappeningContext>();
 

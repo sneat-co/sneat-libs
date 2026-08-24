@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
 import {
   NavController,
   MenuController,
@@ -11,7 +11,7 @@ import {
   IonLabel,
   IonButtons,
   IonButton,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { AuthMenuItemComponent } from '@sneat/auth-ui';
 import { SpaceMenuComponent } from './space-menu.component';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -25,6 +25,7 @@ import { Firestore } from '@angular/fire/firestore';
 @Component({
   selector: 'sneat-auth-menu-item',
   template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
 class AuthMenuItemStubComponent {}

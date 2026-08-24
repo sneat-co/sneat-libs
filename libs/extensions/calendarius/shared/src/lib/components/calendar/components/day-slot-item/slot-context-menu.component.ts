@@ -5,6 +5,7 @@ import {
   inject,
   Input,
   signal,
+  input
 } from '@angular/core';
 import {
   IonIcon,
@@ -15,7 +16,7 @@ import {
   IonSpinner,
   IonText,
   PopoverController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   addSpace,
   IContactusSpaceDboAndID,
@@ -32,7 +33,7 @@ import {
   ContactsSelectorModule,
   ContactsSelectorService,
   IContactSelectorOptions,
-} from '@sneat/extension-contactus-shared';
+} from '@sneat/extension-contactus-ui';
 import { ISpaceContext, zipMapBriefsWithIDs } from '@sneat/space-models';
 import { NEVER, Observable } from 'rxjs';
 import {
@@ -74,9 +75,11 @@ const notImplemented = 'Sorry, not implemented yet';
   templateUrl: 'slot-context-menu.component.html',
 })
 export class SlotContextMenuComponent extends WithSpaceInput {
-  @Input({ required: true }) contactusSpace?: IContactusSpaceDboAndID;
+  readonly contactusSpace = input.required<IContactusSpaceDboAndID | undefined>();
 
-  @Input() dateID?: string;
+  readonly dateID = input<string>();
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() public slotContext?: ISlotUIContext;
 
   // protected readonly happening = signal<IHappeningContext | undefined>(
@@ -115,7 +118,7 @@ export class SlotContextMenuComponent extends WithSpaceInput {
       return;
     }
     const contacts =
-      zipMapBriefsWithIDs(this.contactusSpace?.dbo?.contacts)?.map(
+      zipMapBriefsWithIDs(this.contactusSpace()?.dbo?.contacts)?.map(
         addSpace(space),
       ) || [];
     const happening = this.slotContext.happening;
@@ -146,7 +149,7 @@ export class SlotContextMenuComponent extends WithSpaceInput {
   protected cancelAdjustment(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-    const dateID = this.dateID;
+    const dateID = this.dateID();
     if (!dateID) {
       return;
     }
@@ -182,9 +185,10 @@ export class SlotContextMenuComponent extends WithSpaceInput {
     if (!this.$space()) {
       return;
     }
-    const recurring: EditRecurringSlotParams | undefined = this.dateID
+    const dateID = this.dateID();
+    const recurring: EditRecurringSlotParams | undefined = dateID
       ? {
-          dateID: this.dateID,
+          dateID: dateID,
           adjustment: this.slotContext?.adjustment,
           editMode,
         }
@@ -286,7 +290,7 @@ export class SlotContextMenuComponent extends WithSpaceInput {
       weekday: mode === 'slot' ? slotContext.wd : undefined,
       date:
         mode === 'slot' && happening.brief?.type === 'recurring'
-          ? this.dateID
+          ? this.dateID()
           : undefined,
     });
     return request;

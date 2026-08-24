@@ -13,13 +13,14 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  input
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonLabel,
   IonSegment,
   IonSegmentButton,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { IMemberContext } from '@sneat/extension-contactus-contract';
 import { localDateToIso } from '@sneat/core';
 import { IHappeningSlot, WeekdayCode2, IHappeningWithUiState } from '@sneat/extension-calendarius-contract';
@@ -80,7 +81,9 @@ export class CalendarComponent
   @ViewChild('calendarFilterComponent')
   public calendarFilterComponent?: CalendarFilterComponent;
 
-  @Input() member?: IMemberContext; // TODO: rename to contact?
+  readonly member = input<IMemberContext>(); // TODO: rename to contact?
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() public tab: CalendarTab = 'day';
 
   @Output() readonly tabChanged = new EventEmitter<CalendarTab>();

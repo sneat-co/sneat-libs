@@ -5,9 +5,9 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@angular/common": ">=21.0.0",
-    "@angular/core": ">=21.0.0",
-    "@angular/router": ">=21.0.0",
+    "@angular/common": ">=22.0.0 <23.0.0",
+    "@angular/core": ">=22.0.0 <23.0.0",
+    "@angular/router": ">=22.0.0 <23.0.0",
     "@sneat/core": "^0.26.0",
     "@sneat/data": "^0.26.0",
     "@sneat/dto": "^0.26.0",

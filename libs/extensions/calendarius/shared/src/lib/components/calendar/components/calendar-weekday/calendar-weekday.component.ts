@@ -16,7 +16,7 @@ import {
   IonItemDivider,
   IonLabel,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ShortMonthNamePipe } from '@sneat/components';
 import { HappeningType } from '@sneat/extension-calendarius-contract';
 import { ISlotUIContext, NewHappeningParams, IScheduleNavService, SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';

@@ -1,10 +1,10 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
-import { ContactsSelectorService } from '@sneat/extension-contactus-shared';
+import { ContactsSelectorService } from '@sneat/extension-contactus-ui';
 import { SpaceNavService } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
-import { PopoverController } from '@ionic/angular/standalone';
+import { PopoverController } from '@ionic/angular';
 import { of } from 'rxjs';
 import { HappeningService } from '../../../../services/happening.service';
 import { HappeningSlotModalService } from '../../../happening-slot-form/happening-slot-modal.service';

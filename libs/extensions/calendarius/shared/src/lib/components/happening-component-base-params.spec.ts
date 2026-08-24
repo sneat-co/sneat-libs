@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Firestore } from '@angular/fire/firestore';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
 import {
   ErrorLogger,
@@ -12,7 +12,7 @@ import {
 import { SneatUserService, SneatAuthStateService } from '@sneat/auth-core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
-import { NavController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular';
 import { of } from 'rxjs';
 import { CalendariusSpaceService } from '../services/calendarius-space.service';
 import { HappeningService } from '../services/happening.service';

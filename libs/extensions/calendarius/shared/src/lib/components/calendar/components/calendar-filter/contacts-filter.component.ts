@@ -21,14 +21,14 @@ import {
   IonSegmentButton,
   IonSelect,
   IonSelectOption,
-} from '@ionic/angular/standalone';
-import { ContactTitlePipe } from '@sneat/extension-contactus-shared';
+} from '@ionic/angular';
+import { ContactTitlePipe } from '@sneat/extension-contactus-ui';
 import {
   CONTACTUS_SPACE_SERVICE,
   IContactusSpaceDbo,
   IContactWithBriefAndSpace,
 } from '@sneat/extension-contactus-contract';
-import { ContactusModuleBaseComponent } from '@sneat/extension-contactus-shared';
+import { ContactusModuleBaseComponent } from '@sneat/extension-contactus-ui';
 import { SpaceModuleService } from '@sneat/space-services';
 import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { ClassName } from '@sneat/ui';

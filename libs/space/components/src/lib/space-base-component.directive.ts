@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
-import { NavController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular';
 import {
   equalSpaceRefs,
   ILogger,

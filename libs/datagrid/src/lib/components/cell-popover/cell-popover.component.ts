@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
@@ -13,7 +13,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 // TODO: Local minimal copies to avoid dependency on @sneat/datatug-main and break circular build deps
 interface IRecordsetColumn {
@@ -37,6 +37,7 @@ interface IForeignKey {
 @Component({
   selector: 'sneat-datatug-cell-popover',
   templateUrl: './cell-popover.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterModule,
     FormsModule,
@@ -54,8 +55,14 @@ interface IForeignKey {
   ],
 })
 export class CellPopoverComponent {
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() column?: IRecordsetColumn;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() value: unknown;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() fk?: IForeignKey;
 
   public tab: 'rec' | 'cols' | 'refs' = 'rec';

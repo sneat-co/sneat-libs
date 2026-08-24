@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   IonContent,
@@ -9,7 +9,7 @@ import {
   IonListHeader,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 interface IDemoEntry {
   readonly title: string;
@@ -35,6 +35,7 @@ const DEMO_ENTRIES: readonly IDemoEntry[] = [
     IonItem,
     IonLabel,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-header>
       <ion-toolbar>

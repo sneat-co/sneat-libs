@@ -28,7 +28,7 @@ export abstract class SwipeableBaseComponent extends SneatBaseComponent {
   }
 
   public animationState?: VirtualSliderAnimationStates;
-  protected isEvenSlideActivated = false;
+  protected readonly $isEvenSlideActivated = signal(false);
 
   protected oddSlide?: Swipeable;
   protected evenSlide?: Swipeable;
@@ -66,7 +66,7 @@ export abstract class SwipeableBaseComponent extends SneatBaseComponent {
   }
 
   protected swipeNext(): void {
-    this.isEvenSlideActivated = true;
+    this.$isEvenSlideActivated.set(true);
     this.scheduleSateService.shiftDays(+this.stepDays);
   }
 
@@ -92,7 +92,7 @@ export abstract class SwipeableBaseComponent extends SneatBaseComponent {
   // }
 
   protected swipePrev(): void {
-    this.isEvenSlideActivated = true;
+    this.$isEvenSlideActivated.set(true);
     this.scheduleSateService.shiftDays(-this.stepDays);
   }
 

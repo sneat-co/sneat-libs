@@ -7,6 +7,8 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  ChangeDetectionStrategy,
+  input
 } from '@angular/core';
 import {
   FormControl,
@@ -33,7 +35,7 @@ import {
   IonSelect,
   IonSelectOption,
   ModalController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   dateToIso,
   isoStringsToDate,
@@ -51,6 +53,7 @@ import { TimeSelectorComponent } from './time-selector.component';
 @Component({
   selector: 'sneat-start-end-datetime-form',
   templateUrl: 'start-end-datetime-form.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     FormsModule,
@@ -79,10 +82,12 @@ export class StartEndDatetimeFormComponent implements OnChanges {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly modalController = inject(ModalController);
 
-  @Input() addSlotLabel?: string;
-  @Input({ required: true }) mode?: HappeningType;
-  @Input({ required: true }) date?: string;
+  readonly addSlotLabel = input<string>();
+  readonly mode = input.required<HappeningType | undefined>();
+  readonly date = input.required<string | undefined>();
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) timing: ITiming = emptyTiming;
   @Output() readonly timingChange = new EventEmitter<ITiming>();
 
@@ -131,11 +136,11 @@ export class StartEndDatetimeFormComponent implements OnChanges {
   }
 
   protected get disabled(): boolean {
-    return !this.mode;
+    return !this.mode();
   }
 
   protected get hideStartDate(): boolean {
-    return this.mode === 'recurring';
+    return this.mode() === 'recurring';
   }
 
   // public get timing(): ITiming {
@@ -184,9 +189,9 @@ export class StartEndDatetimeFormComponent implements OnChanges {
 
   private onDateChanged(): void {
 
-    if (this.mode === 'single') {
+    if (this.mode() === 'single') {
       if (!this.startDate.dirty) {
-        const date = this.date || new Date().toISOString().substring(0, 10);
+        const date = this.date() || new Date().toISOString().substring(0, 10);
         this.startDate.setValue(date);
       }
     } else {
@@ -327,7 +332,7 @@ export class StartEndDatetimeFormComponent implements OnChanges {
   }
 
   protected addSlot(): void {
-    if (this.mode === 'single' && !this.timing.start?.date) {
+    if (this.mode() === 'single' && !this.timing.start?.date) {
       alert('Please select date');
       return;
     }

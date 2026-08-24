@@ -21,8 +21,8 @@
     </ion-label>
     <sneat-calendar-add-buttons
       [$space]="$space()"
-      [dateID]="$today()?.day?.dateID"
-      [weekdayID]="$today()?.id"
+      [dateID]="$safeNavigationMigration($today()?.day?.dateID)"
+      [weekdayID]="$safeNavigationMigration($today()?.id)"
     />
   </ion-item>
   <sneat-calendar-day
@@ -36,8 +36,8 @@
     </ion-label>
     <sneat-calendar-add-buttons
       [$space]="$space()"
-      [dateID]="$tomorrow()?.day?.dateID"
-      [weekdayID]="$tomorrow()?.id"
+      [dateID]="$safeNavigationMigration($tomorrow()?.day?.dateID)"
+      [weekdayID]="$safeNavigationMigration($tomorrow()?.id)"
     />
   </ion-item>
   <sneat-calendar-day

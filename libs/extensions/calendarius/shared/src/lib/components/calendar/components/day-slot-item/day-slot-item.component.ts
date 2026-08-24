@@ -1,10 +1,9 @@
 import {
   Component,
-  Input,
   input,
   computed,
   ChangeDetectionStrategy,
-  inject,
+  inject
 } from '@angular/core';
 import {
   PopoverController,
@@ -16,9 +15,9 @@ import {
   IonItem,
   IonLabel,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
-import { ContactsSelectorModule } from '@sneat/extension-contactus-shared';
+import { ContactsSelectorModule } from '@sneat/extension-contactus-ui';
 import { WithSpaceInput } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
 import {
@@ -59,12 +58,12 @@ export class DaySlotItemComponent extends WithSpaceInput {
 
   public readonly $slotContext = input.required<ISlotUIContext>();
 
-  @Input() dateID?: string;
+  readonly dateID = input<string>();
 
-  @Input() mode: 'full' | 'brief' = 'full';
-  @Input() color?: 'light';
+  readonly mode = input<'full' | 'brief'>('full');
+  readonly color = input<'light'>();
 
-  @Input() contactusSpace?: IContactusSpaceDboAndID;
+  readonly contactusSpace = input<IContactusSpaceDboAndID>();
 
   protected readonly $isCanceled = computed(() => {
     const { happening, adjustment } = this.$slotContext();
@@ -106,7 +105,7 @@ export class DaySlotItemComponent extends WithSpaceInput {
         componentProps: {
           $space: this.$space,
           slotContext,
-          dateID: this.dateID,
+          dateID: this.dateID(),
           // state: stateOutput,
         },
         event,

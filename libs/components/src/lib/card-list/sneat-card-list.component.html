@@ -1,11 +1,11 @@
 <ion-card>
   @if (title) {
     <ion-item (click)="cardTitleClick.emit()" tappable>
-      @if (itemIcon && !isLoading && !items?.length) {
+      @if (itemIcon && !isLoading() && !items?.length) {
         <ion-icon [name]="itemIcon" slot="start" />
       }
       <ion-label style="font-weight: bold">{{ title }}</ion-label>
-      @if (isFilterable) {
+      @if (isFilterable()) {
         <ion-input [(ngModel)]="filter" placeholder="(type to filter)" />
       }
       <ion-buttons slot="end">
@@ -40,7 +40,7 @@
       }
     </ion-buttons>
   }
-  @if (isLoading) {
+  @if (isLoading()) {
     <ion-card-content>
       <ion-skeleton-text animated="" style="width: 100%" />
     </ion-card-content>
@@ -50,7 +50,7 @@
         <ion-item
           tappable
           (click)="itemClick && click($event, item)"
-          [routerLink]="getRouterLink(item)"
+          [routerLink]="getRouterLink()(item)"
         >
           @if (itemIcon) {
             <ion-icon [name]="itemIcon" slot="start" />

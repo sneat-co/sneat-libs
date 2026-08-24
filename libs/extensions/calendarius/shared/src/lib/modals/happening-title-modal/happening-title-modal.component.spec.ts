@@ -1,6 +1,6 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { HappeningService } from '../../services/happening.service';
@@ -36,7 +36,9 @@ describe('HappeningTitleModalComponent', () => {
       })
       .compileComponents();
     fixture = TestBed.createComponent(HappeningTitleModalComponent);
+    fixture.componentRef.setInput('happening', undefined);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   }));
 
   it('should create', () => {

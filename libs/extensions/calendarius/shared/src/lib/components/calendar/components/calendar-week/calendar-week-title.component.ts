@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ShortMonthNamePipe } from '@sneat/components';
 import { SwipeableWeek } from '../../../swipeable-ui';
 
@@ -9,5 +9,5 @@ import { SwipeableWeek } from '../../../swipeable-ui';
   imports: [ShortMonthNamePipe],
 })
 export class CalendarWeekTitleComponent {
-  @Input({ required: true }) week?: SwipeableWeek;
+  readonly week = input.required<SwipeableWeek | undefined>();
 }

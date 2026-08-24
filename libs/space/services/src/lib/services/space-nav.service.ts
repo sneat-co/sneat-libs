@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Params } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular/lazy';
 import { AnalyticsService, IAnalyticsService, IIdAndBrief, ISpaceRef } from '@sneat/core';
 import { IMemberBrief } from '@sneat/extension-contactus-contract';
 
@@ -17,7 +17,7 @@ export type ScrumPageTab = 'team' | 'my' | 'risks' | 'qna';
 /**
  * @deprecated Concrete, Ionic-coupled nav service. Kept for backward
  * compatibility — a currently-published dependency of this monorepo
- * (`@sneat/extension-contactus-shared@0.12.3`) still imports this class and
+ * (`@sneat/extension-contactus-ui@0.13.7`) still imports this class and
  * `WithSpaceInput` directly from `@sneat/space-services`, so it cannot be
  * removed from this package's public entry point without breaking that
  * consumer; see the PR description for the full trade-off.

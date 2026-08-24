@@ -9,6 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -75,20 +76,37 @@ Tabulator.registerModule([
     <div id="tabulator" #tabulatorDiv></div>
     <p class="ion-margin-start">Rows: {{ data?.length }}</p>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
 })
 export class DataGridComponent implements AfterViewInit, OnChanges {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() layout?: 'fitData' | 'fitColumns' = 'fitColumns';
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() data?: unknown[] = [];
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() columns?: IGridColumn[] = [];
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() groupBy?: string;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() height?: string;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() maxHeight?: string | number;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() rowContextMenu?: RowContextMenuSignature;
   @ViewChild('tabulatorDiv', { static: true }) tabulatorDiv?: ElementRef;
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() rowClick?: (event: Event, row: unknown) => void;
 
   @Output() readonly rowSelected = new EventEmitter<{
@@ -104,6 +122,8 @@ export class DataGridComponent implements AfterViewInit, OnChanges {
   // private tab = document.createElement('div');
   private tabulator?: Tabulator;
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() public selectable?: boolean | number | 'highlight';
 
   private tabulatorOptions?: TabulatorOptions;

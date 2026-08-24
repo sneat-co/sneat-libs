@@ -1,4 +1,4 @@
-import { Component, signal, ViewChild } from '@angular/core';
+import { Component, signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   IonBackButton,
@@ -7,7 +7,7 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { HappeningType, WeekdayCode2, IHappeningContext, newEmptyHappeningContext } from '@sneat/extension-calendarius-contract';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
 import { SpaceServiceModule } from '@sneat/space-services';
@@ -31,6 +31,7 @@ import { HappeningFormComponent } from '@sneat/extension-calendarius-shared';
     IonTitle,
     IonContent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     { provide: ClassName, useValue: 'NewHappeningPageComponent' },
     SpaceComponentBaseParams,

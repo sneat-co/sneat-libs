@@ -34,15 +34,15 @@
         <div class="virtual-slider-inner" [@virtualSlider]="animationState">
           <h1
             class="virtual-slide sneat-smaller-if-width-less-638"
-            [@virtualSlide]="oddDay?.animationState"
+            [@virtualSlide]="$safeNavigationMigration(oddDay?.animationState)"
           >
-            <sneat-calendar-day-title [weekday]="oddDay?.weekday" />
+            <sneat-calendar-day-title [weekday]="$safeNavigationMigration(oddDay?.weekday)" />
           </h1>
           <h1
             class="virtual-slide"
             [@virtualSlide]="evenDay?.animationState || 'hide'"
           >
-            <sneat-calendar-day-title [weekday]="evenDay?.weekday" />
+            <sneat-calendar-day-title [weekday]="$safeNavigationMigration(evenDay?.weekday)" />
           </h1>
         </div>
       </div>
@@ -50,8 +50,8 @@
 
     <sneat-calendar-add-buttons
       [$space]="$space()"
-      [dateID]="activeDay?.activeDateID"
-      [weekdayID]="activeDay?.weekday?.id"
+      [dateID]="$safeNavigationMigration(activeDay?.activeDateID)"
+      [weekdayID]="$safeNavigationMigration(activeDay?.weekday?.id)"
     />
   </ion-item>
 
@@ -61,12 +61,12 @@
     (swiperight)="swipeRight()"
   >
     <div class="virtual-slider-inner" [@virtualSlider]="animationState">
-      <div class="virtual-slide" [@virtualSlide]="oddSlide?.animationState">
-        <sneat-calendar-day [$weekday]="oddDay?.weekday" [$space]="$space()" />
+      <div class="virtual-slide" [@virtualSlide]="$safeNavigationMigration(oddSlide?.animationState)">
+        <sneat-calendar-day [$weekday]="$safeNavigationMigration(oddDay?.weekday)" [$space]="$space()" />
         <div class="virtual-slide-overflow-fixer"></div>
       </div>
-      <div class="virtual-slide" [@virtualSlide]="evenSlide?.animationState">
-        <sneat-calendar-day [$weekday]="evenDay?.weekday" [$space]="$space()" />
+      <div class="virtual-slide" [@virtualSlide]="$safeNavigationMigration(evenSlide?.animationState)">
+        <sneat-calendar-day [$weekday]="$safeNavigationMigration(evenDay?.weekday)" [$space]="$space()" />
         <div class="virtual-slide-overflow-fixer"></div>
       </div>
     </div>

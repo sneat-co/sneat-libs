@@ -1,4 +1,4 @@
-{{ week?.startDate?.getDate() }}
-{{ week?.startDate?.getMonth() | shortMonthName }}
+{{ week()?.startDate?.getDate() }}
+{{ $safeNavigationMigration(week()?.startDate?.getMonth()) | shortMonthName }}
 &mdash;
-{{ week?.endDate?.getDate() }} {{ week?.endDate?.getMonth() | shortMonthName }}
+{{ week()?.endDate?.getDate() }} {{ $safeNavigationMigration(week()?.endDate?.getMonth()) | shortMonthName }}

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular/lazy';
 import { AnalyticsService, ErrorLogger } from '@sneat/core';
 import { SpaceNavService } from '../services/space-nav.service';
 

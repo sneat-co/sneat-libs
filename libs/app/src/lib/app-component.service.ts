@@ -1,5 +1,5 @@
 import { Injectable, inject, InjectionToken } from '@angular/core';
-import { Platform } from '@ionic/angular/standalone';
+import { Platform } from '@ionic/angular';
 // import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 // import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
