@@ -1,3 +1,13 @@
+## 0.26.1 (2026-08-24)
+
+### 🚀 Features
+
+- migrate libraries to Ionic Framework 9 and Angular 22 ([cfcd230](https://github.com/sneat-co/sneat-libs/commit/cfcd230))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.26.0 (2026-08-20)
 
 ### 🚀 Features
