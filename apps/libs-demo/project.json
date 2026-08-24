@@ -56,6 +56,13 @@
       },
       "defaultConfiguration": "development"
     },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/apps/libs-demo"],
+      "options": {
+        "tsConfig": "apps/libs-demo/tsconfig.spec.json"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     }
