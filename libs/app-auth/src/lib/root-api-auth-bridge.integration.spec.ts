@@ -26,6 +26,8 @@ import { ErrorLogger } from '@sneat/core';
 import { firstValueFrom, NEVER, Observable } from 'rxjs';
 
 const listener = vi.fn();
+type TestUser = { getIdToken: () => Promise<string> };
+let authMock: { currentUser: TestUser | null };
 
 vi.mock('@angular/fire/auth', async () => {
   const actual = await vi.importActual<typeof import('@angular/fire/auth')>(
@@ -55,11 +57,12 @@ vi.mock('@angular/fire/firestore', async () => {
 describe('root API auth bridge integration', () => {
   beforeEach(() => {
     listener.mockReset();
+    authMock = { currentUser: null };
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: {} },
+        { provide: Auth, useValue: authMock },
         {
           provide: AngularFirestore,
           useValue: { app: {}, type: 'firestore' },
@@ -109,7 +112,9 @@ describe('root API auth bridge integration', () => {
     const observer = listener.mock.calls[0][0] as {
       next: (user: { getIdToken: () => Promise<string> }) => void;
     };
-    observer.next({ getIdToken: () => token });
+    const user = { getIdToken: () => token };
+    authMock.currentUser = user;
+    observer.next(user);
 
     const initUser = firstValueFrom(
       userRecord.initUserRecord({ ianaTimezone: 'UTC' }),
