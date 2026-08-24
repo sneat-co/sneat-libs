@@ -19,3 +19,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm nx run-many -t build,test,lint --all
       - run: pnpm run verify:bootstrap-boundaries
+      - run: pnpm run verify:capacitor-peers
