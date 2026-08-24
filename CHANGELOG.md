@@ -1,3 +1,13 @@
+## 0.26.2 (2026-08-24)
+
+### 🚀 Features
+
+- **app:** enable zoneless standard providers ([ac234cd](https://github.com/sneat-co/sneat-libs/commit/ac234cd))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.26.1 (2026-08-24)
 
 ### 🚀 Features
