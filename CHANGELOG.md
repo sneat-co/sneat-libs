@@ -1,3 +1,14 @@
+## 0.26.4 (2026-08-24)
+
+### 🩹 Fixes
+
+- align capacitor peers with supported v8 ([cb3028e](https://github.com/sneat-co/sneat-libs/commit/cb3028e))
+- align Capacitor peers with stable 8 line ([693bb40](https://github.com/sneat-co/sneat-libs/commit/693bb40))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+
 ## 0.26.3 (2026-08-24)
 
 ### 🩹 Fixes
