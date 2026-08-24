@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  Input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -29,6 +30,7 @@ import { IUserSpaceBrief } from '@sneat/auth-models';
 import { IIdAndBrief } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ICreateSpaceRequest, ISpaceContext } from '@sneat/space-models';
+import { SpaceType } from '@sneat/core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
 import { SpacesListComponent } from '../spaces-list';
@@ -61,6 +63,24 @@ import { SpacesListComponent } from '../spaces-list';
   ],
 })
 export class SpacesCardComponent {
+  /** Card heading — a product names its spaces ("Clubs", "Schools"). */
+  @Input() title = 'Spaces';
+
+  /**
+   * When set, only spaces of this type are listed. A Sneat account holds
+   * spaces from every product (family, work, clubs...), and a product home
+   * that lists them all reads as a generic space browser rather than the
+   * product — sneat.club wants exactly the `club` spaces.
+   */
+  @Input() spaceType?: SpaceType;
+
+  /**
+   * Whether the card offers its quick-add form. A product whose spaces are
+   * created by a registration flow (decision 0006) passes false and offers
+   * its own "Register ..." call to action instead.
+   */
+  @Input() canAdd = true;
+
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly navService = inject(SpaceNavService);
   private readonly userService = inject(SneatUserService);
@@ -83,6 +103,7 @@ export class SpacesCardComponent {
     }
     return Object.entries(record.spaces ?? {})
       .map(([id, brief]) => ({ id, brief }))
+      .filter(({ brief }) => !this.spaceType || brief.type === this.spaceType)
       .sort((a, b) => (a.brief.title > b.brief.title ? 1 : -1));
   });
 
@@ -111,10 +132,12 @@ export class SpacesCardComponent {
   protected readonly adding = signal(false);
 
   public constructor() {
-    // Auto-open the "add space" form once we know the user has no spaces.
+    // Auto-open the "add space" form once we know the user has no spaces —
+    // unless adding is disabled (a registration-flow product supplies its own
+    // call to action).
     effect(() => {
       const spaces = this.spaces();
-      if (spaces && spaces.length === 0) {
+      if (spaces && spaces.length === 0 && this.canAdd) {
         this.startAddingSpace();
       }
     });
