@@ -1,3 +1,14 @@
+## 0.26.3 (2026-08-24)
+
+### 🩹 Fixes
+
+- **auth:** resolve current Firebase token per request ([#54](https://github.com/sneat-co/sneat-libs/pull/54))
+- **demo:** enable zoneless demo bootstrap ([b238798](https://github.com/sneat-co/sneat-libs/commit/b238798))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+
 ## 0.26.2 (2026-08-24)
 
 ### 🚀 Features
