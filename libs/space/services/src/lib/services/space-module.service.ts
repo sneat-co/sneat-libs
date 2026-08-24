@@ -10,7 +10,6 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ModuleSpaceItemService } from './space-item.service';
 
-// import firebase from "firebase/compat";
 // import Item = firebase.analytics.Item;
 
 export abstract class SpaceModuleService<Dbo> extends ModuleSpaceItemService<

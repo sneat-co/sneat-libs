@@ -4,6 +4,17 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+overrides:
+  '@angular/router': 22.1.3
+  '@angular/platform-server': 22.1.3
+  '@angular/platform-browser-dynamic': 22.1.3
+  '@angular/platform-browser': 22.1.3
+  '@angular/forms': 22.1.3
+  '@angular/core': 22.1.3
+  '@angular/compiler': 22.1.3
+  '@angular/common': 22.1.3
+  '@angular/animations': 22.1.3
+
 importers:
 
   .:
@@ -418,10 +429,10 @@ packages:
     deprecated: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
     peerDependencies:
       '@angular/compiler-cli': ^22.0.0
-      '@angular/core': ^22.0.0
+      '@angular/core': 22.1.3
       '@angular/localize': ^22.0.0
-      '@angular/platform-browser': ^22.0.0
-      '@angular/platform-server': ^22.0.0
+      '@angular/platform-browser': 22.1.3
+      '@angular/platform-server': 22.1.3
       '@angular/service-worker': ^22.0.0
       '@angular/ssr': ^22.1.5
       browser-sync: ^3.0.2
@@ -523,12 +534,12 @@ packages:
     resolution: {integrity: sha512-YqsbHZK3/HFmLLhwxa5SpN+3ABoVo5GFLV0fiEXCQg2KC7gw2pL15x692jxrq8gEGzT7O27bnjWkvFZ0bBHCnw==}
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
     peerDependencies:
-      '@angular/compiler': ^22.0.0
+      '@angular/compiler': 22.1.3
       '@angular/compiler-cli': ^22.0.0
-      '@angular/core': ^22.0.0
+      '@angular/core': 22.1.3
       '@angular/localize': ^22.0.0
-      '@angular/platform-browser': ^22.0.0
-      '@angular/platform-server': ^22.0.0
+      '@angular/platform-browser': 22.1.3
+      '@angular/platform-server': 22.1.3
       '@angular/service-worker': ^22.0.0
       '@angular/ssr': ^22.1.5
       istanbul-lib-instrument: ^6.0.0
@@ -609,11 +620,11 @@ packages:
   '@angular/fire@20.0.1':
     resolution: {integrity: sha512-iZxE/7d5hJ2WpaENPEjHYBh7m68QybTwBHKOKaeqHz18XCP5Ufl89LuTrnoWkWOk0GdZBVAqpo6n/bM2jYIQAw==}
     peerDependencies:
-      '@angular/common': ^20.0.0
-      '@angular/core': ^20.0.0
-      '@angular/platform-browser': ^20.0.0
-      '@angular/platform-browser-dynamic': ^20.0.0
-      '@angular/platform-server': ^20.0.0
+      '@angular/common': 22.1.3
+      '@angular/core': 22.1.3
+      '@angular/platform-browser': 22.1.3
+      '@angular/platform-browser-dynamic': 22.1.3
+      '@angular/platform-server': 22.1.3
       firebase-tools: ^14.0.0
       rxjs: ~7.8.0
     peerDependenciesMeta:
@@ -2750,9 +2761,9 @@ packages:
   '@ionic/angular@9.0.0':
     resolution: {integrity: sha512-WpFHpdwnZ0vbZys63tNro/BEGxsZwLom1T3odZptT0xV5ImREG37X0n8tahhoHiNM5FlGtuHPpp/5KTOgqnPxQ==}
     peerDependencies:
-      '@angular/core': '>=18.0.0'
-      '@angular/forms': '>=18.0.0'
-      '@angular/router': '>=18.0.0'
+      '@angular/core': 22.1.3
+      '@angular/forms': 22.1.3
+      '@angular/router': 22.1.3
       rxjs: '>=7.5.0'
       zone.js: '>=0.13.0'
     peerDependenciesMeta:
@@ -4603,9 +4614,9 @@ packages:
     resolution: {integrity: sha512-jYC6cgdcoLqgze+6IiWs2mCrL7c0VV7Chd4+IuQ0S+HnNTHkGfFRefEEG8+jt4Aus+9noF9TwXps6lUU7bKVQw==}
     engines: {node: '>=18'}
     peerDependencies:
-      '@angular/common': '>= 14.x <= 22.x'
-      '@angular/core': '>= 14.x <= 22.x'
-      '@angular/router': '>= 14.x <= 22.x'
+      '@angular/common': 22.1.3
+      '@angular/core': 22.1.3
+      '@angular/router': 22.1.3
       rxjs: ^6.5.5 || ^7.x
 
   '@sentry/browser-utils@10.70.0':
@@ -4646,7 +4657,7 @@ packages:
   '@sneat/extension-assetus-contract@0.0.5':
     resolution: {integrity: sha512-nU7Snuv+Uezw28/QpCiEgAIa42v/KUUeTY+yRE32gt29vxB13uauuvPuG+AAJkakX+XNmHjgIi7tI5fhbeTP1A==}
     peerDependencies:
-      '@angular/core': ^21.0.0
+      '@angular/core': 22.1.3
       '@sneat/core': ^0.9.0
       '@sneat/dto': ^0.9.0
       '@sneat/space-models': ^0.9.0
@@ -4656,18 +4667,18 @@ packages:
   '@sneat/extension-contactus-contract@0.12.1':
     resolution: {integrity: sha512-nbzPRlcyamrcg3kz5Vyp0+RHtKQh+9eV7+uvUwDfYXmtkvm1xLi9yY8yerw8566+PqrPn2iaPWARIqnjfNfSSQ==}
     peerDependencies:
-      '@angular/common': '>=21.0.0'
-      '@angular/core': '>=21.0.0'
+      '@angular/common': 22.1.3
+      '@angular/core': 22.1.3
 
   '@sneat/extension-contactus-ui@0.13.7':
     resolution: {integrity: sha512-Qflo0vlDvgqwEkuODceFkohs7VDpv/Np4JWuk61SYHxntPmcOpN82/KNDLXzRV+JG5F0+8utjS9f7gPQ6Ad8PQ==}
     peerDependencies:
-      '@angular/animations': ^22.0.0
-      '@angular/common': ^22.0.0
-      '@angular/core': ^22.0.0
+      '@angular/animations': 22.1.3
+      '@angular/common': 22.1.3
+      '@angular/core': 22.1.3
       '@angular/fire': ^20.0.0
-      '@angular/forms': ^22.0.0
-      '@angular/router': ^22.0.0
+      '@angular/forms': 22.1.3
+      '@angular/router': 22.1.3
       '@ionic/angular': '>=9 <10'
       '@sneat/api': ^0.22.0 || ^0.23.0
       '@sneat/app': ^0.22.0 || ^0.23.0
@@ -4689,8 +4700,8 @@ packages:
   '@sneat/random@0.0.4':
     resolution: {integrity: sha512-zRoBe1rtSgDOWvz8xfSbE9SB6Rn/rGJ7oVvmTmA5X7m89NzW359LROwCTHVnf7o9niD1T9lW7AvsZLdCaM7QOw==}
     peerDependencies:
-      '@angular/common': '>=12.0.0'
-      '@angular/core': '>=12.0.0'
+      '@angular/common': 22.1.3
+      '@angular/core': 22.1.3
 
   '@so-ric/colorspace@1.1.6':
     resolution: {integrity: sha512-/KiKkpHNOBgkFJwu9sh48LkHSMYGyuTcSFK/qMBdnOAlrRJzRSXAOFB5qwzaVQuDl8wAvHVMkaASQDReTahxuw==}
@@ -5223,8 +5234,8 @@ packages:
   angularx-qrcode@22.0.1:
     resolution: {integrity: sha512-a5fqGAerl2+SPUj6KeuH8POBaX+CTg17t+tBMNWQslZ1Tln2kz3/HLdGHlqdSHQOq9sMY8M/rZo5aXpM9w/4Kw==}
     peerDependencies:
-      '@angular/common': '>=22.0.0 <23.0.0'
-      '@angular/core': '>=22.0.0 <23.0.0'
+      '@angular/common': 22.1.3
+      '@angular/core': 22.1.3
 
   ansi-align@3.0.1:
     resolution: {integrity: sha512-IOfwwBF5iczOjp/WeY4YxyjqAFMQoZufdQWDd19SEExbVLNXqvpzSJ/M7Za4/sCPmQ0+GRquoA7bGcINcxew6w==}

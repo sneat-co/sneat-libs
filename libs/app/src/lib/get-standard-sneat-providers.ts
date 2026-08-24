@@ -1,4 +1,8 @@
-import { EnvironmentProviders, Provider } from '@angular/core';
+import {
+  EnvironmentProviders,
+  Provider,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { provideSneatAuthenticatedProviders } from '@sneat/app-auth';
 import { provideSneatIonicShell } from '@sneat/app-ionic';
 import { provideSneatPublicBootstrap } from '@sneat/app-public';
@@ -12,6 +16,7 @@ export function getStandardSneatProviders(
   environmentConfig: IEnvironmentConfig,
 ): readonly (Provider | EnvironmentProviders)[] {
   return [
+    provideZonelessChangeDetection(),
     provideSneatPublicBootstrap({
       apiBaseUrl: environmentConfig.useNgrok
         ? `//${location.host}/v0/`
