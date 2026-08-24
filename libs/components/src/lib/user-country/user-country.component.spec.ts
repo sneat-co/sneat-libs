@@ -131,6 +131,6 @@ describe('UserCountryComponent', () => {
     expect(component['isCountryDetectionStarted']).toBe(false);
     expect(component['$detectingCountry']()).toBe(false);
     expect(component['$saving']()).toBe(false);
-    expect(component.doNotHide).toBe(false);
+    expect(component.doNotHide()).toBe(false);
   });
 });

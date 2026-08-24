@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input } from '@angular/core';
+import { Component, forwardRef, Input, ChangeDetectionStrategy } from '@angular/core';
 import {
   IonItem,
   IonLabel,
@@ -8,7 +8,7 @@ import {
   IonRadioGroup,
   IonSelect,
   IonSelectOption,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SelectOption } from './select-options';
 import {
   ControlValueAccessor,
@@ -26,6 +26,7 @@ import {
       multi: true,
     },
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonItem,
     IonSelect,
@@ -41,14 +42,26 @@ import {
 export class RadioGroupToSelectComponent implements ControlValueAccessor {
   v?: object;
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() label?: string;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() selectLabel?: string;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() radioGroupLabel?: string;
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() slot: 'start' | 'end' = 'start';
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() selectOptions?: SelectOption[];
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() disabled = false;
 
   private onChange: (v: object | undefined) => void = () => void 0;

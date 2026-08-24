@@ -50,7 +50,7 @@
         <sneat-contacts-as-badges
           [$contacts]="
             $relatedContactIDs()
-              | selectedContacts: $contactusSpace()?.dbo?.contacts
+              | selectedContacts: $safeNavigationMigration($contactusSpace()?.dbo?.contacts)
           "
           (deleteContact)="removeContact($event)"
         />

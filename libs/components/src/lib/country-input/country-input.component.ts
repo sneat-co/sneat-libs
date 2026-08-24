@@ -6,6 +6,8 @@ import {
   OnInit,
   Output,
   signal,
+  ChangeDetectionStrategy,
+  input
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -16,7 +18,7 @@ import {
   IonLabel,
   IonSelect,
   IonSelectOption,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ISelectItem, SelectFromListComponent } from '@sneat/ui';
 import { ICountry, CountriesLoaderService } from '../country-selector';
 
@@ -30,6 +32,7 @@ export type CountryInputMode = 'list' | 'dropdown';
 @Component({
   selector: 'sneat-country-input',
   templateUrl: './country-input.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     SelectFromListComponent,
@@ -45,9 +48,11 @@ export type CountryInputMode = 'list' | 'dropdown';
 export class CountryInputComponent implements OnInit {
   private readonly countriesLoader = inject(CountriesLoaderService);
 
-  @Input() mode: CountryInputMode = 'list';
-  @Input() canReset = true;
-  @Input() label = 'Country';
+  readonly mode = input<CountryInputMode>('list');
+  readonly canReset = input(true);
+  readonly label = input('Country');
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() countryID = '';
   @Output() countryIDChange = new EventEmitter<string>();
 

@@ -8,10 +8,9 @@ import {
   EventEmitter,
   inject,
   input,
-  Input,
   Output,
   signal,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import {
   FormControl,
@@ -40,7 +39,7 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { RoutingState } from '@sneat/core';
 import { HappeningType, IHappeningContext, IHappeningDbo, IHappeningSlotWithID, mergeValuesWithIDs, WeekdayCode2 } from '@sneat/extension-calendarius-contract';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
@@ -104,8 +103,8 @@ export class HappeningFormComponent
   protected readonly $hasDescription = computed(
     () => this.$happening().dbo?.description,
   );
-  @Input() public wd?: WeekdayCode2;
-  @Input() public date?: string;
+  public readonly wd = input<WeekdayCode2>();
+  public readonly date = input<string>();
   @Output() readonly happeningChange = new EventEmitter<IHappeningContext>();
 
   private readonly navController = inject(NavController);

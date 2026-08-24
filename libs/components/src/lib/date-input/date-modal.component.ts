@@ -1,9 +1,9 @@
 import {
   Component,
   inject,
-  Input,
   signal,
   ChangeDetectionStrategy,
+  input
 } from '@angular/core';
 import {
   IonButton,
@@ -15,7 +15,7 @@ import {
   IonTitle,
   IonToolbar,
   PopoverController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 
 @Component({
@@ -40,8 +40,8 @@ import { ClassName, SneatBaseComponent } from '@sneat/ui';
   templateUrl: 'date-modal.component.html',
 })
 export class DateModalComponent extends SneatBaseComponent {
-  @Input() title?: string;
-  @Input() max?: string;
+  readonly title = input<string>();
+  readonly max = input<string>();
 
   public constructor() {
     super();

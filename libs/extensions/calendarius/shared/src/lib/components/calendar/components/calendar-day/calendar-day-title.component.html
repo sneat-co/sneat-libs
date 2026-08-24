@@ -8,7 +8,7 @@
     <b>{{ weekday.id | wdToWeekday }}</b
     ><span style="font-weight: normal"
       >, {{ weekday.day?.date?.getDate() }}
-      {{ weekday.day?.date?.getMonth() | longMonthName }}</span
+      {{ $safeNavigationMigration(weekday.day?.date?.getMonth()) | longMonthName }}</span
     >
   }
 </span>

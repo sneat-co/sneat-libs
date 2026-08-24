@@ -7,17 +7,17 @@ import {
   IonItem,
   IonLabel,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { LongMonthNamePipe } from '@sneat/components';
 import { IContactWithBrief } from '@sneat/extension-contactus-contract';
-import { SelectedContactsPipe } from '@sneat/extension-contactus-shared';
+import { SelectedContactsPipe } from '@sneat/extension-contactus-ui';
 import { getRelatedItemIDs } from '@sneat/dto';
 import { WdToWeekdayPipe } from '../../pipes/wd-to-weekday.pipe';
 import { ClassName } from '@sneat/ui';
 import { HappeningBaseComponent } from '../happening-base.component';
 import { IHappeningContactRequest } from '../../services/happening.service';
 import { HappeningSlotsComponent } from '../happening-slots/happening-slots.component';
-import { ContactsAsBadgesComponent } from '@sneat/extension-contactus-shared';
+import { ContactsAsBadgesComponent } from '@sneat/extension-contactus-ui';
 
 @Component({
   styleUrls: ['happening-card.component.scss'],

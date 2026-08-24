@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonCard, IonIcon, IonItem, IonLabel } from '@ionic/angular/standalone';
+import { IonCard, IonIcon, IonItem, IonLabel } from '@ionic/angular';
 import { ClassName } from '@sneat/ui';
 import { CalendarDayServiceModule } from '../../services/calendar-day.service';
 import { HappeningServiceModule } from '../../services/happening.service';

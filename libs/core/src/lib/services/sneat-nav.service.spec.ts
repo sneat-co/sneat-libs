@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router, Event } from '@angular/router';
 import { Location } from '@angular/common';
-import { NavController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { SneatNavService } from './sneat-nav.service';
 

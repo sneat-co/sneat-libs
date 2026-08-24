@@ -9,7 +9,7 @@ import {
   IonLabel,
   IonListHeader,
   IonRadio,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 import { RadioGroupToSelectComponent } from './radio-group-to-select.component';
 import { SelectOption } from './select-options';

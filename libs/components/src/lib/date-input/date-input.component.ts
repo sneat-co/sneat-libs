@@ -6,6 +6,7 @@ import {
   Output,
   EventEmitter,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   IonInput,
@@ -16,7 +17,7 @@ import {
   PopoverController,
   IonIcon,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { DateModalComponent } from './date-modal.component';
 
 @Component({
@@ -31,6 +32,7 @@ import { DateModalComponent } from './date-modal.component';
     IonIcon,
     IonSpinner,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [PopoverController],
 })
 export class DateInputComponent {

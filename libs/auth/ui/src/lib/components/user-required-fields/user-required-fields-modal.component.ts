@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, input } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -20,7 +20,7 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   IInitUserRecordRequest,
   ISneatUserState,
@@ -53,6 +53,7 @@ import { takeUntil } from 'rxjs';
     IonLabel,
     IonFooter,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: ClassName,
@@ -65,7 +66,7 @@ export class UserRequiredFieldsModalComponent extends SneatBaseComponent {
   private readonly userRecordService = inject(UserRecordService);
   private readonly sneatUserService = inject(SneatUserService);
 
-  @Input({ required: true }) space: ISpaceContext = { id: '' };
+  readonly space = input.required<ISpaceContext>();
 
   protected readonly genders: ISelectItem[] = [
     { id: 'male', emoji: '♂️', title: 'Male' },

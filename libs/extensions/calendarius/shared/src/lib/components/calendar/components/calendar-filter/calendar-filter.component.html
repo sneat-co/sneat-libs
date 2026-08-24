@@ -27,7 +27,7 @@
         <!--				<ion-item>-->
         <!--					<ion-checkbox (ionChange)="emitChanged()" slot="start" labelPlacement="end">Myself</ion-checkbox>-->
         <!--				</ion-item>-->
-        @if (showWeekdays) {
+        @if (showWeekdays()) {
           <ion-item-divider color="light">Weekdays</ion-item-divider>
           <ion-grid class="ion-grid-layout">
             <ion-row>
@@ -118,7 +118,7 @@
             </ion-row>
           </ion-grid>
         }
-        @if (showRepeats) {
+        @if (showRepeats()) {
           <ion-item-divider color="light">Repeats</ion-item-divider>
           <ion-grid class="ion-grid-layout">
             <ion-row>

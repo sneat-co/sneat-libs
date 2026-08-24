@@ -1,9 +1,9 @@
-@for (space of spaces; track space.id; let last = $last) {
+@for (space of spaces(); track space.id; let last = $last) {
   <ion-item
     tappable="true"
     [disabled]="!space.brief"
     [lines]="last ? 'full' : 'inset'"
-    routerLink="{{ pathPrefix }}/{{ space.type }}/{{ space.id }}"
+    routerLink="{{ pathPrefix() }}/{{ space.type }}/{{ space.id }}"
     (click)="goSpace($event, space)"
   >
     <ion-icon
@@ -25,7 +25,7 @@
     @if (!space.id && !space.brief) {
       <ion-spinner name="lines-small" />
     }
-    @if (allowLeave && space.id) {
+    @if (allowLeave() && space.id) {
       <ion-buttons slot="end">
         <ion-button
           color="medium"

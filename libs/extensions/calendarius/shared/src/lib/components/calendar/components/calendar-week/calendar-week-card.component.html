@@ -64,7 +64,7 @@
         [$week]="oddWeek"
         [$spaceDaysProvider]="$spaceDaysProvider()"
       />
-      @if (isEvenSlideActivated) {
+      @if ($isEvenSlideActivated()) {
         <sneat-calendar-week
           class="virtual-slide"
           [$space]="$space()"

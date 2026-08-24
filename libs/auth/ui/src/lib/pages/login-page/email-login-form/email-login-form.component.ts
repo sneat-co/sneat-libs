@@ -30,7 +30,7 @@ import {
   IonSegmentButton,
   IonSpinner,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
 import { IInitUserRecordRequest, UserRecordService } from '@sneat/auth-core';
 import { createSetFocusToInput } from '@sneat/ui';

@@ -11,7 +11,7 @@
   lines="full"
   (click)="onSlotClicked($event)"
   class="sneat-tiny-end-padding"
-  [color]="color"
+  [color]="color()"
 >
   <ion-icon
     class="sneat-tiny-end-margin"
@@ -59,7 +59,7 @@
     <!--			/>-->
     <!--		}-->
 
-    @if (mode === "full") {
+    @if (mode() === "full") {
       @if (slotContext?.location?.title || slotContext?.location?.address) {
         <p>
           {{ slotContext?.location?.title || slotContext?.location?.address }}

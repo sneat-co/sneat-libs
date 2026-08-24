@@ -1,7 +1,11 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "affected": { "defaultBase": "main" },
-  "cli": { "packageManager": "pnpm" },
+  "affected": {
+    "defaultBase": "main"
+  },
+  "cli": {
+    "packageManager": "pnpm"
+  },
   "generators": {
     "@nx/angular:library": {
       "linter": "eslint",
@@ -12,38 +16,66 @@
   },
   "targetDefaults": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"],
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "production",
+        "^production"
+      ],
       "cache": true
     },
     "@nx/angular:package": {
       "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "production",
+        "^production"
+      ]
     },
     "@nx/angular:ng-packagr-lite": {
       "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "production",
+        "^production"
+      ]
     },
     "@nx/vitest:test": {
       "cache": true,
-      "inputs": ["default", "^production"]
+      "inputs": [
+        "default",
+        "^production"
+      ]
     },
     "@nx/eslint:lint": {
       "cache": true,
-      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/tools/eslint-rules/**/*"
+      ]
     },
     "nx-release-publish": {
       "executor": "@nx/js:release-publish",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "packageRoot": "dist/{projectRoot}"
       }
     }
   },
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
     "sharedGlobals": [],
     "production": [
       "default",
@@ -53,9 +85,12 @@
     ]
   },
   "release": {
-    "projects": ["*", "!libs-demo", "!libs-demo-e2e"],
+    "projects": [
+      "*",
+      "!libs-demo",
+      "!libs-demo-e2e"
+    ],
     "projectsRelationship": "fixed",
-    "releaseTagPattern": "v{version}",
     "git": {
       "commit": true,
       "tag": true,
@@ -68,13 +103,21 @@
         "packageRoot": "dist/{projectRoot}"
       }
     },
-    "changelog": { "workspaceChangelog": true, "automaticFromRef": true },
+    "changelog": {
+      "workspaceChangelog": true,
+      "automaticFromRef": true
+    },
     "publish": {
       "executor": "@nx/js:release-publish",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "packageRoot": "dist/{projectRoot}"
       }
+    },
+    "releaseTag": {
+      "pattern": "v{version}"
     }
   }
 }

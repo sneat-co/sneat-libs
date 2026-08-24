@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import { provideIonicAngular } from '@ionic/angular';
 import { SimpleChange } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { vi } from 'vitest';
@@ -25,8 +25,11 @@ describe('DataGridComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [DataGridComponent, IonicModule.forRoot()],
-      providers: [{ provide: ErrorLogger, useValue: mockErrorLogger }],
+      imports: [DataGridComponent],
+      providers: [
+        provideIonicAngular(),
+        { provide: ErrorLogger, useValue: mockErrorLogger },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DataGridComponent);

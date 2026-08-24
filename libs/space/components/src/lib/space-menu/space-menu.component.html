@@ -18,7 +18,7 @@
         </ion-select-option>
       } @empty {
         @let space = $space();
-        <ion-select-option [value]="space?.id">
+        <ion-select-option [value]="$safeNavigationMigration(space?.id)">
           @if (!space || (!space?.id && !space?.type)) {
             Loading...
           } @else {

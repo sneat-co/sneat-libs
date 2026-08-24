@@ -23,7 +23,7 @@ import {
   IonSelectOption,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { CurrencyCode, IHappeningBrief, IHappeningContext, IHappeningPrice, TermUnit } from '@sneat/extension-calendarius-contract';
 import { ClassName, SneatBaseModalComponent } from '@sneat/ui';
 import {
@@ -61,6 +61,8 @@ export class HappeningPriceModalComponent extends SneatBaseModalComponent {
   protected readonly changeDetectorRef = inject(ChangeDetectorRef);
   protected readonly happeningService = inject(HappeningService);
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) happening?: IHappeningContext;
 
   @Output() happeningChange = new EventEmitter<IHappeningContext>();

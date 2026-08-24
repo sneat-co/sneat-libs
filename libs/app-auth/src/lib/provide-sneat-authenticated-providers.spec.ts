@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import {
   createEnvironmentInjector,
   EnvironmentInjector,
@@ -274,7 +274,7 @@ describe('authenticated bootstrap providers', () => {
 
   it('hydrates Firebase-dependent auth services in the lazy route injector', () => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideSneatPublicBootstrap()],
+      providers: [provideHttpClient(withXhr()), provideSneatPublicBootstrap()],
     });
     const rootInjector = TestBed.inject(EnvironmentInjector);
     const authStateObservers: unknown[] = [];

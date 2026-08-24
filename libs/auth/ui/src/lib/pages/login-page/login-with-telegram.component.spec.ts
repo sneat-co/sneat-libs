@@ -53,6 +53,6 @@ describe('LoginWithTelegramComponent', () => {
     fixture = await createComponent([
       { provide: TelegramLoginConfig, useValue: { botID: 'DataTugBot' } },
     ]);
-    expect(fixture.componentInstance.botID).toBe('DataTugBot');
+    expect(fixture.componentInstance.botID()).toBe('DataTugBot');
   });
 });

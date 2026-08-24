@@ -15,5 +15,8 @@
     "src/**/*.spec.jsx",
     "src/test-setup.ts",
     "src/lib/testing/**/*"
-  ]
+  ],
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0"
+  }
 }

@@ -15,7 +15,7 @@ import {
   IonInput,
   IonItem,
   IonRow,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { IDateTime, ITiming } from '@sneat/extension-calendarius-contract';
 
 @Component({
@@ -25,6 +25,8 @@ import { IDateTime, ITiming } from '@sneat/extension-calendarius-contract';
   imports: [IonGrid, IonRow, IonCol, IonItem, IonCheckbox, IonInput],
 })
 export class StartEndDatesRangeFormComponent implements OnChanges {
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) timing?: ITiming;
   @Output() timingChange = new EventEmitter<ITiming>();
 

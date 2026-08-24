@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, Input, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, inject, ChangeDetectionStrategy, input } from '@angular/core';
 import {
   ITelegramAuthData,
   SneatAuthWithTelegramService,
@@ -14,6 +14,7 @@ let authWithTelegramService: SneatAuthWithTelegramService;
 @Component({
   providers: [SneatAuthWithTelegramService],
   selector: 'sneat-login-with-telegram',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!--
 				<script
@@ -42,19 +43,16 @@ export class LoginWithTelegramComponent implements OnInit {
     authWithTelegramService = authWithTelegram;
   }
 
-  @Input() public isUserAuthenticated = false;
+  public readonly isUserAuthenticated = input(false);
 
-  @Input() public botID: string = resolveTelegramBotID(
-    this.telegramLoginConfig,
-    location.hostname,
-  );
+  public readonly botID = input<string>(resolveTelegramBotID(this.telegramLoginConfig, location.hostname));
 
-  @Input() public size: 'small' | 'medium' | 'large' = 'large';
-  @Input() public requestAccess: 'write' | 'read' = 'write';
-  @Input() public userPic = true;
+  public readonly size = input<'small' | 'medium' | 'large'>('large');
+  public readonly requestAccess = input<'write' | 'read'>('write');
+  public readonly userPic = input(true);
 
   ngOnInit() {
-    const botID = this.botID;
+    const botID = this.botID();
     if (botID) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -66,7 +64,7 @@ export class LoginWithTelegramComponent implements OnInit {
         authWithTelegramService.loginWithTelegram(
           botID,
           tgAuthData,
-          this.isUserAuthenticated,
+          this.isUserAuthenticated(),
         );
       };
 
@@ -74,9 +72,9 @@ export class LoginWithTelegramComponent implements OnInit {
 
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
       script.setAttribute('data-telegram-login', botID);
-      script.setAttribute('data-request-access', this.requestAccess);
-      script.setAttribute('data-size', this.size);
-      if (!this.userPic) {
+      script.setAttribute('data-request-access', this.requestAccess());
+      script.setAttribute('data-size', this.size());
+      if (!this.userPic()) {
         script.setAttribute('data-userpic', 'false');
       }
       // https://core.telegram.org/widgets/login#receiving-authorization-data

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 
 interface IItem {
   id: string;
@@ -6,15 +6,17 @@ interface IItem {
 
 @Component({
   selector: 'sneat-test',
-  template: `Today's item: {{ item }}`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `Today's item: {{ item() }}`,
 })
 export class TestComponent {
-  @Input() item?: IItem | null;
+  readonly item = input<IItem | null>();
 }
 
 @Component({
   selector: 'sneat-consumer',
   imports: [TestComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <sneat-test [item]="myItem('test')" />`,
 })
 export class ConsumerComponent {

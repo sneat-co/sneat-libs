@@ -11,7 +11,7 @@ import {
   IonIcon,
   IonItem,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { virtualSliderAnimations } from '@sneat/components';
 import { ISpaceContext } from '@sneat/space-models';
 import { ClassName } from '@sneat/ui';
@@ -60,7 +60,7 @@ export class CalendarWeekCardComponent extends SwipeableBaseComponent {
     this.createSlides();
 
     // Delay creation of the non-active slide for performance reasons
-    setTimeout(() => (this.isEvenSlideActivated = true), 500);
+    setTimeout(() => this.$isEvenSlideActivated.set(true), 500);
   }
 
   private createSlides(): void {

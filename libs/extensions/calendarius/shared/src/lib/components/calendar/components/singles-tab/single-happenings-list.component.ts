@@ -14,7 +14,7 @@ import {
   IonLabel,
   IonSpinner,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { IHappeningContext } from '@sneat/extension-calendarius-contract';
 import { WithSpaceInput } from '@sneat/space-services';
@@ -50,6 +50,8 @@ export class SingleHappeningsListComponent
 {
   readonly filterService = inject(CalendarFilterService);
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) public happenings?: IHappeningContext[];
 
   public readonly $contactusSpace = input.required<

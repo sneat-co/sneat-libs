@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpParams, provideHttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, provideHttpClient, withXhr } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -23,7 +23,7 @@ describe('SneatApiService public transport', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: SneatApiBaseUrl, useValue: undefined },
       ],

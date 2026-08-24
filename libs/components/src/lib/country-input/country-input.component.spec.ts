@@ -41,8 +41,8 @@ describe('CountryInputComponent', () => {
   });
 
   it('should initialize with default values', () => {
-    expect(component.canReset).toBe(true);
-    expect(component.label).toBe('Country');
+    expect(component.canReset()).toBe(true);
+    expect(component.label()).toBe('Country');
     expect(component.countryID).toBe('');
   });
 

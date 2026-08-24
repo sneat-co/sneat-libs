@@ -1,11 +1,12 @@
 import {
   Component,
   EventEmitter,
-  Input,
   OnDestroy,
   inject,
+  ChangeDetectionStrategy,
+  input
 } from '@angular/core';
-import { IonCard } from '@ionic/angular/standalone';
+import { IonCard } from '@ionic/angular';
 import { IHappeningContext, IHappeningWithUiState } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
@@ -16,6 +17,7 @@ import { HappeningService } from '../../../../services/happening.service';
 @Component({
   selector: 'sneat-recurring-card',
   templateUrl: './recurring-card.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonCard],
 })
 export class RecurringCardComponent implements OnDestroy {
@@ -24,8 +26,8 @@ export class RecurringCardComponent implements OnDestroy {
   private readonly spaceNavService = inject(SpaceNavService);
 
   private readonly destroyed = new EventEmitter<void>();
-  @Input() recurring?: IHappeningWithUiState;
-  @Input({ required: true }) space?: ISpaceContext;
+  readonly recurring = input<IHappeningWithUiState>();
+  readonly space = input.required<ISpaceContext | undefined>();
 
   ngOnDestroy(): void {
     this.destroyed.next();
@@ -33,14 +35,15 @@ export class RecurringCardComponent implements OnDestroy {
   }
 
   goHappening(happening?: IHappeningWithUiState): void {
-    if (!this.space) {
+    const space = this.space();
+    if (!space) {
       this.errorLogger.logErrorHandler(
         'not able to navigate to happening without a space context',
       );
       return;
     }
     this.spaceNavService
-      .navigateForwardToSpacePage(this.space, `happening/${happening?.id}`, {
+      .navigateForwardToSpacePage(space, `happening/${happening?.id}`, {
         state: { happening },
       })
       .catch(
@@ -59,12 +62,13 @@ export class RecurringCardComponent implements OnDestroy {
     if (!happeningWithUiState) {
       return;
     }
-    if (!this.space?.id) {
+    const space = this.space();
+    if (!space?.id) {
       return;
     }
     const happening: IHappeningContext = {
       id: happeningWithUiState.id,
-      space: { id: this.space?.id },
+      space: { id: space?.id },
       brief: happeningWithUiState.brief,
       dbo: happeningWithUiState.dbo,
     };

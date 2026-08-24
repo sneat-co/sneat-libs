@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonButton,
@@ -8,7 +8,7 @@ import {
   IonIcon,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { Subscription } from 'rxjs';
 // import { Period } from 'sneat-shared/models/types';
 // import { DtoLiability } from 'sneat-shared/models/dto/dto-liability';
@@ -35,6 +35,7 @@ const monthNames = [
   selector: 'sneat-month',
   templateUrl: './month-page.component.html',
   styleUrls: ['./month-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     IonHeader,

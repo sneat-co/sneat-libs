@@ -1,6 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { IonTitle } from '@ionic/angular/standalone';
+import { ChangeDetectionStrategy, Component, Input, input } from '@angular/core';
+import { IonTitle } from '@ionic/angular';
 import { ISpaceContext } from '@sneat/space-models';
 
 @Component({
@@ -10,14 +10,18 @@ import { ISpaceContext } from '@sneat/space-models';
   templateUrl: './space-page-title.component.html',
 })
 export class SpacePageTitleComponent {
-  @Input() icon?: string;
-  @Input() generalTitle?: string;
+  readonly icon = input<string>();
+  readonly generalTitle = input<string>();
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input({ required: true }) space?: ISpaceContext;
-  @Input() titlesBySpaceType?: Record<string, string>;
+  readonly titlesBySpaceType = input<Record<string, string>>();
 
   public get typeTitle(): string {
-    return this.space?.type && this.titlesBySpaceType
-      ? this.titlesBySpaceType[this.space.type]
+    const titlesBySpaceType = this.titlesBySpaceType();
+    return this.space?.type && titlesBySpaceType
+      ? titlesBySpaceType[this.space.type]
       : '';
   }
 }

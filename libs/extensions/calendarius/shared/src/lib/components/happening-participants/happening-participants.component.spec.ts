@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { NavController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular';
 import { Firestore } from '@angular/fire/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService, SneatUserService } from '@sneat/auth-core';
@@ -14,7 +14,7 @@ import {
 } from '@sneat/core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SpaceComponentBaseParams } from '@sneat/space-components';
-import { ContactsSelectorService } from '@sneat/extension-contactus-shared';
+import { ContactsSelectorService } from '@sneat/extension-contactus-ui';
 import { ClassName } from '@sneat/ui';
 import { of } from 'rxjs';
 import { HappeningService } from '../../services/happening.service';

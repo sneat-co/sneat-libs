@@ -16,7 +16,7 @@ import {
   IonMenuButton,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { virtualSliderAnimations } from '@sneat/components';
 import { ScheduleNavService, ScheduleNavServiceModule } from '../../services';
 import { HappeningType, NewHappeningParams } from '@sneat/extension-calendarius-contract';

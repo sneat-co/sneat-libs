@@ -1,12 +1,12 @@
 @if (value) {
   <ion-item
-    [lines]="lastItemLines"
-    [class]="{ 'sneat-tiny-end-padding': !isReadonly }"
+    [lines]="lastItemLines()"
+    [class]="{ 'sneat-tiny-end-padding': !isReadonly() }"
   >
     @if ($selectedItem()?.iconName) {
       <ion-icon
         slot="start"
-        [name]="$selectedItem()?.iconName"
+        [name]="$safeNavigationMigration($selectedItem()?.iconName)"
         [color]="
           $selectedItem()?.iconColor || $selectedItem()?.labelColor || 'medium'
         "
@@ -15,10 +15,10 @@
     <ion-select
       #selectInput
       interface="popover"
-      [label]="label"
+      [label]="label()"
       [(ngModel)]="value"
       (ionChange)="onSelectChanged()"
-      [disabled]="isReadonly || !!$isProcessing()"
+      [disabled]="isReadonly() || !!$isProcessing()"
     >
       @for (item of items; track item.id) {
         <ion-select-option [value]="item.id">
@@ -34,7 +34,7 @@
     </ion-select>
     @if ($isProcessing()) {
       <ion-spinner name="lines-small" color="medium" slot="end" />
-    } @else if (!isReadonly) {
+    } @else if (!isReadonly()) {
       <ion-buttons slot="end" class="ion-no-margin">
         <ion-button color="medium" title="Deselect" (click)="deselect()">
           <ion-icon name="close-outline" />
@@ -43,20 +43,20 @@
     }
   </ion-item>
 } @else {
-  @if (isFilterable) {
+  @if (isFilterable()) {
     <ion-item class="sneat-tiny-end-padding">
       <ion-input
         #filterInput
         color="medium"
         placeholder="filter"
-        [label]="filterLabel"
+        [label]="filterLabel()"
         [value]="$filter()"
         (ionChange)="onFilterChanged($event, 'ionChange')"
         (ionInput)="onFilterChanged($event, 'ionInput')"
       />
       @if ($filter()) {
         <ion-buttons slot="end">
-          @if (canAdd && $hiddenCount()) {
+          @if (canAdd() && $hiddenCount()) {
             <ion-button
               title="Use this"
               color="primary"
@@ -83,9 +83,9 @@
   @if (labelPlacement) {
     <ion-radio-group [(ngModel)]="value" (ionChange)="onRadioChanged($event)">
       <ion-list class="ion-no-padding" lines="full">
-        @if (listLabel === "divider") {
-          <ion-item [color]="listLabelColor">
-            <ion-label>{{ label }}</ion-label>
+        @if (listLabel() === "divider") {
+          <ion-item [color]="listLabelColor()">
+            <ion-label>{{ label() }}</ion-label>
           </ion-item>
         }
         @for (item of $displayItems(); track item.id) {
@@ -124,7 +124,7 @@
                   [value]="item.id"
                   [labelPlacement]="labelPlacement"
                   [justify]="
-                    justify ||
+                    justify() ||
                     (!labelPlacement || labelPlacement === 'start'
                       ? 'space-between'
                       : 'start')
@@ -163,7 +163,7 @@
     <ion-item-group>
       @for (item of $displayItems(); track item.id; let last = $last) {
         <ion-item
-          [lines]="item.description1 ? 'inset' : last ? lastItemLines : 'full'"
+          [lines]="item.description1 ? 'inset' : last ? lastItemLines() : 'full'"
           button
           (click)="select(item)"
         >
@@ -182,7 +182,7 @@
           }
         </ion-item>
         @if (item.description1) {
-          <ion-item [lines]="last ? lastItemLines : 'full'">
+          <ion-item [lines]="last ? lastItemLines() : 'full'">
             <ion-label color="medium">
               {{ item.description1 }}
               @if (item.description2) {

@@ -13,7 +13,7 @@
     <ion-col size="6">
       <ion-item>
         <ion-input
-          [value]="timing?.start?.date"
+          [value]="$safeNavigationMigration(timing?.start?.date)"
           type="date"
           [disabled]="!startEnabled()"
           (ionChange)="onStartChanged($event)"

@@ -22,7 +22,7 @@ import {
   IonSelect,
   IonSelectOption,
   MenuController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ISneatUserState } from '@sneat/auth-core';
 import { IUserSpaceBrief } from '@sneat/auth-models';
 import { AuthMenuItemComponent } from '@sneat/auth-ui';

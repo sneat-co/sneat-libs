@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 export interface IIdAndBriefDemo<Brief> {
   readonly id: string;
@@ -15,6 +15,7 @@ function items<B>(o: Record<string, B>): readonly IIdAndBriefDemo<B>[] {
 
 @Component({
   selector: 'sneat-webstorm-type-err-demo',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @for (item of items; track item.id) {
       {{ item.brief.title }}

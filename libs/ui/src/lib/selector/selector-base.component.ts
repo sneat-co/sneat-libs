@@ -2,10 +2,10 @@ import {
   Directive,
   inject,
   InjectionToken,
-  Input,
   signal,
+  input
 } from '@angular/core';
-import { ModalController, PopoverController } from '@ionic/angular/standalone';
+import { ModalController, PopoverController } from '@ionic/angular';
 import { SneatBaseComponent } from '../components/sneat-base.component';
 
 export const OverlayController = new InjectionToken<
@@ -14,7 +14,7 @@ export const OverlayController = new InjectionToken<
 
 @Directive()
 export abstract class SelectorBaseComponent<T> extends SneatBaseComponent {
-  @Input() public selectMode?: 'single' | 'multiple';
+  public readonly selectMode = input<'single' | 'multiple'>();
 
   protected readonly overlayController = inject(OverlayController);
 

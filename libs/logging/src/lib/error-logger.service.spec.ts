@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ErrorLoggerService } from './error-logger.service';
-import { ToastController } from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular';
 import { captureException, showReportDialog } from '@sentry/angular';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Mock } from 'vitest';

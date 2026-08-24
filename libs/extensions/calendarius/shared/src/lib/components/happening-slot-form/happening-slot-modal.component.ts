@@ -9,6 +9,7 @@ import {
   SimpleChanges,
   OnInit,
   inject,
+  input
 } from '@angular/core';
 import {
   IonButton,
@@ -19,7 +20,7 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { emptyHappeningSlot, IHappeningAdjustment, ITiming, IHappeningContext, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext } from '@sneat/space-models';
@@ -54,14 +55,23 @@ export class HappeningSlotModalComponent
 
   private readonly destroyed = new Subject<void>();
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) space?: ISpaceContext;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) happening: IHappeningContext = {
     id: '',
     space: { id: '' },
   };
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() slot: IHappeningSlotWithID = emptyHappeningSlot;
-  @Input() adjustment?: IHappeningAdjustment;
+  readonly adjustment = input<IHappeningAdjustment>();
 
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() dateID?: string; // For re-scheduling recurring event for a specific day
 
   @Output() readonly happeningSlotChange =

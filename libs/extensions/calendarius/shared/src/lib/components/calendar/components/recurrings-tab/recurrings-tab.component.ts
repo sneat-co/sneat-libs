@@ -16,7 +16,7 @@ import {
   IonLabel,
   IonRouterLink,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { IContactusSpaceDboAndID } from '@sneat/extension-contactus-contract';
 import { IHappeningWithUiState } from '@sneat/extension-calendarius-contract';
 import { ISpaceContext } from '@sneat/space-models';

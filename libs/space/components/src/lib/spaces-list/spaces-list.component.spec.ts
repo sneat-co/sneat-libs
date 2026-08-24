@@ -47,6 +47,9 @@ describe('SpacesListComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(SpacesListComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('userID', undefined);
+    fixture.componentRef.setInput('spaces', undefined);
+    fixture.detectChanges();
   }));
 
   it('should create', () => {

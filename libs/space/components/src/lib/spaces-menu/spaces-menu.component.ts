@@ -5,6 +5,7 @@ import {
   Input,
   signal,
   inject,
+  input
 } from '@angular/core';
 import {
   IonIcon,
@@ -12,7 +13,7 @@ import {
   IonLabel,
   MenuController,
   NavController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ISneatUserState, SneatUserService } from '@sneat/auth-core';
 import { UserRequiredFieldsService } from '@sneat/auth-ui';
 import { SpaceType } from '@sneat/core';
@@ -42,9 +43,12 @@ export class SpacesMenuComponent extends SneatBaseComponent {
   private readonly navController = inject(NavController);
   private readonly menuController = inject(MenuController);
 
-  @Input() spacesLabel = 'Spaces';
-  @Input() pathPrefix = '/space';
+  readonly spacesLabel = input('Spaces');
+  readonly pathPrefix = input('/space');
 
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() spaceType?: SpaceType;
 
   protected readonly $userSpaces = signal<ISpaceContext[] | undefined>(

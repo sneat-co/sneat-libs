@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular/lazy';
 import { AnalyticsService, ErrorLogger, IAnalyticsService, IErrorLogger, IIdAndBrief } from '@sneat/core';
 import { IRecord } from '@sneat/data';
 import { ISpaceDbo } from '@sneat/dto';

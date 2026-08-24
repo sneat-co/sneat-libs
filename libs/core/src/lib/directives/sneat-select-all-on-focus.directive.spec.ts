@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { SneatSelectAllOnFocusDirective } from './sneat-select-all-on-focus.directive';
 import { By } from '@angular/platform-browser';
@@ -15,6 +15,7 @@ import { By } from '@angular/platform-browser';
     </div>
   `,
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SneatSelectAllOnFocusDirective],
 })
 class TestHostComponent {}

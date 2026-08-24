@@ -5,6 +5,8 @@ import {
   Output,
   ViewChild,
   inject,
+  ChangeDetectionStrategy,
+  input
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -21,7 +23,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonSkeletonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { IRecord } from '@sneat/data';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { Observable } from 'rxjs';
@@ -39,6 +41,7 @@ interface IOptionallyTitled {
 @Component({
   selector: 'sneat-card-list',
   templateUrl: './sneat-card-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterModule,
     IonCard,
@@ -59,17 +62,34 @@ interface IOptionallyTitled {
 export class SneatCardListComponent {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
 
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() title?: string;
-  @Input() isFilterable?: boolean;
-  @Input() isLoading?: boolean;
+  readonly isFilterable = input<boolean>();
+  readonly isLoading = input<boolean>();
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() items?: { id?: unknown; title?: string }[];
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() create?: (name: string) => Observable<IRecord<IOptionallyTitled>>;
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() itemIcon?: string;
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() tab?: string;
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() tabs?: ICardTab[];
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() noItemsText?: string;
-  @Input() getRouterLink: (item: unknown) => string = () =>
-    undefined as unknown as string;
+  readonly getRouterLink = input<(item: unknown) => string>(() => undefined as unknown as string);
 
   @Output() readonly cardTitleClick = new EventEmitter<void>();
   @Output() readonly itemClick = new EventEmitter<unknown>();

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 import { HappeningService } from '../../services/happening.service';
 import { HappeningSlotFormComponent } from './happening-slot-form.component';
 import { ClassName } from '@sneat/ui';

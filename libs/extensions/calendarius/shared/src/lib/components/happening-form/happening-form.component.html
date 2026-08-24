@@ -76,7 +76,7 @@
                 placeholder="none"
                 auto-grow="true"
                 readonly="true"
-                [value]="$happening().dbo?.summary"
+                [value]="$safeNavigationMigration($happening().dbo?.summary)"
               />
             </ion-item>
           </ion-col>
@@ -96,8 +96,8 @@
         @if (!$slots()?.length) {
           <sneat-happening-slot-form
             mode="in-form"
-            [wd]="wd"
-            [date]="date"
+            [wd]="wd()"
+            [date]="date()"
             [$happening]="$happening()"
             (happeningChange)="onHappeningChanged($event)"
             (slotAdded)="onSlotAdded($event)"
@@ -107,7 +107,7 @@
           <sneat-happening-slots
             #happeningSlotsComponent
             [happening]="$happening()"
-            [wd]="wd"
+            [wd]="wd()"
           />
         }
         <!--			<sneat-single-slot-form-->
