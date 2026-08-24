@@ -29,11 +29,24 @@ export class FirebaseSneatApiAuthAdapter {
           readiness.resolve();
           return;
         }
+        const resolveCurrentToken = async (
+          forceRefresh: boolean,
+        ): Promise<string | undefined> => {
+          const currentUser = this.auth.currentUser;
+          if (currentUser !== user) return undefined;
+          const token = await currentUser.getIdToken(forceRefresh);
+          return this.auth.currentUser === currentUser ? token : undefined;
+        };
         user
-          .getIdToken()
-          .then((token) => readiness.resolve(token))
+          .getIdToken(false)
+          .then(() =>
+            readiness.resolveWithTokenResolver(resolveCurrentToken),
+          )
           .catch((error) => {
-            readiness.resolve();
+            // A transient network failure must not convert an existing Firebase
+            // session into a signed-out state. The next protected request asks
+            // Firebase again and receives either a current token or that error.
+            readiness.resolveWithTokenResolver(resolveCurrentToken);
             console.error('getIdToken() error:', error);
           });
       },

@@ -185,6 +185,7 @@ describe('SneatAuthStateService', () => {
       getIdToken: vi.fn().mockResolvedValue('mock-token-123'),
     };
 
+    authMock.currentUser = fbUser as unknown as User;
     // First set auth user
     onAuthStateChangedCallback.next(fbUser as unknown as User);
 
@@ -199,6 +200,80 @@ describe('SneatAuthStateService', () => {
     expect(state.token).toBe('mock-token-123');
   });
 
+  it('clears the token on sign-out and ignores a late token lookup', async () => {
+    let resolveToken!: (token: string) => void;
+    const fbUser = {
+      uid: 'signing-out-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'signout@example.com',
+      providerId: 'google.com',
+      providerData: [],
+      getIdToken: vi.fn(
+        () => new Promise<string>((resolve) => (resolveToken = resolve)),
+      ),
+    };
+    authMock.currentUser = fbUser as unknown as User;
+    onAuthStateChangedCallback.next(fbUser as unknown as User);
+    onIdTokenChangedCallback.next(fbUser as unknown as User);
+
+    authMock.currentUser = null;
+    onAuthStateChangedCallback.next(null);
+    onIdTokenChangedCallback.next(null);
+    resolveToken('stale-token');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const state = await firstValueFrom(service.authState);
+    expect(state).toMatchObject({
+      status: AuthStatuses.notAuthenticated,
+      token: null,
+      user: null,
+    });
+  });
+
+  it('ignores a late token lookup from the previous user', async () => {
+    let resolveOldToken!: (token: string) => void;
+    const oldUser = {
+      uid: 'old-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'old@example.com',
+      providerId: 'google.com',
+      providerData: [],
+      getIdToken: vi.fn(
+        () => new Promise<string>((resolve) => (resolveOldToken = resolve)),
+      ),
+    };
+    const currentUser = {
+      uid: 'current-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'current@example.com',
+      providerId: 'google.com',
+      providerData: [],
+      getIdToken: vi.fn().mockResolvedValue('current-token'),
+    };
+    authMock.currentUser = oldUser as unknown as User;
+    onAuthStateChangedCallback.next(oldUser as unknown as User);
+    onIdTokenChangedCallback.next(oldUser as unknown as User);
+
+    authMock.currentUser = currentUser as unknown as User;
+    onAuthStateChangedCallback.next(currentUser as unknown as User);
+    onIdTokenChangedCallback.next(currentUser as unknown as User);
+    await Promise.resolve();
+    resolveOldToken('stale-token');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const state = await firstValueFrom(service.authState);
+    expect(state).toMatchObject({
+      status: AuthStatuses.authenticated,
+      token: 'current-token',
+      user: { uid: 'current-user' },
+    });
+  });
+
   it('should handle error in getIdToken', async () => {
     const errorLogger = TestBed.inject(ErrorLogger);
     const fbUser = {
@@ -211,6 +286,7 @@ describe('SneatAuthStateService', () => {
       getIdToken: vi.fn().mockRejectedValue(new Error('Token error')),
     };
 
+    authMock.currentUser = fbUser as unknown as User;
     onAuthStateChangedCallback.next(fbUser as unknown as User);
     onIdTokenChangedCallback.next(fbUser as unknown as User);
 

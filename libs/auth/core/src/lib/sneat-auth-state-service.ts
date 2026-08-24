@@ -98,34 +98,58 @@ export class SneatAuthStateService {
     shareReplay(1),
   );
 
+  private tokenGeneration = 0;
+  private tokenUserID?: string;
+
   // private readonly fbAuth: Auth;
 
   constructor() {
     const errorLogger = this.errorLogger;
     this.fbAuth.onIdTokenChanged({
       next: (firebaseUser) => {
+        const tokenGeneration = ++this.tokenGeneration;
         const status: AuthStatus = firebaseUser
           ? AuthStatuses.authenticated
           : AuthStatuses.notAuthenticated;
+        if (!firebaseUser) {
+          this.publishSignedOutState();
+          return;
+        }
         if (
-          firebaseUser &&
           this.authState$.value?.user?.uid !== firebaseUser?.uid
         ) {
           this.analyticsService.identify(firebaseUser.uid);
         }
         firebaseUser
-          ?.getIdToken()
+          .getIdToken(false)
           .then((token) => {
+            if (
+              tokenGeneration !== this.tokenGeneration ||
+              this.fbAuth.currentUser !== firebaseUser
+            ) {
+              return;
+            }
+            this.tokenUserID = firebaseUser.uid;
+            const authUser = createSneatAuthUserFromFbUser(firebaseUser);
+            if (this.authUser$.value?.uid !== authUser?.uid) {
+              this.authUser$.next(authUser);
+            }
             const current = this.authState$.value || {};
             this.authState$.next({
               ...current,
               status,
               token,
-              user: this.authUser$.value,
+              user: authUser,
             });
             this.authStatus$.next(status); // Should be after authState$
           })
           .catch((err) => {
+            if (
+              tokenGeneration !== this.tokenGeneration ||
+              this.fbAuth.currentUser !== firebaseUser
+            ) {
+              return;
+            }
             const current = this.authState$.value || {};
             this.authState$.next({
               ...current,
@@ -151,19 +175,24 @@ export class SneatAuthStateService {
         //   `SneatAuthStateService => authStatus: ${this.authStatus$.value}; fbUser`,
         //   fbUser,
         // );
-
         const authUser = createSneatAuthUserFromFbUser(fbUser);
-
-        const status = authUser
-          ? AuthStatuses.authenticated
-          : AuthStatuses.notAuthenticated;
-        this.authStatus$.next(status);
+        if (!authUser) {
+          ++this.tokenGeneration;
+          this.publishSignedOutState();
+          return;
+        }
+        const status = AuthStatuses.authenticated;
         this.authUser$.next(authUser);
         this.authState$.next({
           ...this.authState$.value,
+          token:
+            this.tokenUserID === authUser.uid
+              ? this.authState$.value.token
+              : null,
           user: authUser,
           status,
         });
+        this.authStatus$.next(status);
       },
       error: (err) => {
         this.errorLogger.logError(
@@ -177,6 +206,18 @@ export class SneatAuthStateService {
         });
       },
     });
+  }
+
+  private publishSignedOutState(): void {
+    this.tokenUserID = undefined;
+    this.authUser$.next(null);
+    this.authState$.next({
+      ...this.authState$.value,
+      status: AuthStatuses.notAuthenticated,
+      token: null,
+      user: null,
+    });
+    this.authStatus$.next(AuthStatuses.notAuthenticated);
   }
 
   public signOut(): Promise<void> {

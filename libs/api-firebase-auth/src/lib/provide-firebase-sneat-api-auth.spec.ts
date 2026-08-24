@@ -16,6 +16,10 @@ import {
 } from './provide-firebase-sneat-api-auth';
 
 const listener = vi.fn();
+type TestUser = {
+  getIdToken: (forceRefresh?: boolean) => Promise<string>;
+};
+let authMock: { currentUser: TestUser | null };
 vi.mock('@angular/fire/auth', () => ({
   Auth: class Auth {},
   onIdTokenChanged: (_auth: unknown, observer: unknown) => {
@@ -25,14 +29,17 @@ vi.mock('@angular/fire/auth', () => ({
 }));
 
 describe('FirebaseSneatApiAuthAdapter', () => {
-  beforeEach(() => listener.mockReset());
+  beforeEach(() => {
+    listener.mockReset();
+    authMock = { currentUser: null };
+  });
 
   it('unblocks a root-created API client only after delayed getIdToken resolves', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: {} },
+        { provide: Auth, useValue: authMock },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -46,7 +53,9 @@ describe('FirebaseSneatApiAuthAdapter', () => {
     const observer = listener.mock.calls[0][0] as {
       next: (user: { getIdToken: () => Promise<string> } | null) => void;
     };
-    observer.next({ getIdToken: () => token });
+    const user = { getIdToken: () => token };
+    authMock.currentUser = user;
+    observer.next(user);
     const response = firstValueFrom(rootApi.get<{ ok: boolean }>('private'));
     http.expectNone('https://api.sneat.cloud/v0/private');
 
@@ -62,12 +71,53 @@ describe('FirebaseSneatApiAuthAdapter', () => {
     http.verify();
   });
 
+  it('gets a current Firebase token for every protected request', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(withXhr()),
+        provideHttpClientTesting(),
+        { provide: Auth, useValue: authMock },
+        FirebaseSneatApiAuthAdapter,
+      ],
+    });
+    const api = TestBed.inject(SneatApiService);
+    const http = TestBed.inject(HttpTestingController);
+    TestBed.inject(FirebaseSneatApiAuthAdapter).start();
+    const getIdToken = vi
+      .fn<(forceRefresh?: boolean) => Promise<string>>()
+      .mockResolvedValueOnce('bootstrap-token')
+      .mockResolvedValueOnce('refreshed-token');
+    const observer = listener.mock.calls[0][0] as {
+      next: (user: { getIdToken: typeof getIdToken }) => void;
+    };
+
+    const user = { getIdToken };
+    authMock.currentUser = user;
+    observer.next(user);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const response = firstValueFrom(api.get<{ ok: boolean }>('private'));
+    await Promise.resolve();
+    await Promise.resolve();
+    const request = http.expectOne('https://api.sneat.cloud/v0/private');
+    expect(getIdToken).toHaveBeenCalledTimes(2);
+    expect(getIdToken).toHaveBeenNthCalledWith(1, false);
+    expect(getIdToken).toHaveBeenNthCalledWith(2, false);
+    expect(request.request.headers.get('Authorization')).toBe(
+      'Bearer refreshed-token',
+    );
+    request.flush({ ok: true });
+    await response;
+    http.verify();
+  });
+
   it('fails pending calls closed when Firebase resolves signed out', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: {} },
+        { provide: Auth, useValue: authMock },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -87,7 +137,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: {} },
+        { provide: Auth, useValue: authMock },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -98,15 +148,23 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       next: (user: { getIdToken: () => Promise<string> }) => void;
     };
     let resolveOldToken!: (token: string) => void;
-    observer.next({
+    const oldUser = {
       getIdToken: () =>
         new Promise<string>((resolve) => (resolveOldToken = resolve)),
-    });
-    observer.next({ getIdToken: () => Promise.resolve('current-token') });
+    };
+    authMock.currentUser = oldUser;
+    observer.next(oldUser);
+    const currentUser = {
+      getIdToken: () => Promise.resolve('current-token'),
+    };
+    authMock.currentUser = currentUser;
+    observer.next(currentUser);
     await Promise.resolve();
     await Promise.resolve();
 
     const firstResponse = firstValueFrom(api.get('private'));
+    await Promise.resolve();
+    await Promise.resolve();
     const firstRequest = http.expectOne('https://api.sneat.cloud/v0/private');
     expect(firstRequest.request.headers.get('Authorization')).toBe(
       'Bearer current-token',
@@ -117,6 +175,8 @@ describe('FirebaseSneatApiAuthAdapter', () => {
     resolveOldToken('stale-token');
     await Promise.resolve();
     const secondResponse = firstValueFrom(api.get('private'));
+    await Promise.resolve();
+    await Promise.resolve();
     const secondRequest = http.expectOne('https://api.sneat.cloud/v0/private');
     expect(secondRequest.request.headers.get('Authorization')).toBe(
       'Bearer current-token',
@@ -126,7 +186,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
     http.verify();
   });
 
-  it('resolves unauthenticated when token retrieval fails', async () => {
+  it('keeps the session retryable when token retrieval temporarily fails', async () => {
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
@@ -134,25 +194,39 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: {} },
+        { provide: Auth, useValue: authMock },
         FirebaseSneatApiAuthAdapter,
       ],
     });
     const api = TestBed.inject(SneatApiService);
+    const http = TestBed.inject(HttpTestingController);
     TestBed.inject(FirebaseSneatApiAuthAdapter).start();
     const observer = listener.mock.calls[0][0] as {
       next: (user: { getIdToken: () => Promise<string> }) => void;
     };
-    observer.next({ getIdToken: () => Promise.reject(new Error('denied')) });
+    const getIdToken = vi.fn().mockRejectedValue(new Error('denied'));
+    const user = { getIdToken };
+    authMock.currentUser = user;
+    observer.next(user);
     await Promise.resolve();
 
-    await expect(firstValueFrom(api.get('private'))).rejects.toBe(
-      SneatApiNotAuthenticatedError,
-    );
+    await expect(firstValueFrom(api.get('private'))).rejects.toThrow('denied');
     expect(consoleError).toHaveBeenCalledWith(
       'getIdToken() error:',
       expect.any(Error),
     );
+
+    getIdToken.mockResolvedValue('recovered-token');
+    const response = firstValueFrom(api.get<{ ok: boolean }>('private'));
+    await Promise.resolve();
+    await Promise.resolve();
+    const request = http.expectOne('https://api.sneat.cloud/v0/private');
+    expect(request.request.headers.get('Authorization')).toBe(
+      'Bearer recovered-token',
+    );
+    request.flush({ ok: true });
+    await response;
+    http.verify();
   });
 
   it('runs the route initializer once and fails closed on listener errors', async () => {
@@ -163,7 +237,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: {} },
+        { provide: Auth, useValue: authMock },
         provideFirebaseSneatApiAuth(),
       ],
     });

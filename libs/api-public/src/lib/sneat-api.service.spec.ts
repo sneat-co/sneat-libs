@@ -96,6 +96,80 @@ describe('SneatApiService public transport', () => {
     await response;
   });
 
+  it('rejects a token that resolves after the auth session changes', async () => {
+    let resolveToken!: (token: string) => void;
+    const pendingToken = new Promise<string>(
+      (resolve) => (resolveToken = resolve),
+    );
+    bridge
+      .beginAuthentication()
+      .resolveWithTokenResolver(() => pendingToken);
+    const response = firstValueFrom(api.get('private'));
+
+    bridge.setExplicitToken(undefined);
+    resolveToken('stale-token');
+
+    await expect(response).rejects.toBe(SneatApiNotAuthenticatedError);
+    http.expectNone(`${DefaultSneatAppApiBaseUrl}private`);
+  });
+
+  it('force-refreshes once and retries a protected request after a 401', async () => {
+    const resolveToken = vi.fn((forceRefresh: boolean) =>
+      Promise.resolve(forceRefresh ? 'refreshed-token' : 'expired-token'),
+    );
+    bridge
+      .beginAuthentication()
+      .resolveWithTokenResolver(resolveToken);
+    const response = firstValueFrom(api.get<{ ok: boolean }>('private'));
+    await Promise.resolve();
+
+    const expiredRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}private`,
+    );
+    expect(expiredRequest.request.headers.get('Authorization')).toBe(
+      'Bearer expired-token',
+    );
+    expiredRequest.flush('expired', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+    await Promise.resolve();
+
+    const retriedRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}private`,
+    );
+    expect(retriedRequest.request.headers.get('Authorization')).toBe(
+      'Bearer refreshed-token',
+    );
+    retriedRequest.flush({ ok: true });
+
+    await expect(response).resolves.toEqual({ ok: true });
+    expect(resolveToken.mock.calls).toEqual([[false], [true]]);
+  });
+
+  it('does not automatically retry a mutation after a 401', async () => {
+    const resolveToken = vi.fn((forceRefresh: boolean) =>
+      Promise.resolve(forceRefresh ? 'refreshed-token' : 'expired-token'),
+    );
+    bridge
+      .beginAuthentication()
+      .resolveWithTokenResolver(resolveToken);
+    const response = firstValueFrom(api.post('private', { value: 1 }));
+    await Promise.resolve();
+
+    const request = http.expectOne(`${DefaultSneatAppApiBaseUrl}private`);
+    expect(request.request.headers.get('Authorization')).toBe(
+      'Bearer expired-token',
+    );
+    request.flush('expired', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+
+    await expect(response).rejects.toMatchObject({ status: 401 });
+    expect(resolveToken.mock.calls).toEqual([[false]]);
+  });
+
   it('keeps anonymous GET and POST independent of auth readiness', async () => {
     bridge.beginAuthentication();
     const getResult = firstValueFrom(
