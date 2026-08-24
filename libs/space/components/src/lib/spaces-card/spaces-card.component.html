@@ -1,10 +1,10 @@
 <ion-card>
   <ion-item>
     <ion-label>
-      <ion-card-title color="medium">Spaces</ion-card-title>
+      <ion-card-title color="medium">{{ title }}</ion-card-title>
     </ion-label>
     <ion-buttons slot="end" (click)="startAddingSpace()">
-      @if (!showAdd()) {
+      @if (canAdd && !showAdd()) {
         <ion-button color="primary">
           <ion-icon name="add" slot="start" />
           <ion-label>Add</ion-label>
