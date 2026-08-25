@@ -1,3 +1,14 @@
+## 0.27.0 (2026-08-25)
+
+### ⚠️  Breaking Changes
+
+- remove @angular/fire entirely: breaking removal of getAngularFireProviders/provideFireApp/redirectToLoginIfNotSignedIn/canLoad and the @angular/fire DI tokens ([9d95894](https://github.com/sneat-co/sneat-libs/commit/9d95894))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Fable 5
+
 ## 0.26.6 (2026-08-25)
 
 ### 🩹 Fixes
