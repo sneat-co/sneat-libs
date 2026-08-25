@@ -15,6 +15,18 @@ import {
   provideFirebaseSneatApiAuth,
 } from './provide-firebase-sneat-api-auth';
 
+/**
+ * Drains every pending microtask.
+ *
+ * These specs used to rely on zone.js patching `Promise`: a couple of
+ * `await`s were enough to run the whole token → interceptor → HttpClient
+ * chain. With native promises the exact number of turns is an implementation
+ * detail of that chain, so hop a macrotask instead — `setTimeout(…, 0)` fires
+ * only after every already-queued microtask has run, however long the chain.
+ */
+const settlePendingWork = () =>
+  new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 const listener = vi.fn();
 type TestUser = {
   getIdToken: (forceRefresh?: boolean) => Promise<string>;
@@ -61,7 +73,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
 
     resolveToken('firebase-token');
     await token;
-    await Promise.resolve();
+    await settlePendingWork();
     const request = http.expectOne('https://api.sneat.cloud/v0/private');
     expect(request.request.headers.get('Authorization')).toBe(
       'Bearer firebase-token',

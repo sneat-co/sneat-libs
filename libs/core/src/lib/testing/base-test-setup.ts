@@ -1,15 +1,51 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import '@analogjs/vitest-angular/setup-zone';
+import { NgModule, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 
+/**
+ * Change-detection providers installed into every TestBed in this workspace.
+ *
+ * They live on the *test environment* module rather than on an individual
+ * `TestBed.configureTestingModule({ providers })` call because Angular runs
+ * `TestBed.resetTestingModule()` after every spec (see `ɵgetCleanupHook` in
+ * `@angular/core/testing`), which discards anything configured on the testing
+ * module itself. The test-environment module survives that reset, so zoneless
+ * change detection stays in force for every spec in the file.
+ */
+@NgModule({ providers: [provideZonelessChangeDetection()] })
+export class ZonelessTestEnvironmentModule {}
+
+/**
+ * Initialises the Angular testing environment in **zoneless** mode.
+ *
+ * zone.js is not installed in this workspace, so there is no `waitForAsync`,
+ * no `fakeAsync` and no `tick()`. The replacements are:
+ *
+ * - `beforeEach(waitForAsync(async () => {…}))`
+ *   → `beforeEach(async () => { …; await fixture.whenStable(); })`
+ * - `it('…', fakeAsync(() => { …; tick(N); }))`
+ *   → `it('…', async () => { vi.useFakeTimers(); try { …;
+ *     await vi.advanceTimersByTimeAsync(N); } finally { vi.useRealTimers(); } })`
+ * - a bare `tick()` used only to settle a promise chain (no timers) →
+ *   `await new Promise<void>((resolve) => setTimeout(resolve, 0))`. A real
+ *   `setTimeout(…, 0)` is a macrotask, so every already-queued microtask runs
+ *   to completion before it fires — however long the chain. Prefer it over
+ *   counting `await Promise.resolve()` turns, which is brittle.
+ *
+ * Under zoneless change detection `ComponentFixture.autoDetect` defaults to
+ * `true`, so a fixture refreshes itself once the microtask queue drains, and
+ * `await fixture.whenStable()` is what drains it. Omitting that await is the
+ * one silent failure mode of this migration: the suite stays green while the
+ * component's async initialisation never runs.
+ */
 export function setupAngularTestingEnvironment() {
   try {
     TestBed.initTestEnvironment(
-      BrowserDynamicTestingModule,
+      [BrowserDynamicTestingModule, ZonelessTestEnvironmentModule],
       platformBrowserDynamicTesting(),
     );
   } catch {

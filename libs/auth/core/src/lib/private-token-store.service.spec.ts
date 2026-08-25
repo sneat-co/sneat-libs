@@ -65,9 +65,16 @@ describe('PrivateTokenStoreService', () => {
 
     const promise = firstValueFrom(service.getPrivateToken(domain, projectId));
 
+    // Attach the rejection handler *before* waiting the timer out. The
+    // observable errors ~1ms in, and now that zone.js no longer wraps
+    // `Promise` in a ZoneAwarePromise, a rejection with no handler attached at
+    // that moment reaches Node's unhandled-rejection detector and vitest fails
+    // the whole run on it. The assertion itself is unchanged.
+    const rejectsWithCancel = expect(promise).rejects.toBe(canceledByUser);
+
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    await expect(promise).rejects.toBe(canceledByUser);
+    await rejectsWithCancel;
 
     // Cleanup
     delete (globalThis as { prompt?: unknown }).prompt;

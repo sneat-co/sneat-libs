@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController, NavController } from '@ionic/angular';
 import { Firestore } from '@angular/fire/firestore';
@@ -26,7 +26,7 @@ describe('HappeningFormComponent', () => {
   let component: HappeningFormComponent;
   let fixture: ComponentFixture<HappeningFormComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HappeningFormComponent],
       providers: [
@@ -104,7 +104,9 @@ describe('HappeningFormComponent', () => {
       id: '',
       space: { id: 'test-space' },
     });
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

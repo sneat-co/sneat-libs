@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 
@@ -19,7 +19,7 @@ describe('SpacesCardComponent', () => {
   let fixture: ComponentFixture<SpacesCardComponent>;
   let userState$: BehaviorSubject<ISneatUserState>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     userState$ = new BehaviorSubject<ISneatUserState>({
       status: 'authenticating',
     });
@@ -63,7 +63,7 @@ describe('SpacesCardComponent', () => {
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SpacesCardComponent);

@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { Firestore } from '@angular/fire/firestore';
@@ -29,7 +29,7 @@ describe('CalendarBriefComponent', () => {
   let component: CalendarBriefComponent;
   let fixture: ComponentFixture<CalendarBriefComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CalendarBriefComponent],
       providers: [
@@ -114,7 +114,9 @@ describe('CalendarBriefComponent', () => {
     fixture = TestBed.createComponent(CalendarBriefComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('$space', { id: 'test-space' });
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

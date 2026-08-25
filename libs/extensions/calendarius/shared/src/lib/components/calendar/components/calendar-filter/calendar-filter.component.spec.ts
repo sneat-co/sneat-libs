@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
 import { CalendarFilterService } from '../../../calendar-filter.service';
@@ -9,7 +9,7 @@ describe('CalendarFilterComponent', () => {
   let component: CalendarFilterComponent;
   let fixture: ComponentFixture<CalendarFilterComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CalendarFilterComponent],
       providers: [
@@ -28,7 +28,9 @@ describe('CalendarFilterComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(CalendarFilterComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

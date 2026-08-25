@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { HappeningPageComponent } from './happening-page.component';
@@ -9,7 +9,7 @@ describe('RegularHappeningPage', () => {
   let component: HappeningPageComponent;
   let fixture: ComponentFixture<HappeningPageComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HappeningPageComponent],
       providers: [provideRouter([]), ...provideCalendariusMocks()],
@@ -19,7 +19,7 @@ describe('RegularHappeningPage', () => {
         set: { imports: [], schemas: [CUSTOM_ELEMENTS_SCHEMA] },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HappeningPageComponent);

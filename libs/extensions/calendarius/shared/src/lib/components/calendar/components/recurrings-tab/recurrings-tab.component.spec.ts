@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CalendarFilterService } from '../../../calendar-filter.service';
 import { RecurringsTabComponent } from './recurrings-tab.component';
 
@@ -7,7 +7,7 @@ describe('RecurringsTabComponent', () => {
   let component: RecurringsTabComponent;
   let fixture: ComponentFixture<RecurringsTabComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RecurringsTabComponent],
       providers: [CalendarFilterService],
@@ -23,7 +23,9 @@ describe('RecurringsTabComponent', () => {
     fixture.componentRef.setInput('$recurrings', []);
     fixture.componentRef.setInput('$contactusSpace', undefined);
     fixture.componentRef.setInput('$allRecurrings', []);
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { Firestore } from '@angular/fire/firestore';
@@ -25,7 +25,7 @@ describe('ContactsFilterComponent', () => {
   let component: ContactsFilterComponent;
   let fixture: ComponentFixture<ContactsFilterComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ContactsFilterComponent],
       providers: [
@@ -96,7 +96,9 @@ describe('ContactsFilterComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('$space', { id: 'test-space' });
     fixture.componentRef.setInput('$contactIDs', []);
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

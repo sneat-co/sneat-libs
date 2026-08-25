@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import {
   IonItem,
@@ -18,7 +18,7 @@ describe('RadioGroupToSelectComponent', () => {
   let component: RadioGroupToSelectComponent;
   let fixture: ComponentFixture<RadioGroupToSelectComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RadioGroupToSelectComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -41,7 +41,7 @@ describe('RadioGroupToSelectComponent', () => {
         },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(RadioGroupToSelectComponent);

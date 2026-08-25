@@ -1,6 +1,18 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { CountryFlagPipe, CountryTitle } from './country-emoji.pipe';
 import { CountriesLoaderService } from '../country-selector';
+
+/**
+ * Zoneless replacement for the bare `tick()` these specs used to call.
+ *
+ * The pipes load their cache through a plain promise chain
+ * (`getCountriesByID().then().catch().finally()`) with no timers involved, so
+ * what `tick()` actually did here was drain the microtask queue. A real
+ * `setTimeout(…, 0)` is a macrotask: every already-queued microtask — however
+ * long the chain — runs to completion before it fires.
+ */
+const settlePromiseChain = () =>
+  new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 describe('Country pipes', () => {
   let countriesLoader: { getCountriesByID: () => Promise<unknown> };
@@ -42,18 +54,18 @@ describe('Country pipes', () => {
       expect(pipe.transform('US')).toBe('US');
     });
 
-    it('should return emoji when cache is loaded', fakeAsync(() => {
+    it('should return emoji when cache is loaded', async () => {
       const pipe = TestBed.inject(CountryFlagPipe);
-      tick(); // resolve promise
+      await settlePromiseChain(); // resolve promise
       expect(pipe.transform('US')).toBe('🇺🇸');
       expect(pipe.transform('UA')).toBe('🇺🇦');
-    }));
+    });
 
-    it('should return countryID for unknown country', fakeAsync(() => {
+    it('should return countryID for unknown country', async () => {
       const pipe = TestBed.inject(CountryFlagPipe);
-      tick();
+      await settlePromiseChain();
       expect(pipe.transform('XX')).toBe('XX');
-    }));
+    });
   });
 
   describe('CountryTitle', () => {
@@ -71,18 +83,18 @@ describe('Country pipes', () => {
       expect(pipe.transform('US')).toBe('US');
     });
 
-    it('should return title when cache is loaded', fakeAsync(() => {
+    it('should return title when cache is loaded', async () => {
       const pipe = TestBed.inject(CountryTitle);
-      tick();
+      await settlePromiseChain();
       expect(pipe.transform('US')).toBe('United States');
       expect(pipe.transform('UA')).toBe('Ukraine');
-    }));
+    });
 
-    it('should return countryID for unknown country', fakeAsync(() => {
+    it('should return countryID for unknown country', async () => {
       const pipe = TestBed.inject(CountryTitle);
-      tick();
+      await settlePromiseChain();
       expect(pipe.transform('XX')).toBe('XX');
-    }));
+    });
 
     it('should return empty string for undefined input', () => {
       const pipe = TestBed.inject(CountryTitle);
@@ -91,7 +103,7 @@ describe('Country pipes', () => {
   });
 
   describe('Error handling', () => {
-    it('should handle load error gracefully', fakeAsync(() => {
+    it('should handle load error gracefully', async () => {
       const errorLoader = {
         getCountriesByID: vi.fn().mockReturnValue(Promise.reject(new Error('Load failed'))),
       };
@@ -108,9 +120,9 @@ describe('Country pipes', () => {
       });
 
       const pipe = TestBed.inject(CountryFlagPipe);
-      tick();
+      await settlePromiseChain();
       // After error, should return the countryID itself
       expect(pipe.transform('US')).toBe('US');
-    }));
+    });
   });
 });

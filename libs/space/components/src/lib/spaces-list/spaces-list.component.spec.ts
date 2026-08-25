@@ -1,6 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UserRequiredFieldsService } from '@sneat/auth-ui';
 import { SneatUserService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
@@ -13,7 +13,7 @@ describe('SpacesListComponent', () => {
   let component: SpacesListComponent;
   let fixture: ComponentFixture<SpacesListComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SpacesListComponent],
       providers: [
@@ -50,7 +50,9 @@ describe('SpacesListComponent', () => {
     fixture.componentRef.setInput('userID', undefined);
     fixture.componentRef.setInput('spaces', undefined);
     fixture.detectChanges();
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

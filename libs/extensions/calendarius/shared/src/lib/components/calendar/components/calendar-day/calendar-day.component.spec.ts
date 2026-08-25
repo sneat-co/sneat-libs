@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { CalendarFilterService } from '../../../calendar-filter.service';
 import { SCHEDULE_NAV_SERVICE } from '@sneat/extension-calendarius-contract';
@@ -10,7 +10,7 @@ describe('ScheduleDayComponent', () => {
   let component: CalendarDayComponent;
   let fixture: ComponentFixture<CalendarDayComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CalendarDayComponent],
       providers: [
@@ -19,7 +19,7 @@ describe('ScheduleDayComponent', () => {
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CalendarDayComponent);

@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NavController } from '@ionic/angular';
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
@@ -10,7 +10,7 @@ describe('SignInFromEmailLinkPageComponent', () => {
   let component: SignInFromEmailLinkPageComponent;
   let fixture: ComponentFixture<SignInFromEmailLinkPageComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SignInFromEmailLinkPageComponent],
       providers: [
@@ -35,7 +35,9 @@ describe('SignInFromEmailLinkPageComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(SignInFromEmailLinkPageComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 import { ContactsSelectorService } from '@sneat/extension-contactus-ui';
 import { SpaceNavService } from '@sneat/space-services';
@@ -14,7 +14,7 @@ describe('SlotContextMenuComponent', () => {
   let component: SlotContextMenuComponent;
   let fixture: ComponentFixture<SlotContextMenuComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SlotContextMenuComponent],
       providers: [
@@ -60,7 +60,9 @@ describe('SlotContextMenuComponent', () => {
     fixture = TestBed.createComponent(SlotContextMenuComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('$space', { id: 'test-space' });
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -48,7 +48,6 @@ export function createBaseViteConfig(
         '@angular/material',
         '@angular/fire',
         'rxjs',
-        'zone.js',
       ],
       alias: [
         //				{

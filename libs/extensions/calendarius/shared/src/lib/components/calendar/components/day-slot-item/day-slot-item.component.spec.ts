@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PopoverController } from '@ionic/angular';
 import { CalendarNavService } from '../../../../services';
 import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
@@ -11,7 +11,7 @@ describe('ActivityItemComponent', () => {
   let component: DaySlotItemComponent;
   let fixture: ComponentFixture<DaySlotItemComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DaySlotItemComponent],
       providers: [
@@ -31,7 +31,7 @@ describe('ActivityItemComponent', () => {
         },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DaySlotItemComponent);

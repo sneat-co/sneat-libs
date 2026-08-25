@@ -1,12 +1,12 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CalendarCardHeaderComponent } from './calendar-card-header.component';
 
 describe('CalendarCardHeaderComponent', () => {
   let component: CalendarCardHeaderComponent;
   let fixture: ComponentFixture<CalendarCardHeaderComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CalendarCardHeaderComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -17,7 +17,9 @@ describe('CalendarCardHeaderComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(CalendarCardHeaderComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

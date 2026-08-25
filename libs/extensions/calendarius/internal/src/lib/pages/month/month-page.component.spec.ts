@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { MonthPageComponent } from './month-page.component';
@@ -9,13 +9,13 @@ describe('MonthPage', () => {
   let component: MonthPageComponent;
   let fixture: ComponentFixture<MonthPageComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MonthPageComponent],
       providers: [provideRouter([]), ...provideCalendariusMocks()],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(MonthPageComponent);
