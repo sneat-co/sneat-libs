@@ -8,11 +8,11 @@
     "@angular/common": ">=22.0.0 <23.0.0",
     "@angular/core": ">=22.0.0 <23.0.0",
     "@angular/router": ">=22.0.0 <23.0.0",
-    "@sneat/core": "^0.26.0",
-    "@sneat/data": "^0.26.0",
-    "@sneat/dto": "^0.26.0",
-    "@sneat/space-models": "^0.26.0",
-    "@sneat/space-services": "^0.26.0",
+    "@sneat/core": "^0.27.0",
+    "@sneat/data": "^0.27.0",
+    "@sneat/dto": "^0.27.0",
+    "@sneat/space-models": "^0.27.0",
+    "@sneat/space-services": "^0.27.0",
     "@sneat/extension-contactus-contract": "^0.12.0"
   },
   "dependencies": {

@@ -91,6 +91,7 @@
       "!libs-demo-e2e"
     ],
     "projectsRelationship": "fixed",
+    "versionPlans": true,
     "git": {
       "commit": true,
       "tag": true,
