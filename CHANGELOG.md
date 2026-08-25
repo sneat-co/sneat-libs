@@ -1,3 +1,13 @@
+## 0.26.6 (2026-08-25)
+
+### 🩹 Fixes
+
+- **testing:** run shared test harness zoneless, drop zone.js ([c9eaf8e](https://github.com/sneat-co/sneat-libs/commit/c9eaf8e))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.26.5 (2026-08-25)
 
 ### 🚀 Features
