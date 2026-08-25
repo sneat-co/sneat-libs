@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { NewHappeningPageComponent } from './new-happening-page.component';
@@ -13,7 +13,7 @@ describe('NewHappeningPage', () => {
     window.history.replaceState({}, '', window.location.href);
   });
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NewHappeningPageComponent],
       providers: [provideRouter([]), ...provideCalendariusMocks()],
@@ -23,7 +23,7 @@ describe('NewHappeningPage', () => {
         set: { imports: [], schemas: [CUSTOM_ELEMENTS_SCHEMA] },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(NewHappeningPageComponent);

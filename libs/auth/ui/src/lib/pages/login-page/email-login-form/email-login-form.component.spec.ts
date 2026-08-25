@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Auth } from '@angular/fire/auth';
 import { ToastController } from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
@@ -12,7 +12,7 @@ describe('EmailLoginFormComponent', () => {
   let component: EmailLoginFormComponent;
   let fixture: ComponentFixture<EmailLoginFormComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EmailLoginFormComponent],
       providers: [
@@ -51,7 +51,9 @@ describe('EmailLoginFormComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(EmailLoginFormComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

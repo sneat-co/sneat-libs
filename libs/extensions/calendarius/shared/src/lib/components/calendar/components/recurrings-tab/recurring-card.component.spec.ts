@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 import { SpaceNavService } from '@sneat/space-services';
 import { HappeningService } from '../../../../services/happening.service';
@@ -9,7 +9,7 @@ describe('RecurringCardComponent', () => {
   let component: RecurringCardComponent;
   let fixture: ComponentFixture<RecurringCardComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RecurringCardComponent],
       providers: [
@@ -31,7 +31,9 @@ describe('RecurringCardComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(RecurringCardComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

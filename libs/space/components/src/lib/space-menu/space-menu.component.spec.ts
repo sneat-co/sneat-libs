@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
 import {
   NavController,
@@ -34,7 +34,7 @@ describe('SpaceMenuComponent', () => {
   let component: SpaceMenuComponent;
   let fixture: ComponentFixture<SpaceMenuComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SpaceMenuComponent, RouterTestingModule],
       providers: [
@@ -82,7 +82,7 @@ describe('SpaceMenuComponent', () => {
         },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SpaceMenuComponent);

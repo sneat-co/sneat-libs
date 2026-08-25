@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController, PopoverController } from '@ionic/angular';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
@@ -11,7 +11,7 @@ describe('HappeningSlotFormComponent', () => {
   let component: HappeningSlotFormComponent;
   let fixture: ComponentFixture<HappeningSlotFormComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     Object.defineProperty(window, 'history', {
       value: { state: { wd: 'mo' } },
       configurable: true,
@@ -37,7 +37,7 @@ describe('HappeningSlotFormComponent', () => {
         },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HappeningSlotFormComponent);

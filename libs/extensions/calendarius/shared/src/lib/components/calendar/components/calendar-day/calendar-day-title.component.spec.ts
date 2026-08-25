@@ -1,12 +1,12 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CalendarDayTitleComponent } from './calendar-day-title.component';
 
 describe('CalendarDayTitleComponent', () => {
   let component: CalendarDayTitleComponent;
   let fixture: ComponentFixture<CalendarDayTitleComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CalendarDayTitleComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -17,7 +17,9 @@ describe('CalendarDayTitleComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(CalendarDayTitleComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { ErrorLogger } from '@sneat/core';
 import { SneatUserService } from '@sneat/auth-core';
@@ -24,7 +24,7 @@ describe('UserCountryComponent', () => {
     getCountries: ReturnType<typeof vi.fn>;
   };
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     httpClient = {
       get: vi.fn(() => of('US')),
     };
@@ -69,7 +69,9 @@ describe('UserCountryComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(UserCountryComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

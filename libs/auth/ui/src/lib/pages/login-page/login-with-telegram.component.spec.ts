@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA, Provider } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
@@ -33,17 +33,22 @@ async function createComponent(
       set: { imports: [], schemas: [CUSTOM_ELEMENTS_SCHEMA] },
     })
     .compileComponents();
-  return TestBed.createComponent(LoginWithTelegramComponent);
+  const fixture = TestBed.createComponent(LoginWithTelegramComponent);
+  // Zoneless: `autoDetect` is on by default, but change detection is
+  // scheduled on a microtask. Draining it here is what runs `ngOnInit`,
+  // which zone.js used to flush at the end of `waitForAsync`.
+  await fixture.whenStable();
+  return fixture;
 }
 
 describe('LoginWithTelegramComponent', () => {
   let component: LoginWithTelegramComponent;
   let fixture: ComponentFixture<LoginWithTelegramComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     fixture = await createComponent();
     component = fixture.componentInstance;
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

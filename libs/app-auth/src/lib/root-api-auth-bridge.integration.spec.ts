@@ -25,6 +25,18 @@ import {
 import { ErrorLogger } from '@sneat/core';
 import { firstValueFrom, NEVER, Observable } from 'rxjs';
 
+/**
+ * Drains every pending microtask.
+ *
+ * These specs used to rely on zone.js patching `Promise`: a couple of
+ * `await`s were enough to run the whole token → interceptor → HttpClient
+ * chain. With native promises the exact number of turns is an implementation
+ * detail of that chain, so hop a macrotask instead — `setTimeout(…, 0)` fires
+ * only after every already-queued microtask has run, however long the chain.
+ */
+const settlePendingWork = () =>
+  new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 const listener = vi.fn();
 type TestUser = { getIdToken: () => Promise<string> };
 let authMock: { currentUser: TestUser | null };
@@ -126,7 +138,7 @@ describe('root API auth bridge integration', () => {
 
     resolveToken('route-token');
     await token;
-    await Promise.resolve();
+    await settlePendingWork();
     const requests = http.match(() => true);
     expect(requests).toHaveLength(2);
     for (const request of requests) {

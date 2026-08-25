@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
 import { TimeSelectorComponent } from './time-selector.component';
 
@@ -7,7 +7,7 @@ describe('TimeSelectorComponent', () => {
   let component: TimeSelectorComponent;
   let fixture: ComponentFixture<TimeSelectorComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TimeSelectorComponent],
       providers: [{ provide: ModalController, useValue: { dismiss: vi.fn() } }],
@@ -19,7 +19,9 @@ describe('TimeSelectorComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(TimeSelectorComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

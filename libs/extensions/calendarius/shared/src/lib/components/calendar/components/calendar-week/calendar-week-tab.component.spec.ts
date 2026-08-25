@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 import { SpaceNavService } from '@sneat/space-services';
 import { ClassName } from '@sneat/ui';
@@ -9,7 +9,7 @@ describe('CalendarWeekTabComponent', () => {
   let component: CalendarWeekTabComponent;
   let fixture: ComponentFixture<CalendarWeekTabComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CalendarWeekTabComponent],
       providers: [
@@ -33,7 +33,9 @@ describe('CalendarWeekTabComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('$space', { id: 'test-space' });
     fixture.componentRef.setInput('$spaceDaysProvider', {});
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

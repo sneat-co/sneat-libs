@@ -1,12 +1,12 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FilterItemComponent } from './filter-item.component';
 
 describe('FilterItemComponent', () => {
   let component: FilterItemComponent;
   let fixture: ComponentFixture<FilterItemComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FilterItemComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -22,7 +22,9 @@ describe('FilterItemComponent', () => {
     fixture = TestBed.createComponent(FilterItemComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('$filter', 'test');
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

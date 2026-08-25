@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
 import { SneatUserService, UserRecordService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
@@ -11,7 +11,7 @@ describe('UserRequiredFieldsModalComponent', () => {
   let component: UserRequiredFieldsModalComponent;
   let fixture: ComponentFixture<UserRequiredFieldsModalComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UserRequiredFieldsModalComponent],
       providers: [
@@ -37,7 +37,9 @@ describe('UserRequiredFieldsModalComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(UserRequiredFieldsModalComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
 import { HappeningService } from '../../services/happening.service';
 import { HappeningSlotFormComponent } from './happening-slot-form.component';
@@ -10,7 +10,7 @@ describe('SingleSlotFormComponent', () => {
   let component: HappeningSlotModalComponent;
   let fixture: ComponentFixture<HappeningSlotModalComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     Object.defineProperty(window, 'history', {
       value: { state: { wd: 'mo' } },
       configurable: true,
@@ -26,7 +26,7 @@ describe('SingleSlotFormComponent', () => {
         set: { providers: [{ provide: HappeningService, useValue: {} }] },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HappeningSlotModalComponent);

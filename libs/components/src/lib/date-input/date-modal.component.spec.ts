@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PopoverController } from '@ionic/angular';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
@@ -11,7 +11,7 @@ describe('DateModalComponent', () => {
   let popoverController: { dismiss: ReturnType<typeof vi.fn> };
   let errorLogger: { logError: ReturnType<typeof vi.fn>; logErrorHandler: ReturnType<typeof vi.fn> };
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     popoverController = {
       dismiss: vi.fn().mockResolvedValue(true),
     };
@@ -36,7 +36,9 @@ describe('DateModalComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(DateModalComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

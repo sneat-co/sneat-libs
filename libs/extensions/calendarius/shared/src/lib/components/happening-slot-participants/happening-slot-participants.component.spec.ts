@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
@@ -9,7 +9,7 @@ describe('HappeningSlotParticipantsComponent', () => {
   let component: HappeningSlotParticipantsComponent;
   let fixture: ComponentFixture<HappeningSlotParticipantsComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HappeningSlotParticipantsComponent],
       providers: [
@@ -41,7 +41,9 @@ describe('HappeningSlotParticipantsComponent', () => {
       repeats: 'once',
       happening: { id: 'test', space: { id: 'test-space' }, brief: {} },
     });
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

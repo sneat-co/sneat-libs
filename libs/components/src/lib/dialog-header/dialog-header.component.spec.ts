@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
 import { DialogHeaderComponent } from './dialog-header.component';
 
@@ -8,7 +8,7 @@ describe('DialogHeaderComponent', () => {
   let fixture: ComponentFixture<DialogHeaderComponent>;
   let modalController: { dismiss: ReturnType<typeof vi.fn> };
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     modalController = {
       dismiss: vi.fn().mockResolvedValue(true),
     };
@@ -24,7 +24,9 @@ describe('DialogHeaderComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(DialogHeaderComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '@sneat/ui';
@@ -10,7 +10,7 @@ describe('HappeningTitleModalComponent', () => {
   let component: HappeningTitleModalComponent;
   let fixture: ComponentFixture<HappeningTitleModalComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HappeningTitleModalComponent],
       providers: [
@@ -39,7 +39,9 @@ describe('HappeningTitleModalComponent', () => {
     fixture.componentRef.setInput('happening', undefined);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
