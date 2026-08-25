@@ -5,15 +5,15 @@ import {
   getStoreUrl,
 } from './sneat-api-service-factory';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { Auth } from '@angular/fire/auth';
+import type { Auth } from 'firebase/auth';
 import { SneatApiBaseUrl } from './sneat-api-service';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import * as coreModule from '@sneat/core';
 
 const onIdTokenChangedMock = vi.fn();
 
-vi.mock('@angular/fire/auth', () => ({
+vi.mock('firebase/auth', () => ({
   onIdTokenChanged: (...args: unknown[]) => onIdTokenChangedMock(...args),
-  Auth: vi.fn(),
 }));
 
 describe('SneatApiServiceFactory', () => {
@@ -25,7 +25,7 @@ describe('SneatApiServiceFactory', () => {
         SneatApiServiceFactory,
         provideHttpClientTesting(),
         { provide: SneatApiBaseUrl, useValue: undefined },
-        { provide: Auth, useValue: {} },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: {} as unknown as Auth },
       ],
     });
     factory = TestBed.inject(SneatApiServiceFactory);

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { ModalController } from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
 import {
@@ -18,7 +18,7 @@ import { CalendariusSpaceService } from '../services/calendarius-space.service';
 import { HappeningService } from '../services/happening.service';
 import { HappeningComponentBaseParams } from './happening-component-base-params';
 
-vi.mock('@angular/fire/firestore');
+vi.mock('firebase/firestore');
 
 describe('HappeningComponentBaseParams', () => {
   beforeEach(() => {

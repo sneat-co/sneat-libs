@@ -13,8 +13,8 @@ import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService, APP_INFO, LOGGER_FACTORY } from '@sneat/core';
 import { of } from 'rxjs';
 import { SneatUserService } from '@sneat/auth-core';
-import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
+import { Firestore } from 'firebase/firestore';
 
 @Component({
   selector: 'sneat-spaces-list',
@@ -49,7 +49,7 @@ describe('SpacesMenuComponent', () => {
         { provide: NavController, useValue: {} },
         { provide: MenuController, useValue: {} },
         {
-          provide: Auth,
+          provide: SNEAT_FIREBASE_AUTH,
           useValue: {
             onIdTokenChanged: vi.fn(() => () => void 0),
             onAuthStateChanged: vi.fn(() => () => void 0),

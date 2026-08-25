@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { PopoverController, NavController } from '@ionic/angular';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService, SneatUserService } from '@sneat/auth-core';
 import {
@@ -19,7 +19,7 @@ import { of } from 'rxjs';
 import { CalendarStateService } from '../../calendar-state.service';
 import { CalendarDayTabComponent } from './calendar-day-tab.component';
 
-vi.mock('@angular/fire/firestore');
+vi.mock('firebase/firestore');
 
 describe('CalendarDayTabComponent', () => {
   let component: CalendarDayTabComponent;

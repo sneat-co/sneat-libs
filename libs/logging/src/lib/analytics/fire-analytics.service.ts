@@ -1,11 +1,11 @@
 import { inject, Injectable } from '@angular/core';
+import { logEvent, setUserId, setUserProperties } from 'firebase/analytics';
 import {
-  Analytics,
-  logEvent,
-  setUserId,
-  setUserProperties,
-} from '@angular/fire/analytics';
-import { ErrorLogger, IErrorLogger, ILogErrorOptions } from '@sneat/core';
+  ErrorLogger,
+  IErrorLogger,
+  ILogErrorOptions,
+  SNEAT_FIREBASE_ANALYTICS,
+} from '@sneat/core';
 import {
   IAnalyticsCallOptions,
   IAnalyticsService,
@@ -17,7 +17,16 @@ const logErrOptions: ILogErrorOptions = { show: false, feedback: false };
 @Injectable()
 export class FireAnalyticsService implements IAnalyticsService {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
-  private readonly analytics = inject(Analytics);
+
+  /**
+   * Nullable by contract: `SNEAT_FIREBASE_ANALYTICS` resolves to `null` — it
+   * never throws — when the app has no real `measurementId` or when
+   * `getAnalytics()` is unsupported in the host environment. Every method
+   * below therefore no-ops on `null` instead of reporting a failed SDK call
+   * on each event. Before 0.27.0 this injected `@angular/fire`'s `Analytics`
+   * token, which threw NullInjectorError in exactly those cases.
+   */
+  private readonly analytics = inject(SNEAT_FIREBASE_ANALYTICS);
 
   constructor() {
     if (!this.errorLogger) {
@@ -36,8 +45,10 @@ export class FireAnalyticsService implements IAnalyticsService {
     eventParams?: Record<string, unknown>,
     options?: IAnalyticsCallOptions,
   ): void {
+    const analytics = this.analytics;
+    if (!analytics) return;
     try {
-      logEvent(this.analytics, eventName, eventParams, options);
+      logEvent(analytics, eventName, eventParams, options);
     } catch (e) {
       this.logError(e, 'Failed to log event to Firebase analytics');
     }
@@ -47,9 +58,11 @@ export class FireAnalyticsService implements IAnalyticsService {
     screenName: string,
     options?: IAnalyticsCallOptions,
   ): void {
+    const analytics = this.analytics;
+    if (!analytics) return;
     try {
       const args = { screenName: screenName };
-      logEvent(this.analytics, '$screen_view', args, options);
+      logEvent(analytics, '$screen_view', args, options);
     } catch (e) {
       this.logError(e, 'Failed to log screen view to Firebase analytics');
     }
@@ -60,8 +73,10 @@ export class FireAnalyticsService implements IAnalyticsService {
     userPropertiesToSet?: UserProperties,
     userPropertiesToSetOnce?: UserProperties,
   ): void {
+    const analytics = this.analytics;
+    if (!analytics) return;
     try {
-      setUserId(this.analytics, userID);
+      setUserId(analytics, userID);
     } catch (e) {
       this.logError(e, 'Failed to set user id in Firebase analytics');
     }
@@ -76,15 +91,17 @@ export class FireAnalyticsService implements IAnalyticsService {
         (k) => (customProperties[k] = userPropertiesToSetOnce[k]),
       );
     try {
-      setUserProperties(this.analytics, customProperties);
+      setUserProperties(analytics, customProperties);
     } catch (e) {
       this.logError(e, 'Failed to set user props in Firebase analytics');
     }
   }
 
   public loggedOut(): void {
+    const analytics = this.analytics;
+    if (!analytics) return;
     try {
-      setUserId(this.analytics, null);
+      setUserId(analytics, null);
     } catch (e) {
       this.logError(e, 'Failed to logout user from Firebase analytics');
     }

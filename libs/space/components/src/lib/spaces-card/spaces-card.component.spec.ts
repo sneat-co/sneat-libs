@@ -11,8 +11,8 @@ import { UserRequiredFieldsService } from '@sneat/auth-ui';
 import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService } from '@sneat/core';
 import { BehaviorSubject } from 'rxjs';
-import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
+import { Firestore } from 'firebase/firestore';
 
 describe('SpacesCardComponent', () => {
   let component: SpacesCardComponent;
@@ -47,7 +47,7 @@ describe('SpacesCardComponent', () => {
         },
         { provide: AnalyticsService, useValue: { logEvent: vi.fn() } },
         {
-          provide: Auth,
+          provide: SNEAT_FIREBASE_AUTH,
           useValue: {
             onIdTokenChanged: vi.fn(() => () => void 0),
             onAuthStateChanged: vi.fn(() => () => void 0),

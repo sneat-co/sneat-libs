@@ -21,3 +21,4 @@ export * from './directives';
 export * from './environment-config';
 export * from './logging/interfaces';
 export * from './analytics.interface';
+export * from './firebase.tokens';

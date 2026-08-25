@@ -9,9 +9,10 @@ import {
   where,
   onSnapshot,
   limit,
-} from '@angular/fire/firestore';
+  QuerySnapshot,
+  QueryOrderByConstraint,
+} from 'firebase/firestore';
 import { IIdAndOptionalBriefAndOptionalDbo } from '@sneat/core';
-import { QuerySnapshot, QueryOrderByConstraint } from 'firebase/firestore';
 import { WhereFilterOp } from '@firebase/firestore-types';
 import { INavContext } from '@sneat/core';
 import { from, map, Observable, Subject } from 'rxjs';

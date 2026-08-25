@@ -5,7 +5,7 @@ import {
   DocumentReference,
   DocumentSnapshot,
   QuerySnapshot,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { Subject } from 'rxjs';
 import {
   SneatFirestoreService,
@@ -21,7 +21,7 @@ const mockQuery = vi.fn();
 const mockWhere = vi.fn();
 const mockLimit = vi.fn();
 
-vi.mock('@angular/fire/firestore', () => ({
+vi.mock('firebase/firestore', () => ({
   doc: (...args: unknown[]) => mockDoc(...args),
   getDoc: (...args: unknown[]) => mockGetDoc(...args),
   onSnapshot: (...args: unknown[]) => mockOnSnapshot(...args),

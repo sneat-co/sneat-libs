@@ -7,13 +7,12 @@
   "peerDependencies": {
     "@angular/core": ">=22.0.0 <23.0.0",
     "@angular/router": ">=22.0.0 <23.0.0",
-    "@angular/fire": ">=20",
     "@capacitor/core": ">=8.0.0 <9.0.0",
     "firebase": "*",
     "@sneat/api-firebase-auth": "^0.26.0",
     "@sneat/app-public": "^0.26.0",
     "@sneat/auth-core": "^0.26.0",
-    "@sneat/core": "^0.26.0",
+    "@sneat/core": "^0.27.0",
     "@sneat/logging": "^0.26.0",
     "rxjs": ">=7.8.0",
     "posthog-js": "*"

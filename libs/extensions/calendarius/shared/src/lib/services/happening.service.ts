@@ -2,13 +2,13 @@ import { Injectable, NgModule, inject, Injector } from '@angular/core';
 import {
   Firestore as AngularFirestore,
   orderBy,
-} from '@angular/fire/firestore';
+  QueryOrderByConstraint,
+} from 'firebase/firestore';
 import { IFilter, SneatApiService } from '@sneat/api';
 import { dateToIso } from '@sneat/core';
 import { HappeningStatus, IHappeningBrief, IHappeningDbo, validateHappeningDto, WeekdayCode2, IHappeningContext, IHappeningPrice, IHappeningSlotWithID } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ISpaceContext, ISpaceRequest } from '@sneat/space-models';
-import { QueryOrderByConstraint } from 'firebase/firestore';
 import { map, Observable, tap, throwError } from 'rxjs';
 import { ModuleSpaceItemService } from '@sneat/space-services';
 

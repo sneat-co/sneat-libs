@@ -6,14 +6,15 @@ import {
   makeEnvironmentProviders,
   provideEnvironmentInitializer,
 } from '@angular/core';
-import { Auth, onIdTokenChanged } from '@angular/fire/auth';
+import { onIdTokenChanged } from 'firebase/auth';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { SneatApiAuthTokenBridge } from '@sneat/api-public';
 
 /** Firebase-only adapter. It writes to the root bridge; it never creates a
  * route-local API client, so services created before this route see readiness. */
 @Injectable()
 export class FirebaseSneatApiAuthAdapter {
-  private readonly auth = inject(Auth);
+  private readonly auth = inject(SNEAT_FIREBASE_AUTH);
   private readonly bridge = inject(SneatApiAuthTokenBridge);
   private readonly destroyRef = inject(DestroyRef);
   private started = false;

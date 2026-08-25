@@ -8,11 +8,11 @@ import {
   EnvironmentInjector,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
+import type { Auth } from 'firebase/auth';
 import {
   CollectionReference,
   Firestore as AngularFirestore,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api-public';
 import { provideFirebaseSneatApiAuth } from '@sneat/api-firebase-auth';
 import {
@@ -22,7 +22,7 @@ import {
   TelegramAuthService,
   UserRecordService,
 } from '@sneat/auth-core';
-import { ErrorLogger } from '@sneat/core';
+import { ErrorLogger, SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { firstValueFrom, NEVER, Observable } from 'rxjs';
 
 /**
@@ -41,9 +41,9 @@ const listener = vi.fn();
 type TestUser = { getIdToken: () => Promise<string> };
 let authMock: { currentUser: TestUser | null };
 
-vi.mock('@angular/fire/auth', async () => {
-  const actual = await vi.importActual<typeof import('@angular/fire/auth')>(
-    '@angular/fire/auth',
+vi.mock('firebase/auth', async () => {
+  const actual = await vi.importActual<typeof import('firebase/auth')>(
+    'firebase/auth',
   );
   return {
     ...actual,
@@ -54,9 +54,9 @@ vi.mock('@angular/fire/auth', async () => {
   };
 });
 
-vi.mock('@angular/fire/firestore', async () => {
-  const actual = await vi.importActual<typeof import('@angular/fire/firestore')>(
-    '@angular/fire/firestore',
+vi.mock('firebase/firestore', async () => {
+  const actual = await vi.importActual<typeof import('firebase/firestore')>(
+    'firebase/firestore',
   );
   return {
     ...actual,
@@ -74,7 +74,7 @@ describe('root API auth bridge integration', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: authMock },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         {
           provide: AngularFirestore,
           useValue: { app: {}, type: 'firestore' },

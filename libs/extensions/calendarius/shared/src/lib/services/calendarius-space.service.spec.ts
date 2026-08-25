@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { CalendariusSpaceService } from './calendarius-space.service';
 
-vi.mock('@angular/fire/firestore');
+vi.mock('firebase/firestore');
 
 describe('CalendariusSpaceService', () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@ import {
   collection,
   CollectionReference,
   Firestore as AngularFirestore,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { IIdAndBrief, IIdAndOptionalDbo } from '@sneat/core';
 import { Observable } from 'rxjs';

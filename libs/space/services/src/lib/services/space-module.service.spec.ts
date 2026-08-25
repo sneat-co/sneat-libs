@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { Injector } from '@angular/core';
-import { Firestore, collection } from '@angular/fire/firestore';
+import { Firestore, collection } from 'firebase/firestore';
 import { SpaceModuleService } from './space-module.service';
 
 // Mock collection function
-vi.mock('@angular/fire/firestore', async () => {
-  const actual = await vi.importActual('@angular/fire/firestore');
+vi.mock('firebase/firestore', async () => {
+  const actual = await vi.importActual('firebase/firestore');
   return {
     ...actual,
     collection: vi.fn(() => ({ id: 'mock-collection' })),

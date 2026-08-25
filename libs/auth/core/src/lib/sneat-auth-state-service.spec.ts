@@ -1,13 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { Auth, UserCredential } from '@angular/fire/auth';
-import { AnalyticsService, ErrorLogger } from '@sneat/core';
+import {
+  AnalyticsService,
+  ErrorLogger,
+  SNEAT_FIREBASE_AUTH,
+} from '@sneat/core';
 import {
   SneatAuthStateService,
   AuthStatuses,
 } from './sneat-auth-state-service';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { firstValueFrom, Observer } from 'rxjs';
-import { User } from '@angular/fire/auth';
+import { User, UserCredential } from 'firebase/auth';
 
 // Mock Capacitor
 vi.mock('@capacitor/core', () => ({
@@ -92,7 +95,7 @@ describe('SneatAuthStateService', () => {
           },
         },
         {
-          provide: Auth,
+          provide: SNEAT_FIREBASE_AUTH,
           useValue: authMock,
         },
       ],

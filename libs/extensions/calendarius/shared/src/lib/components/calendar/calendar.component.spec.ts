@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService, SneatUserService } from '@sneat/auth-core';
 import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
@@ -24,7 +24,7 @@ import { CalendarFilterService } from '../calendar-filter.service';
 import { CalendarStateService } from './calendar-state.service';
 import { CalendarComponent } from './calendar.component';
 
-vi.mock('@angular/fire/firestore');
+vi.mock('firebase/firestore');
 
 describe('CalendarComponent', () => {
   let component: CalendarComponent;

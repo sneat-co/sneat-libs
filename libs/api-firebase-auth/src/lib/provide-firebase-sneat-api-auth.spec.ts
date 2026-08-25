@@ -4,7 +4,8 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
+import type { Auth } from 'firebase/auth';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import {
   SneatApiNotAuthenticatedError,
   SneatApiService,
@@ -32,8 +33,7 @@ type TestUser = {
   getIdToken: (forceRefresh?: boolean) => Promise<string>;
 };
 let authMock: { currentUser: TestUser | null };
-vi.mock('@angular/fire/auth', () => ({
-  Auth: class Auth {},
+vi.mock('firebase/auth', () => ({
   onIdTokenChanged: (_auth: unknown, observer: unknown) => {
     listener(observer);
     return vi.fn();
@@ -51,7 +51,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: authMock },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -88,7 +88,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: authMock },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -129,7 +129,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: authMock },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -149,7 +149,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: authMock },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -206,7 +206,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: authMock },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         FirebaseSneatApiAuthAdapter,
       ],
     });
@@ -249,7 +249,7 @@ describe('FirebaseSneatApiAuthAdapter', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: authMock },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         provideFirebaseSneatApiAuth(),
       ],
     });

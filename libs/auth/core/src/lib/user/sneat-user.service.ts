@@ -13,7 +13,7 @@ import {
   doc,
   onSnapshot,
   Unsubscribe,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { IUserRecord } from '@sneat/auth-models';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
