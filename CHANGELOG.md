@@ -1,3 +1,14 @@
+## 0.26.5 (2026-08-25)
+
+### 🚀 Features
+
+- **app-auth,auth-core:** add @angular/fire-free Firebase providers and auth guard ([a292975](https://github.com/sneat-co/sneat-libs/commit/a292975))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Fable 5
+
 ## 0.26.4 (2026-08-24)
 
 ### 🩹 Fixes
