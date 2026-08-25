@@ -1,5 +1,5 @@
 import { Injectable, NgModule, inject, Injector } from '@angular/core';
-import { Firestore as AngularFirestore } from '@angular/fire/firestore';
+import { Firestore as AngularFirestore } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { ICalendarDayBrief, ICalendarDayDbo } from '@sneat/extension-calendarius-contract';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';

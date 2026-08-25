@@ -40,7 +40,7 @@ import {
 import { getRedirectResult } from 'firebase/auth';
 import { filter } from 'rxjs';
 import posthog from 'posthog-js';
-import { getAngularFireProviders } from './init-firebase';
+import { provideSneatFirebase } from './provide-sneat-firebase';
 
 @Injectable()
 export class SneatAuthenticatedLifecycle {
@@ -102,7 +102,7 @@ export function provideSneatAuthenticatedProviders(
     provideChunkLoadErrorRecovery(),
     { provide: EnvConfigToken, useValue: config },
     { provide: LOGGER_FACTORY, useValue: loggerFactory },
-    ...getAngularFireProviders(config.firebaseConfig),
+    provideSneatFirebase(config.firebaseConfig),
     provideFirebaseSneatApiAuth(),
     provideSneatAnalytics(config),
     SneatAuthStateService,

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HappeningService, ICreateHappeningRequest } from './happening.service';
 import { SneatApiService } from '@sneat/api';
 import { ErrorLogger } from '@sneat/core';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { HappeningStatus, IHappeningContext } from '@sneat/extension-calendarius-contract';
@@ -14,7 +14,7 @@ vi.mock('@sneat/space-services', () => ({
   },
 }));
 
-vi.mock('@angular/fire/firestore', () => ({
+vi.mock('firebase/firestore', () => ({
   Firestore: vi.fn(),
   orderBy: vi.fn(),
 }));

@@ -1,10 +1,14 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
 import { ToastController } from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
 import { UserRecordService } from '@sneat/auth-core';
-import { AnalyticsService, APP_INFO, ErrorLogger } from '@sneat/core';
+import {
+  AnalyticsService,
+  APP_INFO,
+  ErrorLogger,
+  SNEAT_FIREBASE_AUTH,
+} from '@sneat/core';
 import { RandomIdService } from '@sneat/random';
 import { EmailLoginFormComponent } from './email-login-form.component';
 
@@ -29,7 +33,7 @@ describe('EmailLoginFormComponent', () => {
           useValue: { logError: vi.fn(), logErrorHandler: () => vi.fn() },
         },
         { provide: ToastController, useValue: { create: vi.fn() } },
-        { provide: Auth, useValue: {} },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: {} },
         {
           provide: RandomIdService,
           useValue: { newRandomId: () => 'test-id' },

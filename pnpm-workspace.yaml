@@ -17,7 +17,6 @@ peerDependencyRules:
     - '@sneat/*'
     - '@ionic/angular'
     - firebase
-    - '@angular/fire'
     - '@sentry/angular'
     - posthog-js
     - '@sneat/random'

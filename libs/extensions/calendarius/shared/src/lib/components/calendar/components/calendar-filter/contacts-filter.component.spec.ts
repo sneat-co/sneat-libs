@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService, SneatUserService } from '@sneat/auth-core';
 import { CONTACTUS_SPACE_SERVICE } from '@sneat/extension-contactus-contract';
@@ -19,7 +19,7 @@ import { ClassName } from '@sneat/ui';
 import { of } from 'rxjs';
 import { ContactsFilterComponent } from './contacts-filter.component';
 
-vi.mock('@angular/fire/firestore');
+vi.mock('firebase/firestore');
 
 describe('ContactsFilterComponent', () => {
   let component: ContactsFilterComponent;

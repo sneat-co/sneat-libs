@@ -9,22 +9,19 @@ import {
   EnumAsUnionOfKeys,
   EnvConfigToken,
   IAnalyticsService,
+  SNEAT_FIREBASE_AUTH,
 } from '@sneat/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { Injectable, inject } from '@angular/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { distinctUntilChanged, shareReplay } from 'rxjs/operators';
 import {
-  Auth,
   AuthProvider,
   getAuth,
   signInWithCredential,
   User,
   UserCredential,
   UserInfo,
-} from '@angular/fire/auth';
-
-import {
   GoogleAuthProvider,
   OAuthProvider,
   GithubAuthProvider,
@@ -70,7 +67,7 @@ export class SneatAuthStateService {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
-  readonly fbAuth = inject(Auth);
+  readonly fbAuth = inject(SNEAT_FIREBASE_AUTH);
 
   // Web OAuth sign-in strategy from the app's environment config (default popup).
   private readonly signInMethod =

@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { ErrorLogger } from '@sneat/core';
 import { of } from 'rxjs';
 import { CalendarDayService } from './calendar-day.service';
 
-vi.mock('@angular/fire/firestore');
+vi.mock('firebase/firestore');
 
 describe('CalendarDayService', () => {
   beforeEach(() => {

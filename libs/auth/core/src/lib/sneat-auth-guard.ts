@@ -1,68 +1,29 @@
 import {
   ActivatedRouteSnapshot,
-  // CanActivate,
-  // CanActivateChild,
-  // CanLoad,
   Route,
-  Router,
   RouterStateSnapshot,
   UrlSegment,
   UrlTree,
 } from '@angular/router';
 import { Observable } from 'rxjs';
-import { Injectable, inject } from '@angular/core';
-import { Auth } from '@angular/fire/auth';
-import { map } from 'rxjs/operators';
-import { AuthPipe } from '@angular/fire/auth-guard';
-
-type AuthCanLoadPipeGenerator = (
-  route: Route,
-  segments: UrlSegment[],
-) => AuthPipe;
+import { Injectable } from '@angular/core';
 
 /**
- * Strip the document's `<base href>` prefix from a browser pathname, returning a
- * router-relative path.
+ * Permissive class-based route guard: every hook returns `true`.
  *
- * Apps mounted under a base href (e.g. `/app/` in the Sneat site-hosting
- * pattern) have a `location.pathname` of `/app/new-game`, but the Angular Router
- * matches routes relative to the base href (`new-game`). Feeding the un-stripped
- * pathname back into the router after login fails to match any route (NG04002).
+ * @deprecated Prefer the functional `sneatAuthGuard`
+ * (`./redirect-to-login.guard`), which actually blocks an unauthenticated
+ * visitor and redirects them to `/login`. This guard admits everyone — it
+ * never gated anything — and is kept only so existing route configs
+ * referencing `SNEAT_AUTH_GUARDS` keep compiling.
+ *
+ * As of 0.27.0 it no longer injects Firebase `Auth`: the injected instance was
+ * never read, and that injection is what coupled this file to `@angular/fire`.
  */
-function routerRelativePath(pathname: string): string {
-  const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
-  if (baseHref === '/' || baseHref === '') {
-    return pathname;
-  }
-  const base = baseHref.replace(/\/$/, ''); // '/app/' -> '/app'
-  if (pathname === base) {
-    return '/';
-  }
-  if (pathname.startsWith(base + '/')) {
-    return pathname.slice(base.length); // '/app/new-game' -> '/new-game'
-  }
-  return pathname;
-}
-
-export const redirectToLoginIfNotSignedIn: AuthPipe = map((user) => {
-  if (user) {
-    return true;
-  }
-  const path = routerRelativePath(location.pathname);
-  let url = '/login';
-  if (path != '/') {
-    url += '#' + path;
-  }
-  return url;
-});
-
 @Injectable({
   providedIn: 'root',
 })
-export class SneatAuthGuard /*implements CanLoad, CanActivate, CanActivateChild*/ {
-  private readonly router = inject(Router);
-  private readonly auth = inject(Auth);
-
+export class SneatAuthGuard {
   public canLoad(
     _route: Route,
     _segments: UrlSegment[],
@@ -71,61 +32,29 @@ export class SneatAuthGuard /*implements CanLoad, CanActivate, CanActivateChild*
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    {
-      // console.log('SneatAuthGuard.canLoad', route, segments);
-      // const authPipeFactory =
-      // 	(route.data && route.data['authCanLoadGuardPipe'] as AuthCanLoadPipeGenerator) ||
-      // 	(() => redirectToLoginIfNotSignedIn);
-      // const subj = new Subject<boolean>();
-      // onAuthStateChanged(this.auth, {
-      // 	next: (user) => {
-      // 		console.log('onAuthStateChanged', user);
-      // 	}
-      // })
-      // return this.auth.user.pipe(
-      // 	map((user) => {
-      // 		console.log('user', user);
-      // 		return user;
-      // 	}),
-      // 	take(1),
-      // 	authPipeFactory(route, segments),
-      // 	map((can) => {
-      // 		console.log('can', can);
-      // 		if (typeof can === 'boolean') {
-      // 			return can;
-      // 		} else if (Array.isArray(can)) {
-      // 			return this.router.createUrlTree(can);
-      // 		} else {
-      // 			return this.router.parseUrl(can);
-      // 		}
-      // 	}),
-      // );
-      return true;
-    }
+    return true;
   }
 
   public canActivate(
     _route: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot, //: Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree
+    _state: RouterStateSnapshot,
   ) {
-    // console.log('SneatAuthGuard.canActivate', route, state);
     return true;
   }
 
   canActivateChild(
     _childRoute: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot, // : Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree
+    _state: RouterStateSnapshot,
   ) {
-    // console.log('SneatAuthGuard.canActivateChild', childRoute, state);
     return true;
   }
 }
 
-export const canLoad = (pipe?: AuthCanLoadPipeGenerator) => ({
-  canLoad: [SneatAuthGuard],
-  data: { authCanLoadGuardPipe: pipe },
-});
-
+/**
+ * @deprecated Use `{ canActivate: [sneatAuthGuard] }` instead — see
+ * `./redirect-to-login.guard`. Retained for route configs that still reference
+ * it; both hooks resolve to the permissive `SneatAuthGuard` above.
+ */
 export const SNEAT_AUTH_GUARDS = {
   canActivate: [SneatAuthGuard],
   canLoad: [SneatAuthGuard],

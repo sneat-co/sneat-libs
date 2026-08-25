@@ -1,10 +1,14 @@
 import { TestBed } from '@angular/core/testing';
-import { Analytics, logEvent, setUserId, setUserProperties } from '@angular/fire/analytics';
-import { ErrorLogger, IErrorLogger } from '@sneat/core';
+import type { Analytics } from 'firebase/analytics';
+import { logEvent, setUserId, setUserProperties } from 'firebase/analytics';
+import {
+  ErrorLogger,
+  IErrorLogger,
+  SNEAT_FIREBASE_ANALYTICS,
+} from '@sneat/core';
 import { FireAnalyticsService } from './fire-analytics.service';
 
-vi.mock('@angular/fire/analytics', () => ({
-  Analytics: class {},
+vi.mock('firebase/analytics', () => ({
   logEvent: vi.fn(),
   setUserId: vi.fn(),
   setUserProperties: vi.fn(),
@@ -30,7 +34,7 @@ describe('FireAnalyticsService', () => {
           useValue: errorLogger,
         },
         {
-          provide: Analytics,
+          provide: SNEAT_FIREBASE_ANALYTICS,
           useValue: analytics,
         },
       ],
@@ -55,7 +59,7 @@ describe('FireAnalyticsService', () => {
             useValue: null,
           },
           {
-            provide: Analytics,
+            provide: SNEAT_FIREBASE_ANALYTICS,
             useValue: analytics,
           },
         ],
@@ -78,7 +82,7 @@ describe('FireAnalyticsService', () => {
             useValue: errorLogger,
           },
           {
-            provide: Analytics,
+            provide: SNEAT_FIREBASE_ANALYTICS,
             useValue: null,
           },
         ],
@@ -88,6 +92,61 @@ describe('FireAnalyticsService', () => {
         expect.stringContaining('!analytics')
       );
       consoleSpy.mockRestore();
+    });
+  });
+
+  // New in 0.27.0: SNEAT_FIREBASE_ANALYTICS is nullable by contract — it
+  // resolves to null (rather than throwing NullInjectorError, as
+  // @angular/fire's Analytics token did) when the app has no real
+  // measurementId. Every method must then no-op silently rather than call the
+  // SDK with null and report a failure on each event.
+  describe('with analytics unavailable (token resolves to null)', () => {
+    let nullAnalyticsService: FireAnalyticsService;
+
+    beforeEach(() => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          FireAnalyticsService,
+          { provide: ErrorLogger, useValue: errorLogger },
+          { provide: SNEAT_FIREBASE_ANALYTICS, useValue: null },
+        ],
+      });
+      nullAnalyticsService = TestBed.inject(FireAnalyticsService);
+      consoleSpy.mockRestore();
+      vi.clearAllMocks();
+    });
+
+    it('logEvent should not call the SDK and should not report an error', () => {
+      nullAnalyticsService.logEvent('test_event', { param1: 'value1' });
+
+      expect(logEvent).not.toHaveBeenCalled();
+      expect(errorLogger.logError).not.toHaveBeenCalled();
+    });
+
+    it('setCurrentScreen should not call the SDK and should not report an error', () => {
+      nullAnalyticsService.setCurrentScreen('HomeScreen');
+
+      expect(logEvent).not.toHaveBeenCalled();
+      expect(errorLogger.logError).not.toHaveBeenCalled();
+    });
+
+    it('identify should not call the SDK and should not report an error', () => {
+      nullAnalyticsService.identify('user123', { name: 'John' });
+
+      expect(setUserId).not.toHaveBeenCalled();
+      expect(setUserProperties).not.toHaveBeenCalled();
+      expect(errorLogger.logError).not.toHaveBeenCalled();
+    });
+
+    it('loggedOut should not call the SDK and should not report an error', () => {
+      nullAnalyticsService.loggedOut();
+
+      expect(setUserId).not.toHaveBeenCalled();
+      expect(errorLogger.logError).not.toHaveBeenCalled();
     });
   });
 

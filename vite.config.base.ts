@@ -46,7 +46,6 @@ export function createBaseViteConfig(
         '@angular/router',
         '@angular/cdk',
         '@angular/material',
-        '@angular/fire',
         'rxjs',
       ],
       alias: [
@@ -54,6 +53,31 @@ export function createBaseViteConfig(
         //					find: '@ionic/core/components',
         //					replacement: '@ionic/core/components/index.js',
         //				},
+        // TRANSITIONAL — see the 0.27.0 `@angular/fire` removal.
+        //
+        // sneat-libs itself no longer imports `@angular/fire` anywhere, and the
+        // package is gone from every package.json. One npm dependency still
+        // does: the precompiled `@sneat/extension-contactus-ui` bundle (0.13.9,
+        // the newest published, still peer-depends on `@angular/fire@^20`) does
+        // `import { Firestore } from '@angular/fire/firestore'` and then
+        // `inject(Firestore)`.
+        //
+        // @angular/fire's `Firestore` is a pure pass-through DI shim —
+        // `class Firestore { constructor(firestore) { return firestore; } }` —
+        // over the modular SDK's real `Firestore` class, so pointing the
+        // specifier straight at `firebase/firestore` hands that bundle the same
+        // class sneat-libs now provides. That makes the DI token identical
+        // instead of merely similar, which is what lets its `inject(Firestore)`
+        // resolve against `provideSneatFirebase()`.
+        //
+        // This alias only covers THIS workspace's builds and tests. Consuming
+        // apps that use @sneat/extension-contactus-ui need the same alias in
+        // their own bundler config until a fire-free contactus-ui is published
+        // — which is the real fix. See the PR body.
+        {
+          find: /^@angular\/fire\/firestore$/,
+          replacement: 'firebase/firestore',
+        },
       ],
     },
     plugins: [
@@ -108,7 +132,6 @@ export function createBaseViteConfig(
         deps: {
           inline: [
             '@ionic/angular',
-            '@angular/fire',
             /@angular\//,
             /@stencil\//,
             /tslib/,

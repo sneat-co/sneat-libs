@@ -4,8 +4,8 @@ import {
   setupGlobalMocks,
 } from './base-test-setup';
 import { ErrorLogger } from '../logging/interfaces';
-import { Firestore } from '@angular/fire/firestore';
-import { Auth } from '@angular/fire/auth';
+import { Firestore } from 'firebase/firestore';
+import { SNEAT_FIREBASE_AUTH } from '../firebase.tokens';
 import { AnalyticsService } from '../analytics.interface';
 
 export function configureGlobalTestBed() {
@@ -29,7 +29,7 @@ export function configureGlobalTestBed() {
           },
         },
         {
-          provide: Auth,
+          provide: SNEAT_FIREBASE_AUTH,
           useValue: {
             onIdTokenChanged: vi.fn(() => () => void 0),
             onAuthStateChanged: vi.fn(() => () => void 0),
@@ -59,6 +59,23 @@ export function configureGlobalTestBed() {
  * import { setupTestEnvironment } from '@sneat/core/testing';
  * setupTestEnvironment();
  * ```
+ *
+ * ## `@angular/fire`-free since @sneat/core 0.27.0
+ *
+ * The global TestBed above no longer provides `@angular/fire`'s `Firestore`
+ * and `Auth` tokens. It provides `Firestore` from `firebase/firestore` (a real
+ * class in the modular SDK, so it doubles as its own DI token) and
+ * `SNEAT_FIREBASE_AUTH` from `@sneat/core`. A repo re-syncing this file must
+ * make the same swap in its own specs:
+ *
+ * - `import { Firestore } from '@angular/fire/firestore'`
+ *   → `import { Firestore } from 'firebase/firestore'`
+ * - `{ provide: Auth, … }` (from `@angular/fire/auth`)
+ *   → `{ provide: SNEAT_FIREBASE_AUTH, … }` (from `@sneat/core`)
+ * - `vi.mock('@angular/fire/firestore')` → `vi.mock('firebase/firestore')`
+ *
+ * and drop `@angular/fire` from its own `package.json` and its
+ * `resolve.dedupe`/`server.deps.inline` lists.
  *
  * ## Zoneless since @sneat/core 0.26.5
  *

@@ -9,7 +9,7 @@ import {
   Firestore as AngularFirestore,
   CollectionReference,
   collection,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService, SneatFirestoreService } from '@sneat/api';
 import {
   AuthStatus,

@@ -1,16 +1,17 @@
 import {
   EnvironmentProviders,
-  InjectionToken,
   inject,
   makeEnvironmentProviders,
 } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { IFirebaseConfig } from '@sneat/core';
-import { FirebaseApp, initializeApp } from 'firebase/app';
 import {
-  Analytics,
-  getAnalytics,
-} from 'firebase/analytics';
+  IFirebaseConfig,
+  SNEAT_FIREBASE_ANALYTICS,
+  SNEAT_FIREBASE_APP,
+  SNEAT_FIREBASE_AUTH,
+} from '@sneat/core';
+import { FirebaseApp, initializeApp } from 'firebase/app';
+import { Analytics, getAnalytics } from 'firebase/analytics';
 import {
   Auth,
   connectAuthEmulator,
@@ -30,38 +31,20 @@ import {
 export { Firestore } from 'firebase/firestore';
 
 /**
- * DI token for the app's initialized `firebase/app` `FirebaseApp` instance.
+ * The three Firebase instance tokens now live in `@sneat/core` — every lib
+ * that injects them (`@sneat/auth-core`, `@sneat/logging`,
+ * `@sneat/api-firebase-auth`) sits *below* `@sneat/app-auth` in the graph, so
+ * declaring them here would force a dependency cycle. They are re-exported so
+ * `import { SNEAT_FIREBASE_AUTH } from '@sneat/app-auth'` — the path
+ * documented when they shipped — keeps working unchanged.
  *
- * `FirebaseApp` is a plain interface in the modular SDK (no runtime class),
- * so — unlike `Firestore` — it cannot be used as an injection token by
- * itself; inject this token instead, e.g. `inject(SNEAT_FIREBASE_APP)`.
+ * @see `@sneat/core`'s `firebase.tokens.ts` for the full rationale.
  */
-export const SNEAT_FIREBASE_APP = new InjectionToken<FirebaseApp>(
-  'SNEAT_FIREBASE_APP',
-);
-
-/**
- * DI token for the app's initialized `firebase/auth` `Auth` instance.
- * Same rationale as `SNEAT_FIREBASE_APP`: `Auth` is interface-only upstream.
- */
-export const SNEAT_FIREBASE_AUTH = new InjectionToken<Auth>(
-  'SNEAT_FIREBASE_AUTH',
-);
-
-/**
- * DI token for the app's `firebase/analytics` `Analytics` instance.
- *
- * Resolves to `null` — never throws — when analytics isn't configured (no
- * real `measurementId`, using the fleet's `'G-PROVIDE_IF_NEEDED'` sentinel)
- * or when `getAnalytics()` throws in an environment that doesn't support it
- * (SSR, some webviews, privacy-hardened browsers). The factory only runs the
- * first time something actually injects this token, so an app that never
- * injects it never pays for Analytics initialization at all — consumers must
- * treat the value as optional either way.
- */
-export const SNEAT_FIREBASE_ANALYTICS = new InjectionToken<Analytics | null>(
-  'SNEAT_FIREBASE_ANALYTICS',
-);
+export {
+  SNEAT_FIREBASE_APP,
+  SNEAT_FIREBASE_AUTH,
+  SNEAT_FIREBASE_ANALYTICS,
+} from '@sneat/core';
 
 function emulatorAllowed(enabled: boolean): boolean {
   if (!enabled) return false;
@@ -75,24 +58,20 @@ function emulatorAllowed(enabled: boolean): boolean {
 }
 
 /**
- * `@angular/fire`-free replacement for `getAngularFireProviders()` (see
- * `./init-firebase`). Initializes the firebase modular SDK directly
- * (`initializeApp`/`getFirestore`/`getAuth`/`getAnalytics`) and provides
- * `FirebaseApp`, `Firestore`, `Auth`, and `Analytics` through Angular DI —
- * `inject(Firestore)`, `inject(SNEAT_FIREBASE_AUTH)`, etc. — with no
- * `@angular/fire` import anywhere in this file or its call graph.
+ * The single Firebase bootstrap for a Sneat app. Initializes the firebase
+ * modular SDK directly (`initializeApp`/`getFirestore`/`getAuth`/
+ * `getAnalytics`) and provides `FirebaseApp`, `Firestore`, `Auth` and
+ * `Analytics` through Angular DI — `inject(Firestore)`,
+ * `inject(SNEAT_FIREBASE_AUTH)`, etc.
  *
- * Emulator wiring (`connectFirestoreEmulator`/`connectAuthEmulator`) mirrors
- * `getAngularFireProviders()` exactly, including the Capacitor native-vs-web
- * Auth persistence split and the firestore-emulator-over-443 SSL flag flip.
+ * Emulator wiring (`connectFirestoreEmulator`/`connectAuthEmulator`) includes
+ * the Capacitor native-vs-web Auth persistence split and the
+ * firestore-emulator-over-443 SSL flag flip.
  *
- * NOT YET wired into `provideSneatAuthenticatedProviders()` / the fleet's
- * bootstrap chain. sneat-libs' own internals (`SneatAuthStateService`,
- * `FirebaseSneatApiAuthAdapter`, the analytics fan-out, …) still depend on
- * `@angular/fire`'s `Auth`/`Firestore`/`Analytics` tokens, and cutting them
- * over is a separate, larger pass — see the Step 1 PR description. This
- * function exists standalone so it can be adopted incrementally, and so its
- * own DI wiring is exercised and tested ahead of that cutover.
+ * This replaced `getAngularFireProviders()`, removed in @sneat/app-auth
+ * 0.27.0 along with the `@angular/fire` dependency itself.
+ * `provideSneatAuthenticatedProviders()` calls it for you; call it directly
+ * only in an app that wires its own authenticated route providers.
  */
 export function provideSneatFirebase(
   firebaseConfig: IFirebaseConfig,

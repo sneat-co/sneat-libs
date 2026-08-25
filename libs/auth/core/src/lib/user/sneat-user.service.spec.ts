@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import {
   Firestore as AngularFirestore,
   CollectionReference,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { ErrorLogger } from '@sneat/core';
 import {
@@ -15,8 +15,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of, Subject, firstValueFrom } from 'rxjs';
 
 // Mock firestore functions
-vi.mock('@angular/fire/firestore', async () => {
-  const actual = await vi.importActual('@angular/fire/firestore');
+vi.mock('firebase/firestore', async () => {
+  const actual = await vi.importActual('firebase/firestore');
   return {
     ...actual,
     collection: vi

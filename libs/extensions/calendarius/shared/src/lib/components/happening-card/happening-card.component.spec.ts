@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController, NavController } from '@ionic/angular';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService, SneatUserService } from '@sneat/auth-core';
 import {
@@ -21,7 +21,7 @@ import { HappeningService } from '../../services/happening.service';
 import { HappeningBaseComponentParams } from '../happening-base.component';
 import { HappeningCardComponent } from './happening-card.component';
 
-vi.mock('@angular/fire/firestore');
+vi.mock('firebase/firestore');
 
 describe('HappeningCardComponent', () => {
   let component: HappeningCardComponent;

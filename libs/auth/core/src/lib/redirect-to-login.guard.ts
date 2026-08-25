@@ -7,8 +7,8 @@ import { AuthStatuses, SneatAuthStateService } from './sneat-auth-state-service'
  * Redirect target for an unauthenticated visitor: `/login`, or
  * `/login#<path>` for a non-root path so the login page can send them back
  * to it after signing in. Matches the URL shape the fleet's
- * `@angular/fire/auth-guard`-based `redirectToLoginIfNotSignedIn` pipe (see
- * `./sneat-auth-guard`) has always produced.
+ * `@angular/fire/auth-guard`-based `redirectToLoginIfNotSignedIn` pipe always
+ * produced — that pipe was removed in 0.27.0 together with `@angular/fire`.
  */
 export function loginRedirectPath(path: string): string {
   return path && path !== '/' ? `/login#${path}` : '/login';
@@ -16,7 +16,7 @@ export function loginRedirectPath(path: string): string {
 
 /**
  * Functional route guard — the `@angular/fire`-free replacement for the
- * fleet's one uniform pattern:
+ * fleet's one uniform pattern. Before 0.27.0 a protected route read:
  *
  *   import { AuthGuard } from '@angular/fire/auth-guard';
  *   import { redirectToLoginIfNotSignedIn } from '@sneat/auth-core';
@@ -25,7 +25,8 @@ export function loginRedirectPath(path: string): string {
  *     data: { authGuardPipe: () => redirectToLoginIfNotSignedIn },
  *   }
  *
- * becomes simply:
+ * Since 0.27.0 — where both `AuthGuard` and `redirectToLoginIfNotSignedIn`
+ * are gone — it reads simply:
  *
  *   import { sneatAuthGuard } from '@sneat/auth-core';
  *   { canActivate: [sneatAuthGuard] }
@@ -34,9 +35,13 @@ export function loginRedirectPath(path: string): string {
  * the attempted path as a hash fragment). Driven entirely by Sneat's own
  * `SneatAuthStateService` — no `@angular/fire` `Auth`/`AuthPipe` involved.
  *
+ * The attempted path comes from `RouterStateSnapshot.url`, which is already
+ * router-relative, so this needs none of the `<base href>` stripping the old
+ * `location.pathname`-based pipe did.
+ *
  * Waits out the initial `'authenticating'` status (Firebase hasn't resolved
- * the session yet) before deciding, exactly like the fleet's current
- * `user(auth).pipe(take(1), redirectToLoginIfNotSignedIn)` composition does.
+ * the session yet) before deciding, exactly like the old
+ * `user(auth).pipe(take(1), redirectToLoginIfNotSignedIn)` composition did.
  */
 export const sneatAuthGuard: CanActivateFn = async (
   _route,
