@@ -8,7 +8,7 @@ as its end-to-end harness.
 
 | Artifact | Package | Home | Purpose |
 | --- | --- | --- | --- |
-| Contract | `@sneat/extension-<id>-contract` | `sneat-co/ext-<id>` | Public types, DTOs, tokens and interfaces. |
+| Contract | `@sneat/extension-<id>-contract` | `libs/<id>/` in `sneat-co/sneat-ext-contracts` (default) — or `sneat-co/ext-<id>`, only by explicit founder decision | Public types, DTOs, tokens and interfaces. |
 | Runtime | `@sneat/extension-<id>` | `<id>/frontend/libs/extensions/<id>/runtime` | Providers, routes, pages and implementations used by host apps. |
 | UI | `@sneat/extension-<id>-ui` | `<id>/frontend/libs/extensions/<id>/ui` | Optional components/pipes intentionally reused by other source libraries. |
 
@@ -17,8 +17,11 @@ extension or app library needs reusable UI. Otherwise pages and components stay 
 runtime; speculative packages are not generated.
 
 Every publishable package has `publishConfig.access=public`. Runtime plus UI form a
-fixed Nx release group and share a version. The contract repository releases
-independently and first.
+fixed Nx release group and share a version. The contract releases independently
+and first, from whichever repo currently owns it — by default
+`sneat-ext-contracts`; see
+[`extension-standards/README.md`](./README.md#contract-home) for the default
+vs. standalone-exception split.
 
 ## Runtime public API
 
