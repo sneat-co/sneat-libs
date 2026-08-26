@@ -162,8 +162,8 @@ export class UserCountryComponent
       },
       error: (err) => {
         this.errorLogger.logError(
-          'UserCountryComponent: Failed to set user country',
           err,
+          'UserCountryComponent: Failed to set user country',
         );
         this.$saving.set(false);
       },
