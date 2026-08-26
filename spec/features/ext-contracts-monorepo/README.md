@@ -11,7 +11,7 @@ status: Draft
 
 ## Summary
 
-Consolidate every extension contract package into a single `sneat-ext-contracts` repository (working name — see Open Questions) with per-contract independent versioning, superseding the per-extension contract repo convention ([extension-contract-repo](../extension-contract-repo/README.md)). npm package names do not change; only sources and publish pipelines move. Founder decisions recorded 2026-08-26: consolidation approved; per-contract (independent) versioning approved.
+Consolidate every extension contract package into a single `sneat-ext-contracts` repository (name decided 2026-08-26) with per-contract independent versioning, superseding the per-extension contract repo convention ([extension-contract-repo](../extension-contract-repo/README.md)). npm package names do not change; only sources and publish pipelines move. Founder decisions recorded 2026-08-26: consolidation approved; per-contract (independent) versioning approved.
 
 ## Problem
 
@@ -85,7 +85,7 @@ Phases execute in order; each family reaches the migration-operator good result 
 
 **Phase 5 — Cleanup and proof.** Retire the orphaned `@sneat/extension-eventus-contract` zombie (rsvp-express migrates to eventius names); delete dead `publish.yml` leftovers in the bookius and yardius product repos; correct `backstage/docs/repository-catalog.md`; supersede [extension-contract-repo](../extension-contract-repo/README.md) via `specscore feature change-status`; org-wide audit proving no repo outside the monorepo carries an armed workflow publishing any `@sneat/extension-*-contract` name.
 
-Go `backend/` contract halves are explicitly OUT of scope for these phases pending the Open Question below — the `ext-*` repos are archived only once their Go half's disposition is decided; until then Phase 1/2 disarms their npm pipelines but leaves the repos unarchived if a Go module is present.
+Go `backend/` contract halves follow option (b) per the Decisions section: each family's Phase 1/2 step gains a Go leg — move the `backend/` module to `<name>/` in the monorepo, rewrite that family's Go consumers in one coordinated step, mark the old module `Deprecated:` in its go.mod, and prove via a compile sweep that no consumer mixes old and new paths. Phase 0 must first deliver the shared cicd per-module tagging workflow; until it exists, families migrate their npm side only and their `ext-*` repos stay unarchived.
 
 ## Acceptance Criteria
 
@@ -96,10 +96,13 @@ Go `backend/` contract halves are explicitly OUT of scope for these phases pendi
 - `extension-contract-repo` is Superseded via specscore CLI status change, referencing this feature.
 - Each archived `ext-*` repo's description points to the monorepo.
 
+## Decisions
+
+- **Repo name: `sneat-ext-contracts`** — decided by founder 2026-08-26. Names the contents; blocks runtime scope creep by construction.
+- **Go contract halves: option (b), full polyglot consolidation** — founder selection 2026-08-26, coordinator concurrence, subject to three riders now embedded in Behavior and the migration plan: (1) multi-module layout (one `go.mod` per extension, `github.com/sneat-co/sneat-ext-contracts/<name>`, tagged `<name>/v0.x.y`) for symmetry with per-contract npm versioning; (2) automated per-module tagging lands in the shared `sneat-co/cicd` workflow during Phase 0 — the Go side does not start without it, or manual multi-module tags would recreate the tag-desync disease this feature cures; (3) per-family atomic cutover — old and new import paths are different Go types, so each family's consumer rewrite lands complete in one wave step, the old module immediately gains a go.mod `Deprecated:` notice, and a compile sweep proves no mixed-path usage remains. Accepted cost: Go version history does not carry across a module path change; each contract restarts Go versioning at the new path (cosmetic for frozen type-only modules).
+
 ## Open Questions
 
-- **Repo name** — `sneat-ext-contracts` (recommended: names the contents, blocks runtime scope creep) vs `sneat-extensions` (founder-floated; right only if the repo is ever intended to absorb more than contracts). Blocks Phase 0.
-- **Go contract halves** — the superseded convention made `ext-<name>` polyglot (Go `backend/` + npm `frontend/`). Go modules are import-path-addressed, so unlike npm the Go side CANNOT move consumer-invisibly: options are (a) consolidate npm only and keep Go contract modules where they are (splits the pairing; `ext-*` repos live on as Go-only), (b) full polyglot consolidation as a multi-module Go repo with a coordinated import-path rewrite across backend consumers, (c) fold Go contract types into the `sneat-go-core`/core-modules layer. Founder decision; blocks archiving any `ext-*` repo that has a `backend/`, but not the npm phases.
 - **Archived repo disposition** — archive read-only (recommended: preserves history and incoming links) vs delete.
 - **calendarius cutover steps** — filled in from the impact analysis when it reports (Phase 4 gate).
 
