@@ -1,3 +1,14 @@
+## 0.27.2 (2026-08-26)
+
+### 🩹 Fixes
+
+- fix: correct swapped logError(e, message) arguments so server error details reach the user ([cb555cf](https://github.com/sneat-co/sneat-libs/commit/cb555cf))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 5
+
 ## 0.27.1 (2026-08-26)
 
 ### 🚀 Features
