@@ -25,8 +25,6 @@ module.exports = [
       // The load-bearing rule is `type:shared` must NEVER depend on `type:internal`.
       // Transitional allowance (scope:app) covers pre-existing coupling from the
       // extensions into the app layer; remove it once the app exposes a contract.
-      // (ext:calendarius allowance was removed after calendarius adopted the
-      // contract/shared/internal convention — cross-extension access is now via its contract.)
       '@nx/enforce-module-boundaries': [
         'error',
         {
