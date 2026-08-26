@@ -310,24 +310,6 @@ importers:
         specifier: 2.8.1
         version: 2.8.1
 
-  libs/extensions/calendarius/contract:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/extensions/calendarius/internal:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
-  libs/extensions/calendarius/shared:
-    dependencies:
-      tslib:
-        specifier: 2.8.1
-        version: 2.8.1
-
   libs/grid:
     dependencies:
       tslib:

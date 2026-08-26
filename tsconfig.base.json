@@ -84,9 +84,6 @@
       "@sneat/space-services": [
         "libs/space/services/src/index.ts"
       ],
-      "@sneat/extension-calendarius-contract": [
-        "libs/extensions/calendarius/contract/src/index.ts"
-      ],
       "@sneat/app": [
         "libs/app/src/index.ts"
       ],
@@ -107,9 +104,6 @@
       ],
       "@sneat/wizard": [
         "libs/wizard/src/index.ts"
-      ],
-      "@sneat/extension-calendarius-shared": [
-        "libs/extensions/calendarius/shared/src/index.ts"
       ],
       "@sneat/space-nav-ionic": [
         "libs/space/nav-ionic/src/index.ts"
