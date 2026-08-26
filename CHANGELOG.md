@@ -1,3 +1,13 @@
+## 0.27.1 (2026-08-26)
+
+### 🚀 Features
+
+- port EventHappening contract (event-happening.ts + happening.ts pricing/planned-slot additions) from the abandoned ext-calendarius 0.24.1 lineage ([e99040f](https://github.com/sneat-co/sneat-libs/commit/e99040f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.0 (2026-08-25)
 
 ### ⚠️  Breaking Changes
