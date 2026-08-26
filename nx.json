@@ -88,7 +88,8 @@
     "projects": [
       "*",
       "!libs-demo",
-      "!libs-demo-e2e"
+      "!libs-demo-e2e",
+      "!ext-calendarius-contract"
     ],
     "projectsRelationship": "fixed",
     "versionPlans": true,
