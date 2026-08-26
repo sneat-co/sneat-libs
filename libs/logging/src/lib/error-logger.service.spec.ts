@@ -141,6 +141,31 @@ describe('ErrorLoggerService', () => {
       expect(captureException).not.toHaveBeenCalled();
       vi.unstubAllGlobals();
     });
+
+    it('should warn when arguments look swapped (string e, non-string message)', () => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      const err = new Error('real error');
+      service.logError('a plain message' as unknown, err as unknown as string);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('arguments look swapped'),
+        { e: 'a plain message', message: err },
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it('should NOT warn about swapped arguments for a plain string call with no message', () => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      service.logError('just an error string');
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining('arguments look swapped'),
+        expect.anything(),
+      );
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('showError', () => {

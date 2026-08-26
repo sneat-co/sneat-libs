@@ -127,7 +127,7 @@ export class UserRequiredFieldsModalComponent extends SneatBaseComponent {
     this.userRecordService.initUserRecord(request).subscribe({
       next: () => this.modalController.dismiss(true).catch(console.error),
       error: (err) => {
-        this.errorLogger.logError('Failed to init user record:', err);
+        this.errorLogger.logError(err, 'Failed to init user record:');
         alert('Failed to init user record');
         this.submitting = false;
       },
