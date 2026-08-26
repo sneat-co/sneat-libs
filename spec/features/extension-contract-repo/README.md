@@ -1,12 +1,12 @@
 ---
 format: https://specscore.md/feature-specification
-status: Approved
+status: Deprecated
 ---
 
 # Feature: Per-extension contract repo (`ext-<name>`) convention
 
 > [SpecScore.**Studio**](https://specscore.studio): | [Explore](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-contract-repo?op=explore) | [Edit](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-contract-repo?op=edit) | [Ask question](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-contract-repo?op=ask) | [Request change](https://specscore.studio/app/github.com/sneat-co/sneat-libs/spec/features/extension-contract-repo?op=request-change) |
-**Status:** Approved
+**Status:** Deprecated
 **Source Ideas:** per-extension-contract-repo
 
 ## Summary
