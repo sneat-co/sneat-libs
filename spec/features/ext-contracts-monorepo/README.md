@@ -81,7 +81,14 @@ Phases execute in order; each family reaches the migration-operator good result 
 
 **Phase 3 — Never-extracted in-repo contracts.** commitius, communitycentrum, sneatclub, togethered extract directly into the monorepo (skipping the `ext-*` generation); their product repos switch `workspace:*` → published versions. circleus's scaffold stub is either promoted to a real contract or explicitly dropped (task-level decision).
 
-**Phase 4 — calendarius (gated).** Blocked on the dependency-direction and divergence impact analysis (in flight 2026-08-26). Resolves the sneat-libs entanglement (moving genuinely platform-owned types into `@sneat/core` if the analysis finds any), moves the authoritative contract in, disarms `ext-calendarius`, and schedules retirement of sneat-libs's `-internal`/`-shared` copies behind their remaining consumers.
+**Phase 4 — calendarius (analysis complete 2026-08-26; founder decision: no special case — calendarius consolidates like every family).** The impact analysis found it CLEANLY EXTRACTABLE: zero sneat-libs code outside `libs/extensions/calendarius/` depends on it (it resided there only as the convention's second reference implementation), so no types move to `@sneat/core`. Steps:
+1. ✅ Disarm the dual publisher: `ext-calendarius`'s push-triggered `publish.yml` (the 2026-08-15 collision mechanism) is `disabled_manually` at repo level (2026-08-26); its PR #32 carries the in-file trigger removal, blocked on baseline-red required checks (coverage floor on the doomed frontend) pending an admin merge. sneat-libs is sole interim publisher.
+2. EventHappening port decision — OPEN, founder (see Open Questions).
+3. Migrate the last `-internal`/`-shared` consumers — assetus (3 apps) and logistus — onto `@sneat/extension-calendarius`(+`-ui`), mirroring sneat-apps PR #3489. Owner: the 0.27.0 fleet wave (after the calendarius product repo republishes with `^0.27.0` peers).
+4. Delete `libs/extensions/calendarius/{internal,shared}` from sneat-libs (gated on step 3); drop from the fixed-release projects list and tsconfig paths.
+5. Contract migrates to sneat-ext-contracts as a normal family step (source: sneat-libs's copy plus step 2's outcome), version continuing from npm's actual latest; remove `contract` from sneat-libs's release set.
+6. Go leg per option (b): `github.com/sneat-co/ext-calendarius/backend` → `sneat-ext-contracts/calendarius`, coordinated rewrite of its direct consumers (calendarius, gameboard, togethered, sneat-bots, sneat-go) and indirect (gametable, communitycentrum, sneat-cli, requoter), old module marked `Deprecated:`, compile sweep proves no mixed paths.
+7. Archive `ext-calendarius` once both halves are done; then sweep the ~30 declare-only `-contract` dependents (cargo-culted via `sneat-ext-template` — fix the template first) and the stale sneat-apps calendarius README.
 
 **Phase 5 — Cleanup and proof.** Retire the orphaned `@sneat/extension-eventus-contract` zombie (rsvp-express migrates to eventius names); delete dead `publish.yml` leftovers in the bookius and yardius product repos; correct `backstage/docs/repository-catalog.md`; supersede [extension-contract-repo](../extension-contract-repo/README.md) via `specscore feature change-status`; org-wide audit proving no repo outside the monorepo carries an armed workflow publishing any `@sneat/extension-*-contract` name.
 
@@ -104,7 +111,7 @@ Go `backend/` contract halves follow option (b) per the Decisions section: each 
 ## Open Questions
 
 - **Archived repo disposition** — archive read-only (recommended: preserves history and incoming links) vs delete.
-- **calendarius cutover steps** — filled in from the impact analysis when it reports (Phase 4 gate).
+- **EventHappening port (calendarius, Phase 4 step 2)** — founder decision: `ext-calendarius`'s abandoned 0.24.1 lineage contains ~340–400 lines of shipped, tested contract work absent from the consumed 0.27.0 line (`EventHappeningDto` hierarchy/recurrence contract + happening pricing/planned-slot validation), whose Go backend half is ALREADY LIVE in `calendarius/backend` (facade4calendarius event_happening_*). Port it forward into the consolidated contract (coordinator recommendation — abandoning orphans live server capability with no client contract expressing it), or explicitly abandon the planned-event feature scope.
 
 ---
 *This document follows the https://specscore.md/feature-specification*
