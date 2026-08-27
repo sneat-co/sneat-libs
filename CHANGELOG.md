@@ -1,3 +1,13 @@
+## 0.27.3 (2026-08-27)
+
+### 🩹 Fixes
+
+- Defer Firebase session startup and allow local subdomains ([d10da56](https://github.com/sneat-co/sneat-libs/commit/d10da56))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.2 (2026-08-26)
 
 ### 🩹 Fixes
