@@ -21,6 +21,7 @@ import { SneatUserService } from '@sneat/auth-core';
 import { of } from 'rxjs';
 import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { Firestore } from 'firebase/firestore';
+import { SpaceService } from '@sneat/space-services';
 
 @Component({
   selector: 'sneat-auth-menu-item',
@@ -81,6 +82,7 @@ describe('SpaceMenuComponent', () => {
           schemas: [CUSTOM_ELEMENTS_SCHEMA],
         },
       })
+      .overrideProvider(SpaceService, { useValue: {} })
       .compileComponents();
   });
 
