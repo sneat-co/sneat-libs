@@ -1,3 +1,13 @@
+## 0.27.4 (2026-08-27)
+
+### 🩹 Fixes
+
+- Avoid Ionic root barrels on Sneat.app bootstrap paths ([8fc7c2f](https://github.com/sneat-co/sneat-libs/commit/8fc7c2f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.3 (2026-08-27)
 
 ### 🩹 Fixes
