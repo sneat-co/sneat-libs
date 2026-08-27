@@ -10,6 +10,8 @@ import {
   SNEAT_FIREBASE_ANALYTICS,
   SNEAT_FIREBASE_APP,
   SNEAT_FIREBASE_AUTH,
+  provideSneatFirebaseAuth,
+  provideSneatFirestore,
   provideSneatFirebase,
 } from './provide-sneat-firebase';
 
@@ -119,6 +121,15 @@ function createInjector(config: IFirebaseConfig) {
   );
 }
 
+function createAuthOnlyInjector(config: IFirebaseConfig) {
+  const parent = TestBed.inject(EnvironmentInjector);
+  return createEnvironmentInjector(
+    [provideSneatFirebaseAuth(config)],
+    parent,
+    'sneat-firebase-auth-test',
+  );
+}
+
 describe('provideSneatFirebase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -137,6 +148,31 @@ describe('provideSneatFirebase', () => {
       expect.objectContaining({ projectId: 'test' }),
     );
     injector.destroy();
+  });
+
+  it('keeps Firestore and Firebase Analytics out of an auth-only shell', () => {
+    const injector = createAuthOnlyInjector(baseConfig());
+
+    expect(injector.get(SNEAT_FIREBASE_AUTH)).toBe(mocks.auth);
+    expect(injector.get(Firestore, null)).toBeNull();
+    expect(injector.get(SNEAT_FIREBASE_ANALYTICS, null)).toBeNull();
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
+    expect(mocks.getAnalytics).not.toHaveBeenCalled();
+    injector.destroy();
+  });
+
+  it('adds Firestore only in a child data injector', () => {
+    const authInjector = createAuthOnlyInjector(baseConfig());
+    const dataInjector = createEnvironmentInjector(
+      [provideSneatFirestore(baseConfig())],
+      authInjector,
+      'sneat-firebase-data-test',
+    );
+
+    expect(dataInjector.get(Firestore)).toBe(mocks.firestore);
+    expect(mocks.getFirestore).toHaveBeenCalledWith(mocks.app);
+    dataInjector.destroy();
+    authInjector.destroy();
   });
 
   it('resolves Firestore wired to the initialized app, no emulator', () => {
@@ -238,6 +274,29 @@ describe('provideSneatFirebase', () => {
     expect(mocks.connectFirestoreEmulator).not.toHaveBeenCalled();
     expect(mocks.connectAuthEmulator).not.toHaveBeenCalled();
     expect(consoleError).toHaveBeenCalled();
+
+    Object.defineProperty(window.location, 'hostname', {
+      writable: true,
+      value: originalHostname,
+    });
+    injector.destroy();
+  });
+
+  it('allows emulator wiring for a named localhost app domain', () => {
+    const originalHostname = location.hostname;
+    Object.defineProperty(window.location, 'hostname', {
+      writable: true,
+      value: 'sneat-app.localhost',
+    });
+    expect(location.hostname).toBe('sneat-app.localhost');
+
+    const injector = createInjector(
+      baseConfig({ emulator: { authPort: 9099, firestorePort: 8080 } }),
+    );
+    injector.get(Firestore);
+    injector.get(SNEAT_FIREBASE_AUTH);
+    expect(mocks.connectFirestoreEmulator).toHaveBeenCalled();
+    expect(mocks.connectAuthEmulator).toHaveBeenCalled();
 
     Object.defineProperty(window.location, 'hostname', {
       writable: true,

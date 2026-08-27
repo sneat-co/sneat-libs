@@ -49,7 +49,13 @@ export {
 function emulatorAllowed(enabled: boolean): boolean {
   if (!enabled) return false;
   const hostname = typeof location === 'undefined' ? '' : location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '127.0.0.1'
+  ) {
+    return true;
+  }
   console.error(
     '[provideSneatFirebase] Emulator config present on a non-localhost host ' +
       `("${hostname || '?'}") — ignoring it.`,
@@ -58,11 +64,10 @@ function emulatorAllowed(enabled: boolean): boolean {
 }
 
 /**
- * The single Firebase bootstrap for a Sneat app. Initializes the firebase
- * modular SDK directly (`initializeApp`/`getFirestore`/`getAuth`/
- * `getAnalytics`) and provides `FirebaseApp`, `Firestore`, `Auth` and
- * `Analytics` through Angular DI — `inject(Firestore)`,
- * `inject(SNEAT_FIREBASE_AUTH)`, etc.
+ * Firebase App + Auth boundary for an app shell that must know whether the
+ * visitor is signed in. It deliberately does not import or provide Firestore
+ * or Firebase Analytics: put those behind the authenticated route that needs
+ * data. `provideSneatFirebase()` remains the compatibility all-in-one API.
  *
  * Emulator wiring (`connectFirestoreEmulator`/`connectAuthEmulator`) includes
  * the Capacitor native-vs-web Auth persistence split and the
@@ -73,7 +78,7 @@ function emulatorAllowed(enabled: boolean): boolean {
  * `provideSneatAuthenticatedProviders()` calls it for you; call it directly
  * only in an app that wires its own authenticated route providers.
  */
-export function provideSneatFirebase(
+export function provideSneatFirebaseAuth(
   firebaseConfig: IFirebaseConfig,
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -81,6 +86,31 @@ export function provideSneatFirebase(
       provide: SNEAT_FIREBASE_APP,
       useFactory: (): FirebaseApp => initializeApp(firebaseConfig),
     },
+    {
+      provide: SNEAT_FIREBASE_AUTH,
+      useFactory: (): Auth => {
+        const app = inject(SNEAT_FIREBASE_APP);
+        const auth: Auth = Capacitor.isNativePlatform()
+          ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
+          : getAuth(app);
+        const emulator = firebaseConfig.emulator;
+        if (emulator?.authPort && emulatorAllowed(true)) {
+          connectAuthEmulator(
+            auth,
+            `${emulator.authPort === 443 ? 'https' : 'http'}://${emulator.authHost || '127.0.0.1'}:${emulator.authPort}`,
+          );
+        }
+        return auth;
+      },
+    },
+  ]);
+}
+
+/** Install only where a component actually reads or writes Firestore data. */
+export function provideSneatFirestore(
+  firebaseConfig: IFirebaseConfig,
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
     {
       provide: Firestore,
       useFactory: (): Firestore => {
@@ -102,23 +132,14 @@ export function provideSneatFirebase(
         return firestore;
       },
     },
-    {
-      provide: SNEAT_FIREBASE_AUTH,
-      useFactory: (): Auth => {
-        const app = inject(SNEAT_FIREBASE_APP);
-        const auth: Auth = Capacitor.isNativePlatform()
-          ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
-          : getAuth(app);
-        const emulator = firebaseConfig.emulator;
-        if (emulator?.authPort && emulatorAllowed(true)) {
-          connectAuthEmulator(
-            auth,
-            `${emulator.authPort === 443 ? 'https' : 'http'}://${emulator.authHost || '127.0.0.1'}:${emulator.authPort}`,
-          );
-        }
-        return auth;
-      },
-    },
+  ]);
+}
+
+/** Install only in the route that has elected to send Firebase Analytics. */
+export function provideSneatFirebaseAnalytics(
+  firebaseConfig: IFirebaseConfig,
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
     {
       provide: SNEAT_FIREBASE_ANALYTICS,
       useFactory: (): Analytics | null => {
@@ -140,5 +161,18 @@ export function provideSneatFirebase(
         }
       },
     },
+  ]);
+}
+
+/** Compatibility bootstrap for existing app roots. New apps should compose
+ * `provideSneatFirebaseAuth()` at the shell and add Firestore/Analytics only
+ * to their lazy authenticated routes. */
+export function provideSneatFirebase(
+  firebaseConfig: IFirebaseConfig,
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    provideSneatFirebaseAuth(firebaseConfig),
+    provideSneatFirestore(firebaseConfig),
+    provideSneatFirebaseAnalytics(firebaseConfig),
   ]);
 }

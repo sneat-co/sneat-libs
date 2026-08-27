@@ -39,7 +39,6 @@ import {
 } from '@sneat/logging';
 import { getRedirectResult } from 'firebase/auth';
 import { filter } from 'rxjs';
-import posthog from 'posthog-js';
 import { provideSneatFirebase } from './provide-sneat-firebase';
 
 @Injectable()
@@ -89,14 +88,6 @@ export class SneatAuthenticatedLifecycle {
 export function provideSneatAuthenticatedProviders(
   config: IEnvironmentConfig,
 ): EnvironmentProviders {
-  // Compatibility with getStandardSneatProviders(): start PostHog before the
-  // analytics fan-out consumes it. This import is intentionally auth-only.
-  if (config.posthog) {
-    posthog.init(config.posthog.token, {
-      ...config.posthog.config,
-      capture_pageview: false,
-    });
-  }
   const providers: (Provider | EnvironmentProviders)[] = [
     provideErrorLogger(),
     provideChunkLoadErrorRecovery(),

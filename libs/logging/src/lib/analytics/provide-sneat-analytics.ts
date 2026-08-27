@@ -9,7 +9,7 @@ import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { FireAnalyticsService } from './fire-analytics.service';
 import { GtagAnalyticsService } from './gtag-analytics.service';
 import { MultiAnalyticsService } from './multi-analytics.service';
-import { PosthogAnalyticsService } from './posthog-analytics.service';
+import { DeferredPosthogAnalyticsService } from './deferred-posthog-analytics.service';
 import { Injector, Provider } from '@angular/core';
 
 export interface IAnalyticsConfig {
@@ -55,7 +55,14 @@ export function provideSneatAnalytics(
       const config = getAnalyticsConfig(environmentConfig);
       const as: IAnalyticsService[] = [];
       if (config?.addPosthog) {
-        as.push(new PosthogAnalyticsService());
+        as.push(
+          new DeferredPosthogAnalyticsService(
+            environmentConfig.posthog as NonNullable<
+              IEnvironmentConfig['posthog']
+            >,
+            errorLogger,
+          ),
+        );
       }
       if (config?.googleAnalyticsMeasurementId) {
         as.push(new GtagAnalyticsService(config.googleAnalyticsMeasurementId));

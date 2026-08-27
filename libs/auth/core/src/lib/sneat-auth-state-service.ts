@@ -46,6 +46,16 @@ export enum AuthStatuses {
 
 export type AuthStatus = EnumAsUnionOfKeys<typeof AuthStatuses>;
 
+/**
+ * A user-visible, evidence-based session progress phase. The UI maps these to
+ * friendly copy (for example “Checking your sign-in”), never SDK terminology.
+ */
+export type SneatAuthLoadingPhase =
+  | 'checking-session'
+  | 'getting-token'
+  | 'ready'
+  | 'failed';
+
 export interface ISneatAuthUser extends UserInfo {
   readonly isAnonymous: boolean;
   readonly emailVerified: boolean;
@@ -54,15 +64,22 @@ export interface ISneatAuthUser extends UserInfo {
 
 export interface ISneatAuthState {
   readonly status: AuthStatus;
+  readonly loadingPhase?: SneatAuthLoadingPhase;
   readonly token?: string | null;
   readonly user?: ISneatAuthUser | null;
   readonly err?: unknown;
 }
 
 const initialAuthStatus = AuthStatuses.authenticating;
-export const initialSneatAuthState = { status: initialAuthStatus };
+export const initialSneatAuthState = {
+  status: initialAuthStatus,
+  loadingPhase: 'checking-session' as const,
+};
 
-@Injectable({ providedIn: 'root' })
+// The host must provide this from its authenticated route/session boundary.
+// Keeping it out of the root injector is what allows public shells to render
+// before Firebase Auth and Firestore are downloaded.
+@Injectable()
 export class SneatAuthStateService {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly analyticsService =
@@ -112,6 +129,11 @@ export class SneatAuthStateService {
           this.publishSignedOutState();
           return;
         }
+        this.authState$.next({
+          ...this.authState$.value,
+          status: AuthStatuses.authenticating,
+          loadingPhase: 'getting-token',
+        });
         if (
           this.authState$.value?.user?.uid !== firebaseUser?.uid
         ) {
@@ -135,6 +157,7 @@ export class SneatAuthStateService {
             this.authState$.next({
               ...current,
               status,
+              loadingPhase: 'ready',
               token,
               user: authUser,
             });
@@ -150,6 +173,7 @@ export class SneatAuthStateService {
             const current = this.authState$.value || {};
             this.authState$.next({
               ...current,
+              loadingPhase: 'failed',
               err: `fbUser.getIdToken() failed: ${err}`,
             });
             this.errorLogger.logError(err, 'Failed in fbUser.getIdToken()');
@@ -159,6 +183,7 @@ export class SneatAuthStateService {
         const current = this.authState$.value || {};
         this.authState$.next({
           ...current,
+          loadingPhase: 'failed',
           err: `fbAuth.onIdTokenChanged() failed: ${err}`,
         });
         errorLogger.logError(err, 'failed in fbAuth.onIdTokenChanged');
@@ -188,6 +213,7 @@ export class SneatAuthStateService {
               : null,
           user: authUser,
           status,
+          loadingPhase: 'ready',
         });
         this.authStatus$.next(status);
       },
@@ -199,6 +225,7 @@ export class SneatAuthStateService {
         const current = this.authState$.value || {};
         this.authState$.next({
           ...current,
+          loadingPhase: 'failed',
           err: `fbAuth.onAuthStateChanged() failed: ${err}`,
         });
       },
@@ -211,6 +238,7 @@ export class SneatAuthStateService {
     this.authState$.next({
       ...this.authState$.value,
       status: AuthStatuses.notAuthenticated,
+      loadingPhase: 'ready',
       token: null,
       user: null,
     });

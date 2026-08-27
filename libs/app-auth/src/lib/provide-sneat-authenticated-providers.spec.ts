@@ -276,10 +276,9 @@ describe('authenticated bootstrap providers', () => {
       'http://127.0.0.1:9099',
     );
     expect(mocks.getAnalytics).toHaveBeenCalled();
-    expect(mocks.posthogInit).toHaveBeenCalledWith(
-      'posthog-token',
-      expect.objectContaining({ capture_pageview: false }),
-    );
+    // PostHog is loaded by the analytics service only after its first event, so
+    // merely creating the authenticated injector must not pull it into startup.
+    expect(mocks.posthogInit).not.toHaveBeenCalled();
     expect(mocks.provideSentry).toHaveBeenCalled();
     injector.destroy();
   });
