@@ -7,7 +7,8 @@ import {
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { RouteReuseStrategy } from '@angular/router';
-import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
+import { IonicRouteStrategy } from '@ionic/angular/common';
+import { provideIonicAngular } from '@ionic/angular/provide';
 
 /** Route-level Ionic setup for a lazily-loaded Ionic island (e.g. calendar,
  * or a form not yet ported to PrimeNG) inside an otherwise PrimeNG app.

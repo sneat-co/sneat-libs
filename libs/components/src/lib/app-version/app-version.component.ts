@@ -1,10 +1,8 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import {
-  IonInput,
-  IonItem,
-  IonItemDivider,
-  IonLabel,
-} from '@ionic/angular';
+import { IonInput } from '@ionic/angular/ion-input';
+import { IonItem } from '@ionic/angular/ion-item';
+import { IonItemDivider } from '@ionic/angular/ion-item-divider';
+import { IonLabel } from '@ionic/angular/ion-label';
 import { buildInfo } from './build-info';
 
 @Component({
