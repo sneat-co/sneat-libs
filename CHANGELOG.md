@@ -1,3 +1,13 @@
+## 0.27.5 (2026-08-28)
+
+### 🩹 Fixes
+
+- Fix lazy Ionic NavController provider for authenticated space routes. ([faf690e](https://github.com/sneat-co/sneat-libs/commit/faf690e))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.4 (2026-08-27)
 
 ### 🩹 Fixes
