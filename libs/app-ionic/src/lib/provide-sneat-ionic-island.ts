@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { RouteReuseStrategy } from '@angular/router';
-import { IonicRouteStrategy } from '@ionic/angular/common';
+import { IonicRouteStrategy, NavController } from '@ionic/angular/common';
 import { provideIonicAngular } from '@ionic/angular/provide';
 
 /** Route-level Ionic setup for a lazily-loaded Ionic island (e.g. calendar,
@@ -25,6 +25,9 @@ export function provideSneatIonicShell(): EnvironmentProviders {
     provideIonicAngular(),
     provideAnimationsAsync(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    // Keep the token explicit: lazy consumers import it through Ionic's
+    // focused entry point and must not depend on tree-shakable root metadata.
+    NavController,
   ];
   return makeEnvironmentProviders(providers);
 }
