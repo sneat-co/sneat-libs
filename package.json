@@ -59,7 +59,7 @@
     "@typescript-eslint/eslint-plugin": "8.67.0",
     "@typescript-eslint/parser": "8.67.0",
     "@vitest/coverage-v8": "^4.1.10",
-    "angularx-qrcode": "22.0.1",
+    "better-qr": "0.1.2",
     "date-fns": "4.1.0",
     "eslint": "9.39.3",
     "eslint-plugin-json": "4.0.1",
