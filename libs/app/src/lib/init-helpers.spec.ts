@@ -20,6 +20,15 @@ function setHostname(hostname: string): void {
 describe('appEnvironmentConfig (fail-safe env selection)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  it('can load the emulator environment on a server without location', async () => {
+    vi.stubGlobal('location', undefined);
+    vi.resetModules();
+
+    await expect(
+      import('../environments/environment.base'),
+    ).resolves.toBeDefined();
+  });
+
   it('returns the production config verbatim on a deployed domain', () => {
     setHostname('listus-app.web.app');
     const cfg = appEnvironmentConfig(PROD);

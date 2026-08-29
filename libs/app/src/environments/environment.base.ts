@@ -12,8 +12,10 @@ import {
  */
 // import 'zone.js/dist/zone-error';
 
-const useNgrok = window.location.hostname.includes('.ngrok.');
-const useSSL = useNgrok || window.location.hostname == 'local-app.sneat.ws';
+const browserHostname =
+  typeof location === 'undefined' ? '' : location.hostname;
+const useNgrok = browserHostname.includes('.ngrok.');
+const useSSL = useNgrok || browserHostname == 'local-app.sneat.ws';
 
 // const nonSecureEmulatorHost = '127.0.0.1'; // 'localhost';
 const nonSecureEmulatorHost = '127.0.0.1'; // 'localhost';
@@ -21,13 +23,13 @@ const nonSecureEmulatorHost = '127.0.0.1'; // 'localhost';
 export const firebaseEmulatorConfig: IFirebaseEmulatorConfig = {
   authPort: useSSL ? 443 : 9099,
   authHost: useNgrok
-    ? window.location.hostname
+    ? browserHostname
     : useSSL
       ? 'local-fb-auth.sneat.ws'
       : nonSecureEmulatorHost,
   firestorePort: useSSL ? 443 : 8080,
   firestoreHost: useNgrok
-    ? window.location.hostname
+    ? browserHostname
     : useSSL
       ? 'local-firestore.sneat.ws'
       : nonSecureEmulatorHost,

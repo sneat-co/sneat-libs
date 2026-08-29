@@ -1,7 +1,9 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   DestroyRef,
   EnvironmentProviders,
   Injectable,
+  PLATFORM_ID,
   Provider,
   inject,
   makeEnvironmentProviders,
@@ -107,9 +109,11 @@ export function provideSneatAuthenticatedProviders(
       provide: SNEAT_AUTHENTICATED_LIFECYCLE,
       useExisting: SneatAuthenticatedLifecycle,
     },
-    provideEnvironmentInitializer(() =>
-      inject(SneatAuthenticatedLifecycle).start(),
-    ),
+    provideEnvironmentInitializer(() => {
+      if (isPlatformBrowser(inject(PLATFORM_ID))) {
+        inject(SneatAuthenticatedLifecycle).start();
+      }
+    }),
   ];
   if (config.sentry) providers.push(provideSentryAppInitializer(config.sentry));
   return makeEnvironmentProviders(providers);

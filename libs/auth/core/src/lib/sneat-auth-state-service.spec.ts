@@ -3,6 +3,7 @@ import {
   AnalyticsService,
   ErrorLogger,
   SNEAT_FIREBASE_AUTH,
+  SneatUrlOperationBlocker,
 } from '@sneat/core';
 import {
   SneatAuthStateService,
@@ -67,8 +68,12 @@ describe('SneatAuthStateService', () => {
   };
   let onAuthStateChangedCallback: Observer<User | null>;
   let onIdTokenChangedCallback: Observer<User | null>;
+  let operationBlockerMock: { isBlocked: Mock };
 
   beforeEach(() => {
+    operationBlockerMock = {
+      isBlocked: vi.fn().mockReturnValue(false),
+    };
     authMock = {
       onIdTokenChanged: vi.fn().mockImplementation((obs) => {
         onIdTokenChangedCallback = obs;
@@ -98,6 +103,10 @@ describe('SneatAuthStateService', () => {
           provide: SNEAT_FIREBASE_AUTH,
           useValue: authMock,
         },
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: operationBlockerMock,
+        },
       ],
     });
     service = TestBed.inject(SneatAuthStateService);
@@ -124,6 +133,32 @@ describe('SneatAuthStateService', () => {
 
     const user = await firstValueFrom(service.authUser);
     expect(user?.uid).toBe('u1');
+  });
+
+  it('keeps auth state pending and suppresses Firebase events when auth is blocked', async () => {
+    operationBlockerMock.isBlocked.mockImplementation(
+      (operation) => operation === 'auth',
+    );
+    const fbUser = {
+      uid: 'blocked-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'blocked@example.com',
+      providerId: 'password',
+      providerData: [],
+      getIdToken: vi.fn().mockResolvedValue('must-not-be-read'),
+    };
+
+    onAuthStateChangedCallback.next(fbUser as unknown as User);
+    onIdTokenChangedCallback.next(fbUser as unknown as User);
+
+    await Promise.resolve();
+    expect(await firstValueFrom(service.authState)).toEqual({
+      status: AuthStatuses.authenticating,
+      loadingPhase: 'checking-session',
+    });
+    expect(await firstValueFrom(service.authUser)).toBeUndefined();
+    expect(fbUser.getIdToken).not.toHaveBeenCalled();
   });
 
   it('should call fbAuth.signOut when signOut is called', async () => {

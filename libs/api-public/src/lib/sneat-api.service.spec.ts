@@ -4,6 +4,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { SneatUrlOperationBlocker } from '@sneat/core-public';
 import { firstValueFrom } from 'rxjs';
 import {
   SneatApiAuthTokenBridge,
@@ -19,13 +20,21 @@ describe('SneatApiService public transport', () => {
   let api: SneatApiService;
   let bridge: SneatApiAuthTokenBridge;
   let http: HttpTestingController;
+  let operationBlockerMock: { isBlocked: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    operationBlockerMock = {
+      isBlocked: vi.fn().mockReturnValue(false),
+    };
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: SneatApiBaseUrl, useValue: undefined },
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: operationBlockerMock,
+        },
       ],
     });
     api = TestBed.inject(SneatApiService);
@@ -40,6 +49,28 @@ describe('SneatApiService public transport', () => {
       SneatApiNotAuthenticatedError,
     );
     http.expectNone(`${DefaultSneatAppApiBaseUrl}private`);
+  });
+
+  it('keeps protected and anonymous requests pending when server requests are blocked', () => {
+    operationBlockerMock.isBlocked.mockImplementation(
+      (operation) => operation === 'server-requests',
+    );
+    const events: string[] = [];
+
+    api.get('private').subscribe({
+      next: () => events.push('protected-next'),
+      error: () => events.push('protected-error'),
+      complete: () => events.push('protected-complete'),
+    });
+    api.getAsAnonymous('public').subscribe({
+      next: () => events.push('anonymous-next'),
+      error: () => events.push('anonymous-error'),
+      complete: () => events.push('anonymous-complete'),
+    });
+
+    http.expectNone(`${DefaultSneatAppApiBaseUrl}private`);
+    http.expectNone(`${DefaultSneatAppApiBaseUrl}public`);
+    expect(events).toEqual([]);
   });
 
   it('defers a request while Firebase token readiness is pending', async () => {
@@ -194,6 +225,7 @@ describe('SneatApiService public transport', () => {
       TestBed.inject(HttpClient),
       bridge,
       'https://custom-api.example/',
+      operationBlockerMock as unknown as SneatUrlOperationBlocker,
     );
     customApi.setApiAuthToken('custom-token');
     const params = new HttpParams().set('id', '123');

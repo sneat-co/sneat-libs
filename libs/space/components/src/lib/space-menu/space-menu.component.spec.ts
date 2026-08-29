@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   NavController,
   MenuController,
@@ -9,6 +13,7 @@ import {
   IonSelectOption,
   IonIcon,
   IonLabel,
+  IonItemDivider,
   IonButtons,
   IonButton,
 } from '@ionic/angular';
@@ -18,10 +23,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService, APP_INFO, LOGGER_FACTORY } from '@sneat/core';
 import { SneatUserService } from '@sneat/auth-core';
-import { of } from 'rxjs';
+import { NEVER, of, Subject } from 'rxjs';
 import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { Firestore } from 'firebase/firestore';
 import { SpaceService } from '@sneat/space-services';
+import { provideSpaceExtensionNavItems } from '../space-extension-links';
 
 @Component({
   selector: 'sneat-auth-menu-item',
@@ -34,8 +40,10 @@ class AuthMenuItemStubComponent {}
 describe('SpaceMenuComponent', () => {
   let component: SpaceMenuComponent;
   let fixture: ComponentFixture<SpaceMenuComponent>;
+  let userChanged: Subject<string | undefined>;
 
   beforeEach(async () => {
+    userChanged = new Subject<string | undefined>();
     await TestBed.configureTestingModule({
       imports: [SpaceMenuComponent, RouterTestingModule],
       providers: [
@@ -49,7 +57,14 @@ describe('SpaceMenuComponent', () => {
         { provide: AnalyticsService, useValue: { logEvent: vi.fn() } },
         { provide: LOGGER_FACTORY, useValue: { getLogger: () => console } },
         { provide: APP_INFO, useValue: {} },
-        { provide: SneatUserService, useValue: { userState: of({}) } },
+        {
+          provide: SneatUserService,
+          useValue: {
+            currentUserID: undefined,
+            userChanged,
+            userState: of({}),
+          },
+        },
         { provide: NavController, useValue: {} },
         { provide: MenuController, useValue: {} },
         {
@@ -60,6 +75,14 @@ describe('SpaceMenuComponent', () => {
           },
         },
         { provide: Firestore, useValue: {} },
+        provideSpaceExtensionNavItems([
+          {
+            id: 'sizes',
+            title: 'Sizes',
+            path: 'sizes',
+            icon: '<svg></svg>',
+          },
+        ]),
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
@@ -72,6 +95,7 @@ describe('SpaceMenuComponent', () => {
             IonSelectOption,
             IonIcon,
             IonLabel,
+            IonItemDivider,
             IonButtons,
             IonButton,
             AuthMenuItemComponent,
@@ -82,7 +106,9 @@ describe('SpaceMenuComponent', () => {
           schemas: [CUSTOM_ELEMENTS_SCHEMA],
         },
       })
-      .overrideProvider(SpaceService, { useValue: {} })
+      .overrideProvider(SpaceService, {
+        useValue: { watchSpace: vi.fn(() => NEVER) },
+      })
       .compileComponents();
   });
 
@@ -101,5 +127,77 @@ describe('SpaceMenuComponent', () => {
       (fixture.nativeElement as HTMLElement).querySelectorAll('ion-label'),
     ).map((label) => label.textContent?.trim());
     expect(labels).toContain('Sizes');
+  });
+
+  it('renders primary space links before the extensions section', () => {
+    const labels = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('ion-label'),
+    );
+    const labelTexts = labels.map((label) => label.textContent?.trim());
+
+    expect(labelTexts.indexOf('Members')).toBeLessThan(
+      labelTexts.indexOf('Calendar'),
+    );
+    expect(labelTexts.indexOf('Calendar')).toBeLessThan(
+      labelTexts.indexOf('Extensions'),
+    );
+
+    const calendarItem = labels
+      .find((label) => label.textContent?.trim() === 'Calendar')
+      ?.closest('ion-item');
+    expect(calendarItem?.getAttribute('lines')).toBe('none');
+
+    const extensionsDivider = labels
+      .find((label) => label.textContent?.trim() === 'Extensions')
+      ?.closest('ion-item-divider');
+    expect(extensionsDivider?.getAttribute('color')).toBe('header');
+  });
+
+  it('keeps URL-derived space identity when auth initially reports no user', () => {
+    component['onSpaceIdChangedInUrl']({
+      id: 'family-space',
+      type: 'family',
+    });
+
+    userChanged.next(undefined);
+
+    expect(component['$space']()).toMatchObject({
+      id: 'family-space',
+      type: 'family',
+    });
+  });
+
+  it('disables space navigation when the requested space does not exist', () => {
+    component['onSpaceIdChangedInUrl']({
+      id: 'missing-space',
+      type: 'family',
+    });
+    fixture.detectChanges();
+    component['onSpaceContextChanged']({
+      id: 'missing-space',
+      type: undefined,
+      brief: null,
+      dbo: null,
+    });
+    fixture.detectChanges();
+
+    expect(component['$space']()).toMatchObject({
+      id: 'missing-space',
+      type: 'family',
+    });
+    expect(component['$spaceNotFound']()).toBe(true);
+    expect(component['$disabled']()).toBe(true);
+
+    const navigationItems = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll(
+        'ion-item[tappable]',
+      ),
+    );
+    expect(navigationItems.length).toBeGreaterThan(0);
+    expect(
+      navigationItems.every(
+        (item) => (item as unknown as { disabled: boolean }).disabled,
+      ),
+    ).toBe(true);
   });
 });

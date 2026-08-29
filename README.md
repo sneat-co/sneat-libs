@@ -3,6 +3,10 @@
 Shared Angular libraries published as public npm packages under the `@sneat` scope.
 Built with [Nx](https://nx.dev), targeting Angular 21+ and Ionic 8+.
 
+Shared framework and dependency decisions are recorded in
+[TECH-STACK.md](TECH-STACK.md). Read it before introducing a cross-cutting
+frontend dependency.
+
 <!-- dev-approach:v1 -->
 ## Our approach to development
 
