@@ -12,10 +12,13 @@ import {
   QuerySnapshot,
   QueryOrderByConstraint,
 } from 'firebase/firestore';
-import { IIdAndOptionalBriefAndOptionalDbo } from '@sneat/core';
+import {
+  IIdAndOptionalBriefAndOptionalDbo,
+  SneatUrlOperationBlocker,
+} from '@sneat/core';
 import { WhereFilterOp } from '@firebase/firestore-types';
 import { INavContext } from '@sneat/core';
-import { from, map, Observable, Subject } from 'rxjs';
+import { from, map, NEVER, Observable, Subject } from 'rxjs';
 
 export interface IFilter {
   readonly field: string;
@@ -30,6 +33,8 @@ export interface IQueryArgs {
 }
 
 export class SneatFirestoreService<Brief, Dbo extends Brief> {
+  private readonly operationBlocker: SneatUrlOperationBlocker;
+
   constructor(
     private readonly injector: Injector,
     // private readonly afs: AngularFirestore,
@@ -44,12 +49,16 @@ export class SneatFirestoreService<Brief, Dbo extends Brief> {
     if (!dto2brief) {
       throw new Error('dto2brief is required');
     }
+    this.operationBlocker = injector.get(SneatUrlOperationBlocker);
   }
 
   watchByID<Dbo2 extends Dbo>(
     collection: CollectionReference<Dbo2>,
     id: string,
   ): Observable<IIdAndOptionalBriefAndOptionalDbo<Brief, Dbo2>> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     const docRef = runInInjectionContext(this.injector, () =>
       doc(collection, id),
     );
@@ -59,6 +68,9 @@ export class SneatFirestoreService<Brief, Dbo extends Brief> {
   watchByDocRef<Dbo2 extends Dbo>(
     docRef: DocumentReference<Dbo2>,
   ): Observable<IIdAndOptionalBriefAndOptionalDbo<Brief, Dbo2>> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     return runInInjectionContext(this.injector, () => {
       const subj = new Subject<DocumentSnapshot<Dbo2>>();
       // const snapshots = docSnapshots<Dbo2>(docRef);
@@ -86,6 +98,9 @@ export class SneatFirestoreService<Brief, Dbo extends Brief> {
   getByDocRef<Dbo2 extends Dbo>(
     docRef: DocumentReference<Dbo2>,
   ): Observable<INavContext<Brief, Dbo2>> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     return from(getDoc(docRef)).pipe(
       map((changes) =>
         docSnapshotToDto<Brief, Dbo2>(docRef.id, this.dto2brief, changes),
@@ -97,6 +112,9 @@ export class SneatFirestoreService<Brief, Dbo extends Brief> {
     collectionRef: CollectionReference<Dbo2>,
     queryArgs?: IQueryArgs,
   ): Observable<QuerySnapshot<Dbo2>> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     const operator = (f: IFilter) =>
       f.field.endsWith('IDs') ? 'array-contains' : f.operator;
     const q = query(

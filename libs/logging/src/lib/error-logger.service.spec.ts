@@ -41,6 +41,21 @@ describe('ErrorLoggerService', () => {
   });
 
   describe('logError', () => {
+    it('logs without browser reporting or toast UI during server rendering', () => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      vi.stubGlobal('window', undefined);
+
+      service.logError(new Error('server render'));
+
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(captureException).not.toHaveBeenCalled();
+      expect(toastController.create).not.toHaveBeenCalled();
+      vi.unstubAllGlobals();
+      consoleSpy.mockRestore();
+    });
+
     it('should log to console.error', () => {
       const consoleSpy = vi
         .spyOn(console, 'error')

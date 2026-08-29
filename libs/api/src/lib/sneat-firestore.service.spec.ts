@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Injector } from '@angular/core';
+import { SneatUrlOperationBlocker } from '@sneat/core';
 import {
   CollectionReference,
   DocumentReference,
@@ -58,10 +59,19 @@ describe('SneatFirestoreService', () => {
   let service: SneatFirestoreService<TestBrief, TestDbo>;
   let injector: Injector;
   let dto2brief: (id: string, dto: TestDbo) => TestBrief;
+  let operationBlockerMock: { isBlocked: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    operationBlockerMock = {
+      isBlocked: vi.fn().mockReturnValue(false),
+    };
     TestBed.configureTestingModule({
-      providers: [],
+      providers: [
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: operationBlockerMock,
+        },
+      ],
     });
     injector = TestBed.inject(Injector);
     dto2brief = (id: string, dto: TestDbo) => ({ id, name: dto.name });
@@ -78,6 +88,35 @@ describe('SneatFirestoreService', () => {
   it('should be created', () => {
     service = new SneatFirestoreService(injector, dto2brief);
     expect(service).toBeTruthy();
+  });
+
+  it('keeps reads pending without touching Firestore when server requests are blocked', () => {
+    operationBlockerMock.isBlocked.mockImplementation(
+      (operation) => operation === 'server-requests',
+    );
+    service = new SneatFirestoreService(injector, dto2brief);
+    const docRef = {
+      id: 'blocked-doc',
+      path: 'test-collection/blocked-doc',
+    } as DocumentReference<TestDbo>;
+    const collectionRef = {
+      path: 'test-collection',
+    } as CollectionReference<TestDbo>;
+    const events: string[] = [];
+    const observer = {
+      next: () => events.push('next'),
+      error: () => events.push('error'),
+      complete: () => events.push('complete'),
+    };
+
+    service.watchByDocRef(docRef).subscribe(observer);
+    service.getByDocRef(docRef).subscribe(observer);
+    service.watchSnapshotsByFilter(collectionRef).subscribe(observer);
+
+    expect(mockGetDoc).not.toHaveBeenCalled();
+    expect(mockOnSnapshot).not.toHaveBeenCalled();
+    expect(mockQuery).not.toHaveBeenCalled();
+    expect(events).toEqual([]);
   });
 
   it('should use default dto2brief if not provided', () => {

@@ -15,6 +15,7 @@ import {
   IonItem,
   IonItemDivider,
   IonLabel,
+  IonSpinner,
   MenuController,
   NavController,
 } from '@ionic/angular';
@@ -39,6 +40,7 @@ import { PersonNamesPipe, personNames } from '../../pipes/person-names.pipe';
     IonIcon,
     IonButtons,
     IonButton,
+    IonSpinner,
     JsonPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

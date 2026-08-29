@@ -1,4 +1,4 @@
-<ion-item-divider color="light">
+<ion-item-divider color="header">
   @if ($authStatus() === "authenticated") {
     <ion-label>Signed in as</ion-label>
   } @else {
@@ -10,8 +10,16 @@
     <ion-label>Loading....</ion-label>
   </ion-item>
 } @else if ($isAuthenticating()) {
-  <ion-item routerLink="login">
-    <ion-label>Authenticating....</ion-label>
+  <ion-item data-testid="authenticating" routerLink="login">
+    <ion-icon slot="start" name="person-circle-outline" />
+    <ion-label>Authenticating...</ion-label>
+    <ion-buttons slot="end">
+      <ion-spinner
+        name="lines-small"
+        color="medium"
+        aria-label="Authenticating"
+      />
+    </ion-buttons>
   </ion-item>
 }
 @if ($authStatus() === "notAuthenticated") {

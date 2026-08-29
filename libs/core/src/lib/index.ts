@@ -22,3 +22,10 @@ export * from './environment-config';
 export * from './logging/interfaces';
 export * from './analytics.interface';
 export * from './firebase.tokens';
+export {
+  SNEAT_BLOCKABLE_OPERATIONS,
+  SNEAT_URL_HASH,
+  SneatUrlOperationBlocker,
+  parseSneatBlockedOperations,
+  type SneatBlockableOperation,
+} from '@sneat/core-public';

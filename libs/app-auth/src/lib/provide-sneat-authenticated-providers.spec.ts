@@ -2,6 +2,7 @@ import { provideHttpClient, withXhr } from '@angular/common/http';
 import {
   createEnvironmentInjector,
   EnvironmentInjector,
+  PLATFORM_ID,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { Auth } from 'firebase/auth';
@@ -238,6 +239,23 @@ describe('authenticated bootstrap providers', () => {
     vi.clearAllMocks();
     mocks.native = false;
     mocks.getRedirectResult.mockResolvedValue(null);
+  });
+
+  it('does not start the browser auth lifecycle while rendering on the server', () => {
+    TestBed.configureTestingModule({});
+    const lifecycle = { start: vi.fn() };
+    const injector = createEnvironmentInjector(
+      [
+        provideSneatAuthenticatedProviders(environmentConfig()),
+        { provide: PLATFORM_ID, useValue: 'server' },
+        { provide: SneatAuthenticatedLifecycle, useValue: lifecycle },
+      ],
+      TestBed.inject(EnvironmentInjector),
+      'server-authenticated-route',
+    );
+
+    expect(lifecycle.start).not.toHaveBeenCalled();
+    injector.destroy();
   });
 
   it('constructs web Firebase, emulator, analytics, PostHog, and Sentry adapters', () => {

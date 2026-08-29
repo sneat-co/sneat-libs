@@ -11,7 +11,8 @@ import {
   OnDestroy,
   Optional,
 } from '@angular/core';
-import { Observable, catchError, switchMap, throwError } from 'rxjs';
+import { SneatUrlOperationBlocker } from '@sneat/core-public';
+import { NEVER, Observable, catchError, switchMap, throwError } from 'rxjs';
 import { SneatApiAuthTokenBridge } from './sneat-api-auth-token.bridge';
 import {
   IHttpRequestOptions,
@@ -34,6 +35,7 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
     private readonly httpClient: HttpClient,
     private readonly authTokenBridge: SneatApiAuthTokenBridge,
     @Inject(SneatApiBaseUrl) @Optional() baseUrl: string | null,
+    private readonly operationBlocker: SneatUrlOperationBlocker,
   ) {
     this.baseUrl = baseUrl ?? DefaultSneatAppApiBaseUrl;
   }
@@ -88,6 +90,9 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
     params?: HttpParams,
     options?: IHttpRequestOptions,
   ): Observable<T> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     return this.httpClient.get<T>(this.baseUrl + endpoint, {
       ...options,
       params: params ?? options?.params,
@@ -95,6 +100,9 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
   }
 
   postAsAnonymous<T>(endpoint: string, body: unknown): Observable<T> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     return this.httpClient.post<T>(this.baseUrl + endpoint, body);
   }
 
@@ -121,6 +129,9 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
     request: (headers: HttpHeaders) => Observable<T>,
     retryUnauthorized = false,
   ): Observable<T> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     return this.authTokenBridge.resolvedToken(false).pipe(
       switchMap((token) => {
         const authenticatedRequest = request(

@@ -13,10 +13,9 @@ import {
   RouterLink,
 } from '@angular/router';
 import {
-  IonButton,
-  IonButtons,
   IonIcon,
   IonItem,
+  IonItemDivider,
   IonLabel,
   IonList,
   IonSelect,
@@ -34,6 +33,7 @@ import { takeUntil } from 'rxjs/operators';
 import { SpaceBaseComponent } from '../space-base-component.directive';
 import { SpaceComponentBaseParams } from '../space-component-base-params.service';
 import { ClassName } from '@sneat/ui';
+import { SpaceExtensionLinksComponent } from '../space-extension-links';
 
 @Component({
   selector: 'sneat-space-menu',
@@ -46,12 +46,12 @@ import { ClassName } from '@sneat/ui';
     RouterLink,
     IonList,
     IonItem,
+    IonItemDivider,
     IonSelect,
     IonSelectOption,
     IonIcon,
     IonLabel,
-    IonButtons,
-    IonButton,
+    SpaceExtensionLinksComponent,
   ],
   providers: [
     {
@@ -67,7 +67,9 @@ export class SpaceMenuComponent extends SpaceBaseComponent {
     readonly IIdAndBrief<IUserSpaceBrief>[] | undefined
   >(undefined);
 
-  protected readonly $disabled = computed(() => !this.$spaceID());
+  protected readonly $disabled = computed(
+    () => !this.$spaceID() || this.$spaceNotFound(),
+  );
 
   protected readonly $currentPage = signal<string>('');
 

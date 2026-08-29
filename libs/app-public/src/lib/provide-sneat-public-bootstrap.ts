@@ -1,4 +1,8 @@
-import { provideHttpClient, withXhr } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withFetch,
+  withInterceptors,
+} from '@angular/common/http';
 import {
   ErrorHandler,
   EnvironmentProviders,
@@ -11,6 +15,7 @@ import {
   SneatApiBaseUrl,
 } from '@sneat/api-public';
 import { SneatTitleStrategy } from './sneat-title.strategy';
+import { urlOperationBlockerInterceptor } from './url-operation-blocker.interceptor';
 
 export interface ISneatPublicBootstrapConfig {
   readonly apiBaseUrl?: string;
@@ -22,7 +27,13 @@ export function provideSneatPublicBootstrap(
   config: ISneatPublicBootstrapConfig = {},
 ): EnvironmentProviders {
   const providers: (Provider | EnvironmentProviders)[] = [
-    provideHttpClient(withXhr()),
+    // Fetch works in browsers and edge SSR runtimes. Keeping XHR here pulls
+    // Angular's Node-only `xhr2` fallback into every server bundle even when an
+    // application overrides the backend later.
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([urlOperationBlockerInterceptor]),
+    ),
     { provide: ErrorHandler, useClass: ErrorHandler },
     { provide: TitleStrategy, useClass: SneatTitleStrategy },
     {

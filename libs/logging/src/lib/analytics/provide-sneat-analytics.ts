@@ -24,7 +24,8 @@ function getAnalyticsConfig(
   environmentConfig: IEnvironmentConfig,
 ): IAnalyticsConfig {
   const useAnalytics =
-    location.host === 'sneat.app' || location.protocol === 'https:';
+    typeof location !== 'undefined' &&
+    (location.host === 'sneat.app' || location.protocol === 'https:');
 
   const firebaseMeasurementId = environmentConfig.firebaseConfig?.measurementId;
   const gaMeasurementId = environmentConfig.googleAnalytics?.measurementId;

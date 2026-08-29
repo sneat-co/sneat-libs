@@ -35,21 +35,31 @@
 
 // https://ionicframework.com/docs/theming/colors
 :root {
-  --ion-color-divider: #f0f7ff;
-  --ion-color-divider-rgb: 240, 247, 255;
-  --ion-color-divider-contrast: #000000;
-  --ion-color-divider-contrast-rgb: 0, 0, 0;
-  --ion-color-divider-shade: #d3d9e0;
-  --ion-color-divider-tint: #f2f8ff;
+  --ion-color-header: #f0f7ff;
+  --ion-color-header-rgb: 240, 247, 255;
+  --ion-color-header-contrast: #000000;
+  --ion-color-header-contrast-rgb: 0, 0, 0;
+  --ion-color-header-shade: #d3d9e0;
+  --ion-color-header-tint: #f2f8ff;
 }
 
-.ion-color-divider {
-  --ion-color-base: var(--ion-color-divider);
-  --ion-color-base-rgb: var(--ion-color-divider-rgb);
-  --ion-color-contrast: var(--ion-color-divider-contrast);
-  --ion-color-contrast-rgb: var(--ion-color-divider-contrast-rgb);
-  --ion-color-shade: var(--ion-color-divider-shade);
-  --ion-color-tint: var(--ion-color-divider-tint);
+.ion-color-header {
+  --ion-color-base: var(--ion-color-header);
+  --ion-color-base-rgb: var(--ion-color-header-rgb);
+  --ion-color-contrast: var(--ion-color-header-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-header-contrast-rgb);
+  --ion-color-shade: var(--ion-color-header-shade);
+  --ion-color-tint: var(--ion-color-header-tint);
+}
+
+ion-item.sneat-card-header {
+  --background: var(--ion-color-header);
+  --color: var(--ion-color-header-contrast);
+}
+
+.sneat-pane-header {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-light-contrast);
 }
 .cardy {
   //--ion-background-color: #fcfcfc;

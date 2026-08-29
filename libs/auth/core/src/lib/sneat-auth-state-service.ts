@@ -10,6 +10,7 @@ import {
   EnvConfigToken,
   IAnalyticsService,
   SNEAT_FIREBASE_AUTH,
+  SneatUrlOperationBlocker,
 } from '@sneat/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { Injectable, inject } from '@angular/core';
@@ -85,6 +86,7 @@ export class SneatAuthStateService {
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
   readonly fbAuth = inject(SNEAT_FIREBASE_AUTH);
+  private readonly operationBlocker = inject(SneatUrlOperationBlocker);
 
   // Web OAuth sign-in strategy from the app's environment config (default popup).
   private readonly signInMethod =
@@ -121,6 +123,9 @@ export class SneatAuthStateService {
     const errorLogger = this.errorLogger;
     this.fbAuth.onIdTokenChanged({
       next: (firebaseUser) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
         const tokenGeneration = ++this.tokenGeneration;
         const status: AuthStatus = firebaseUser
           ? AuthStatuses.authenticated
@@ -180,6 +185,9 @@ export class SneatAuthStateService {
           });
       },
       error: (err) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
         const current = this.authState$.value || {};
         this.authState$.next({
           ...current,
@@ -193,6 +201,9 @@ export class SneatAuthStateService {
     this.fbAuth.onAuthStateChanged({
       complete: () => void 0,
       next: (fbUser) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
         // console.log(
         //   `SneatAuthStateService => authStatus: ${this.authStatus$.value}; fbUser`,
         //   fbUser,
@@ -218,6 +229,9 @@ export class SneatAuthStateService {
         this.authStatus$.next(status);
       },
       error: (err) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
         this.errorLogger.logError(
           err,
           'failed to retrieve Firebase auth user information',

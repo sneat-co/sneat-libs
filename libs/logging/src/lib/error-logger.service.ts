@@ -42,6 +42,11 @@ export class ErrorLoggerService implements IErrorLogger {
       '; Logging options:',
       options,
     );
+    // Server rendering must record the error without invoking browser-only
+    // Sentry feedback UI or Ionic toasts.
+    if (typeof window === 'undefined') {
+      return;
+    }
     if (e === true || e === false) {
       try {
         // noinspection ExceptionCaughtLocallyJS
