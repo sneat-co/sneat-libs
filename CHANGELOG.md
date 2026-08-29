@@ -1,3 +1,13 @@
+## 0.27.6 (2026-08-29)
+
+### 🩹 Fixes
+
+- Add progressive authentication and space-loading support, request blocking for local UI inspection, and shared space extension navigation. ([192ceef](https://github.com/sneat-co/sneat-libs/commit/192ceef))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.5 (2026-08-28)
 
 ### 🩹 Fixes
