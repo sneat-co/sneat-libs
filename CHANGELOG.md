@@ -1,3 +1,13 @@
+## 0.27.7 (2026-08-31)
+
+### 🩹 Fixes
+
+- Publish reusable space selection, shared card/pane styling, and list add/remove animations for consuming Sneat apps. ([f26b46f](https://github.com/sneat-co/sneat-libs/commit/f26b46f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.6 (2026-08-29)
 
 ### 🩹 Fixes
