@@ -2,7 +2,7 @@
   <ion-item
     tappable="true"
     [disabled]="!space.brief"
-    [lines]="last ? 'full' : 'inset'"
+    [lines]="last ? 'none' : 'inset'"
     routerLink="{{ pathPrefix() }}/{{ space.type }}/{{ space.id }}"
     (click)="goSpace($event, space)"
   >

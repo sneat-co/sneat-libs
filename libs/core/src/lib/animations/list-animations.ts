@@ -39,6 +39,25 @@ export const listItemAnimations = trigger('listItem', [
 // TODO: How it is different from listItemAnimations ?
 export const listAddRemoveAnimation: AnimationTriggerMetadata[] = [
   trigger('addRemove', [
-    transition(':leave', [animate('0.2s  ease-in-out', style({ height: 0 }))]),
+    transition(
+      'void => added',
+      [
+        style({ height: 0, opacity: 0, overflow: 'hidden' }),
+        animate(
+          '250ms ease-out',
+          style({ height: '*', opacity: 1, overflow: 'hidden' }),
+        ),
+      ],
+    ),
+    transition(
+      ':leave',
+      [
+        style({ height: '*', opacity: 1, overflow: 'hidden' }),
+        animate(
+          '250ms ease-in',
+          style({ height: 0, opacity: 0, overflow: 'hidden' }),
+        ),
+      ],
+    ),
   ]),
 ];

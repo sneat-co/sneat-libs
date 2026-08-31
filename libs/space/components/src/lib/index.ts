@@ -1,5 +1,6 @@
 export * from './avatar/avatar.component';
 export * from './space-menu';
+export * from './space-selector';
 export * from './space-extension-links';
 export * from './spaces-menu';
 export * from './space-page-title/space-page-title.component';

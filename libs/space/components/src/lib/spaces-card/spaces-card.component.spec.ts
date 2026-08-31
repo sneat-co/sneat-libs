@@ -75,6 +75,15 @@ describe('SpacesCardComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('uses the shared blue card-header treatment', () => {
+    const header = fixture.nativeElement.querySelector(
+      'ion-card > ion-item',
+    ) as HTMLElement;
+
+    expect(header.classList.contains('sneat-card-header')).toBe(true);
+    expect(header.getAttribute('lines')).toBe('full');
+  });
+
   // Regression guard: before the fix the card stayed on "Authenticating..." even
   // after the user record loaded, because it mutated fields in a subscription and
   // relied on Zone change detection. With signals the derived `spaces` must react

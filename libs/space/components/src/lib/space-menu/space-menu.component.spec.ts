@@ -9,8 +9,6 @@ import {
   MenuController,
   IonList,
   IonItem,
-  IonSelect,
-  IonSelectOption,
   IonIcon,
   IonLabel,
   IonItemDivider,
@@ -91,8 +89,6 @@ describe('SpaceMenuComponent', () => {
           imports: [
             IonList,
             IonItem,
-            IonSelect,
-            IonSelectOption,
             IonIcon,
             IonLabel,
             IonItemDivider,
@@ -120,6 +116,14 @@ describe('SpaceMenuComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('renders the space selector as a light side-menu section', () => {
+    const selectorItem = fixture.nativeElement.querySelector(
+      'ion-item:has(sneat-space-selector)',
+    ) as HTMLElement;
+
+    expect(selectorItem.classList.contains('sneat-pane-header')).toBe(true);
   });
 
   it('renders the Sizes menu item for the sizeus extension', () => {

@@ -1,4 +1,3 @@
-import { TitleCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -18,22 +17,16 @@ import {
   IonItemDivider,
   IonLabel,
   IonList,
-  IonSelect,
-  IonSelectOption,
   MenuController,
 } from '@ionic/angular';
-import { ISneatUserState } from '@sneat/auth-core';
-import { IUserSpaceBrief } from '@sneat/auth-models';
 import { AuthMenuItemComponent } from '@sneat/auth-ui';
-import { IIdAndBrief } from '@sneat/core';
-import { zipMapBriefsWithIDs } from '@sneat/space-models';
 import { SpaceServiceModule } from '@sneat/space-services';
 import { filter } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { SpaceBaseComponent } from '../space-base-component.directive';
 import { SpaceComponentBaseParams } from '../space-component-base-params.service';
 import { ClassName } from '@sneat/ui';
 import { SpaceExtensionLinksComponent } from '../space-extension-links';
+import { SpaceSelectorComponent } from '../space-selector';
 
 @Component({
   selector: 'sneat-space-menu',
@@ -42,16 +35,14 @@ import { SpaceExtensionLinksComponent } from '../space-extension-links';
   imports: [
     AuthMenuItemComponent,
     SpaceServiceModule,
-    TitleCasePipe,
     RouterLink,
     IonList,
     IonItem,
     IonItemDivider,
-    IonSelect,
-    IonSelectOption,
     IonIcon,
     IonLabel,
     SpaceExtensionLinksComponent,
+    SpaceSelectorComponent,
   ],
   providers: [
     {
@@ -63,10 +54,6 @@ import { SpaceExtensionLinksComponent } from '../space-extension-links';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpaceMenuComponent extends SpaceBaseComponent {
-  protected readonly $spaces = signal<
-    readonly IIdAndBrief<IUserSpaceBrief>[] | undefined
-  >(undefined);
-
   protected readonly $disabled = computed(
     () => !this.$spaceID() || this.$spaceNotFound(),
   );
@@ -80,12 +67,6 @@ export class SpaceMenuComponent extends SpaceBaseComponent {
     const router = inject(Router);
 
     super();
-    this.spaceParams.userService.userState
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe({
-        next: this.onUserStateChanged,
-        error: this.errorLogger.logErrorHandler('failed to get user stage'),
-      });
     router.events
       .pipe(
         this.takeUntilDestroyed(),
@@ -129,31 +110,4 @@ export class SpaceMenuComponent extends SpaceBaseComponent {
     this.menuCtrl.close().catch(this.errorLogger.logError);
   }
 
-  protected onSpaceSelected(event: Event): void {
-    const spaceID = (event as CustomEvent).detail.value as string;
-    if (spaceID === this.space?.id) {
-      return;
-    }
-    const space = this.$spaces()?.find((t) => t.id === spaceID);
-    if (space) {
-      this.setSpaceRef(space);
-      this.spaceNav
-        .navigateToSpace(space)
-        .catch(
-          this.errorLogger.logErrorHandler(
-            'Failed to navigate to teams page on current team changed from team menu dropdown',
-          ),
-        );
-    }
-    this.menuCtrl.close().catch(console.error);
-    return;
-  }
-
-  private readonly onUserStateChanged = (userState: ISneatUserState): void => {
-    this.$spaces.set(
-      userState?.record
-        ? zipMapBriefsWithIDs(userState.record.spaces) || []
-        : undefined,
-    );
-  };
 }

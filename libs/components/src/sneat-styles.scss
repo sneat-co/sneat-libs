@@ -35,12 +35,26 @@
 
 // https://ionicframework.com/docs/theming/colors
 :root {
-  --ion-color-header: #f0f7ff;
-  --ion-color-header-rgb: 240, 247, 255;
-  --ion-color-header-contrast: #000000;
-  --ion-color-header-contrast-rgb: 0, 0, 0;
-  --ion-color-header-shade: #d3d9e0;
-  --ion-color-header-tint: #f2f8ff;
+  // Semantic surface tokens. An app can override these at :root or on a
+  // narrower host to brand an individual card/menu without replacing shared
+  // component markup.
+  --sneat-card-header-background: #f0f7ff;
+  --sneat-card-header-background-rgb: 240, 247, 255;
+  --sneat-card-header-color: #000000;
+  --sneat-card-header-color-rgb: 0, 0, 0;
+  --sneat-card-header-background-shade: #d3d9e0;
+  --sneat-card-header-background-tint: #f2f8ff;
+
+  --sneat-pane-header-background: var(--ion-color-light);
+  --sneat-pane-header-color: var(--ion-color-light-contrast);
+
+  // Ionic color alias for headers such as <ion-item-divider color="header">.
+  --ion-color-header: var(--sneat-card-header-background);
+  --ion-color-header-rgb: var(--sneat-card-header-background-rgb);
+  --ion-color-header-contrast: var(--sneat-card-header-color);
+  --ion-color-header-contrast-rgb: var(--sneat-card-header-color-rgb);
+  --ion-color-header-shade: var(--sneat-card-header-background-shade);
+  --ion-color-header-tint: var(--sneat-card-header-background-tint);
 }
 
 .ion-color-header {
@@ -52,14 +66,18 @@
   --ion-color-tint: var(--ion-color-header-tint);
 }
 
-ion-item.sneat-card-header {
-  --background: var(--ion-color-header);
-  --color: var(--ion-color-header-contrast);
+.sneat-card-header {
+  --background: var(--sneat-card-header-background);
+  --color: var(--sneat-card-header-color);
+  background: var(--sneat-card-header-background);
+  color: var(--sneat-card-header-color);
 }
 
 .sneat-pane-header {
-  --background: var(--ion-color-light);
-  --color: var(--ion-color-light-contrast);
+  --background: var(--sneat-pane-header-background);
+  --color: var(--sneat-pane-header-color);
+  background: var(--sneat-pane-header-background);
+  color: var(--sneat-pane-header-color);
 }
 .cardy {
   //--ion-background-color: #fcfcfc;

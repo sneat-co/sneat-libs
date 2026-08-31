@@ -69,4 +69,17 @@ describe('SpacesListComponent', () => {
     };
     expect(icon.name).toBe('person-circle-outline');
   });
+
+  it('removes the final space row divider', () => {
+    fixture.componentRef.setInput('spaces', [
+      { id: 'family-1', type: 'family', brief: { title: 'Family' } },
+      { id: 'home-1', type: 'personal', brief: { title: 'Home' } },
+    ]);
+    fixture.detectChanges();
+
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll('ion-item'),
+    ) as Array<{ lines: string }>;
+    expect(items.map((item) => item.lines)).toEqual(['inset', 'none']);
+  });
 });
