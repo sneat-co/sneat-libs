@@ -1,3 +1,13 @@
+## 0.27.8 (2026-09-01)
+
+### 🩹 Fixes
+
+- Allow retry-safe POST requests to refresh an expired authentication token once while keeping mutation retries opt-in. ([#76](https://github.com/sneat-co/sneat-libs/pull/76))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+
 ## 0.27.7 (2026-08-31)
 
 ### 🩹 Fixes
