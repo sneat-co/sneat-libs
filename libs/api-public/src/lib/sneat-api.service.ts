@@ -16,6 +16,7 @@ import { NEVER, Observable, catchError, switchMap, throwError } from 'rxjs';
 import { SneatApiAuthTokenBridge } from './sneat-api-auth-token.bridge';
 import {
   IHttpRequestOptions,
+  ISneatApiPostOptions,
   ISneatApiService,
 } from './sneat-api-service.interface';
 
@@ -46,13 +47,16 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
   post<T>(
     endpoint: string,
     body: unknown,
-    options?: IHttpRequestOptions,
+    options?: ISneatApiPostOptions,
   ): Observable<T> {
-    return this.withAuth((headers) =>
-      this.httpClient.post<T>(this.baseUrl + endpoint, body, {
-        ...options,
-        headers: this.withAuthorization(options?.headers, headers),
-      }),
+    const { retryUnauthorizedOnce = false, ...httpOptions } = options ?? {};
+    return this.withAuth(
+      (headers) =>
+        this.httpClient.post<T>(this.baseUrl + endpoint, body, {
+          ...httpOptions,
+          headers: this.withAuthorization(httpOptions.headers, headers),
+        }),
+      retryUnauthorizedOnce,
     );
   }
 
