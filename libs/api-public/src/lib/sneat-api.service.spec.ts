@@ -201,6 +201,45 @@ describe('SneatApiService public transport', () => {
     expect(resolveToken.mock.calls).toEqual([[false]]);
   });
 
+  it('force-refreshes once and retries an explicitly retry-safe POST after a 401', async () => {
+    const resolveToken = vi.fn((forceRefresh: boolean) =>
+      Promise.resolve(forceRefresh ? 'refreshed-token' : 'expired-token'),
+    );
+    bridge.beginAuthentication().resolveWithTokenResolver(resolveToken);
+    const body = { spaceID: 'space-1' };
+    const response = firstValueFrom(
+      api.post<{ ok: boolean }>('status', body, {
+        retryUnauthorizedOnce: true,
+      }),
+    );
+    await Promise.resolve();
+
+    const expiredRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}status`,
+    );
+    expect(expiredRequest.request.body).toEqual(body);
+    expect(expiredRequest.request.headers.get('Authorization')).toBe(
+      'Bearer expired-token',
+    );
+    expiredRequest.flush('expired', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+    await Promise.resolve();
+
+    const retriedRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}status`,
+    );
+    expect(retriedRequest.request.body).toEqual(body);
+    expect(retriedRequest.request.headers.get('Authorization')).toBe(
+      'Bearer refreshed-token',
+    );
+    retriedRequest.flush({ ok: true });
+
+    await expect(response).resolves.toEqual({ ok: true });
+    expect(resolveToken.mock.calls).toEqual([[false], [true]]);
+  });
+
   it('keeps anonymous GET and POST independent of auth readiness', async () => {
     bridge.beginAuthentication();
     const getResult = firstValueFrom(

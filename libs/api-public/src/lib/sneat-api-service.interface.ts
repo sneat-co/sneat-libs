@@ -10,6 +10,15 @@ export interface IHttpRequestOptions {
   withCredentials?: boolean;
 }
 
+export interface ISneatApiPostOptions extends IHttpRequestOptions {
+  /**
+   * Force-refresh the auth token and retry once after HTTP 401.
+   * Enable only for retry-safe requests because POST mutations may not be
+   * idempotent.
+   */
+  retryUnauthorizedOnce?: boolean;
+}
+
 export interface ISneatApiResponse<T> {
   data: T;
 }
@@ -18,7 +27,7 @@ export interface ISneatApiService {
   post<I, O>(
     endpoint: string,
     body: I,
-    options?: IHttpRequestOptions,
+    options?: ISneatApiPostOptions,
   ): Observable<O>;
   put<I, O>(
     endpoint: string,
