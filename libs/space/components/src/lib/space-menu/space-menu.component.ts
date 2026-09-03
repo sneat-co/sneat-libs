@@ -59,6 +59,9 @@ export class SpaceMenuComponent extends SpaceBaseComponent {
   );
 
   protected readonly $currentPage = signal<string>('');
+  protected readonly $showSSO = computed(
+    () => this.$space()?.type === 'company',
+  );
 
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly menuCtrl = inject(MenuController);
@@ -109,5 +112,4 @@ export class SpaceMenuComponent extends SpaceBaseComponent {
   protected closeMenu(): void {
     this.menuCtrl.close().catch(this.errorLogger.logError);
   }
-
 }

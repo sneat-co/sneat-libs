@@ -62,7 +62,7 @@
           Sign in or create your regular Sneat account, then we’ll continue with
           company setup.
         </p>
-        <ion-button expand="block" [href]="regularLoginURL()">
+        <ion-button expand="block" (click)="continueWithRegularLogin()">
           Continue with regular sign up
         </ion-button>
       </ion-card-content>

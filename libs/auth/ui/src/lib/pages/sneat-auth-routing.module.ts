@@ -33,6 +33,14 @@ export const ssoRoutes: Routes = [
         (m) => m.SsoSettingsPageComponent,
       ),
   },
+  {
+    path: 'space/:spaceType/:spaceID/settings/sso',
+    canActivate: [sneatAuthGuard],
+    loadComponent: () =>
+      import('../sso/sso-settings-page.component').then(
+        (m) => m.SsoSettingsPageComponent,
+      ),
+  },
 ];
 
 export const authRoutes: Routes = [

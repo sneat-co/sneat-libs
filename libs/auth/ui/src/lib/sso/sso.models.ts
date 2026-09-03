@@ -4,18 +4,31 @@ export interface SsoDiscovery {
   readonly fixedDomain: boolean;
 }
 
+export type SsoProtocol = 'oidc' | 'saml';
+
+export type SsoProviderPreset =
+  | 'entra'
+  | 'okta'
+  | 'keycloak'
+  | 'generic_oidc'
+  | 'generic_saml';
+
 export interface SsoConfigRequest {
   readonly spaceID: string;
+  readonly protocol: SsoProtocol;
+  readonly providerPreset: SsoProviderPreset;
   readonly emailDomain: string;
-  readonly issuer: string;
-  readonly clientID: string;
-  readonly clientSecret: string;
+  readonly issuer?: string;
+  readonly clientID?: string;
+  readonly clientSecret?: string;
   readonly loginHost?: string;
+  readonly samlIdpMetadataXML?: string;
 }
 
 export interface SsoConfig {
   readonly spaceID: string;
-  readonly protocol: 'oidc';
+  readonly protocol: SsoProtocol;
+  readonly providerPreset?: SsoProviderPreset;
   readonly status:
     | 'draft'
     | 'configured'
@@ -27,8 +40,25 @@ export interface SsoConfig {
   readonly clientID: string;
   readonly hasClientSecret: boolean;
   readonly loginHosts?: readonly string[];
+  readonly samlIdpEntityID?: string;
+  readonly hasSamlMetadata: boolean;
+  readonly domainVerification?: SsoDomainVerification;
   readonly verifiedAt?: string;
   readonly verifiedByUserID?: string;
+  readonly disabledAt?: string;
+}
+
+export interface SsoDomainVerification {
+  readonly recordName: string;
+  readonly recordValue: string;
+  readonly verifiedAt?: string;
+}
+
+export interface SsoDomainChallengeRequest {
+  readonly spaceID: string;
+  readonly emailDomain: string;
+  readonly protocol: SsoProtocol;
+  readonly providerPreset: SsoProviderPreset;
 }
 
 export interface SsoStart {

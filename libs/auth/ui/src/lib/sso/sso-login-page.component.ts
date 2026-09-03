@@ -84,6 +84,13 @@ export class SsoLoginPageComponent implements OnInit {
       .catch(() => undefined);
   }
 
+  protected continueWithRegularLogin(): void {
+    // `/login` is a separate application entry point in consuming Sneat apps.
+    // Force a document navigation so Ionic does not treat it as an in-app
+    // route and leave an empty router outlet.
+    location.assign(this.regularLoginURL());
+  }
+
   protected async continue(): Promise<void> {
     if (!this.validEmail() || this.busy()) {
       return;

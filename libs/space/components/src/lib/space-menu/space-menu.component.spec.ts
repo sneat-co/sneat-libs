@@ -133,6 +133,12 @@ describe('SpaceMenuComponent', () => {
     expect(labels).toContain('Sizes');
   });
 
+  it('links company spaces to shared enterprise SSO settings', async () => {
+    const template = await import('./space-menu.component.html?raw');
+    expect(template.default).toContain('Enterprise SSO');
+    expect(template.default).toContain("spacePageUrl('settings/sso')");
+  });
+
   it('renders primary space links before the extensions section', () => {
     const labels = Array.from(
       (fixture.nativeElement as HTMLElement).querySelectorAll('ion-label'),

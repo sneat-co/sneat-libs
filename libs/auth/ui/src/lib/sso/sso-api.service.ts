@@ -1,10 +1,15 @@
 import { HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { SneatApiService } from '@sneat/api';
+import {
+  DefaultSneatAppApiBaseUrl,
+  SneatApiBaseUrl,
+  SneatApiService,
+} from '@sneat/api';
 import { Observable } from 'rxjs';
 import {
   SsoConfig,
   SsoConfigRequest,
+  SsoDomainChallengeRequest,
   SsoDiscovery,
   SsoExchange,
   SsoStart,
@@ -13,6 +18,8 @@ import {
 @Injectable({ providedIn: 'root' })
 export class SsoApiService {
   private readonly api = inject(SneatApiService);
+  private readonly apiBaseURL =
+    inject(SneatApiBaseUrl, { optional: true }) ?? DefaultSneatAppApiBaseUrl;
 
   discover(
     email: string,
@@ -33,6 +40,30 @@ export class SsoApiService {
 
   saveConfig(request: SsoConfigRequest): Observable<SsoConfig> {
     return this.api.post<SsoConfig>('sso/config', request);
+  }
+
+  prepareDomain(request: SsoDomainChallengeRequest): Observable<SsoConfig> {
+    return this.api.post<SsoConfig>('sso/domain/challenge', request);
+  }
+
+  verifyDomain(spaceID: string): Observable<SsoConfig> {
+    return this.api.post<SsoConfig>('sso/domain/verify', { spaceID });
+  }
+
+  disable(spaceID: string): Observable<SsoConfig> {
+    return this.api.post<SsoConfig>('sso/config/disable', { spaceID });
+  }
+
+  delete(spaceID: string): Observable<{ readonly deleted: boolean }> {
+    return this.api.delete<{ readonly deleted: boolean }>(
+      'sso/config',
+      new HttpParams().set('spaceID', spaceID),
+    );
+  }
+
+  samlMetadataURL(): string {
+    return new URL('sso/saml/metadata', new URL(this.apiBaseURL, location.href))
+      .href;
   }
 
   startActivation(
