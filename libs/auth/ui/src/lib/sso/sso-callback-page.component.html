@@ -1,0 +1,22 @@
+<ion-header
+  ><ion-toolbar color="light"
+    ><ion-title>Company SSO</ion-title></ion-toolbar
+  ></ion-header
+>
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-content class="ion-text-center">
+      @if (error()) {
+        <h1>SSO sign-in could not be completed</h1>
+        <p>
+          <ion-text color="danger">{{ error() }}</ion-text>
+        </p>
+        <ion-button routerLink="/sso">Try again</ion-button>
+      } @else {
+        <ion-spinner />
+        <h1>Finishing company sign-in…</h1>
+        <p>Linking your verified identity to your Sneat account and space.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+</ion-content>

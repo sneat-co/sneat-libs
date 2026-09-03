@@ -1,0 +1,136 @@
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-buttons slot="start"
+      ><ion-back-button defaultHref="/sso/setup"
+    /></ion-buttons>
+    <ion-title>Enterprise SSO</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (loading() || !userRecordLoaded()) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner />
+      <p>Loading SSO settings…</p>
+    </div>
+  } @else if (!isAdmin()) {
+    <ion-card color="danger">
+      <ion-card-content>
+        <h1>Owner or admin access required</h1>
+        <p>You do not have permission to configure SSO for this space.</p>
+      </ion-card-content>
+    </ion-card>
+  } @else {
+    <ion-card>
+      <ion-card-content>
+        <h1>OIDC company sign-in</h1>
+        @if (config(); as current) {
+          <p>
+            Status:
+            <ion-badge
+              [color]="current.status === 'active' ? 'success' : 'medium'"
+              >{{ current.status }}</ion-badge
+            >
+          </p>
+        }
+        <p>
+          The secret stays on the server. Saving never activates SSO by itself.
+        </p>
+
+        <ion-item>
+          <ion-label position="stacked">Primary email domain</ion-label>
+          <ion-input
+            name="email-domain"
+            placeholder="acme.com"
+            [ngModel]="domain()"
+            (ngModelChange)="domain.set($event)"
+            [disabled]="busy()"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">OIDC issuer</ion-label>
+          <ion-input
+            name="issuer"
+            type="url"
+            placeholder="https://login.microsoftonline.com/tenant-id/v2.0"
+            [ngModel]="issuer()"
+            (ngModelChange)="issuer.set($event)"
+            [disabled]="busy()"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Client ID</ion-label>
+          <ion-input
+            name="client-id"
+            autocomplete="off"
+            [ngModel]="clientID()"
+            (ngModelChange)="clientID.set($event)"
+            [disabled]="busy()"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Client secret</ion-label>
+          <ion-input
+            name="client-secret"
+            type="password"
+            autocomplete="new-password"
+            [placeholder]="
+              config()?.hasClientSecret
+                ? 'Leave blank to keep the stored secret'
+                : 'Required'
+            "
+            [ngModel]="clientSecret()"
+            (ngModelChange)="clientSecret.set($event)"
+            [disabled]="busy()"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked"
+            >Company login host (optional)</ion-label
+          >
+          <ion-input
+            name="login-host"
+            placeholder="acme.datatug.app"
+            [ngModel]="loginHost()"
+            (ngModelChange)="loginHost.set($event)"
+            [disabled]="busy()"
+          />
+        </ion-item>
+        <p>
+          <ion-text color="medium"
+            >A company host fixes the login page to this email domain. Only
+            approved Sneat-owned host suffixes can be claimed.</ion-text
+          >
+        </p>
+
+        @if (error()) {
+          <p>
+            <ion-text color="danger">{{ error() }}</ion-text>
+          </p>
+        }
+        @if (success()) {
+          <p>
+            <ion-text color="success">{{ success() }}</ion-text>
+          </p>
+        }
+
+        <ion-button
+          fill="outline"
+          [disabled]="!formValid() || busy()"
+          (click)="save()"
+        >
+          @if (busy()) {
+            <ion-spinner name="lines-small" slot="start" />
+          }
+          Save configuration
+        </ion-button>
+        <ion-button
+          [disabled]="!formValid() || busy()"
+          (click)="testAndActivate()"
+        >
+          Test &amp; Activate SSO
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  }
+</ion-content>
