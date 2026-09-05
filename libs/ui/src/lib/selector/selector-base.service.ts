@@ -33,8 +33,8 @@ export abstract class SelectorBaseService<T = ISelectItem> {
         if (onSelected) {
           await onSelected(items);
         }
-        await this.modalController.dismiss(items);
         result = items;
+        await this.modalController.dismiss(items);
       },
     };
     let componentProps: ComponentProps<unknown> = {
