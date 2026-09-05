@@ -18,6 +18,22 @@ export function isLocalhost(): boolean {
   );
 }
 
+// Match the shared backend's trusted local HTTPS listener. Tunnel users retain
+// their same-origin routing; deployed apps retain the normal production API.
+export function standardSneatApiBaseUrl(
+  config: IEnvironmentConfig,
+): string | undefined {
+  if (config.useNgrok) {
+    return `//${location.host}/v0/`;
+  }
+  if (!config.firebaseConfig.emulator) {
+    return undefined;
+  }
+  return isLocalhost()
+    ? 'https://sneat-api.dev.localhost:4300/v0/'
+    : 'https://local-api.sneat.ws/v0/';
+}
+
 // Fail-safe environment selection. Use the Firebase emulator ONLY when running
 // on localhost; every deployed domain gets the production config passed in.
 //
@@ -53,8 +69,7 @@ export function appEnvironmentConfig(
   // auth.sneat.co is an authorized OAuth redirect domain shared across products.
   // Apps on Firebase Hosting (or wanting a same-origin authDomain) override by
   // setting firebaseConfig.authDomain.
-  const authDomain =
-    prod.firebaseConfig.authDomain || SHARED_SNEAT_AUTH_DOMAIN;
+  const authDomain = prod.firebaseConfig.authDomain || SHARED_SNEAT_AUTH_DOMAIN;
   return {
     ...prod,
     firebaseConfig: { ...prod.firebaseConfig, authDomain },

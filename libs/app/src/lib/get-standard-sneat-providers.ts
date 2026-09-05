@@ -6,9 +6,14 @@ import {
 import { provideSneatAuthenticatedProviders } from '@sneat/app-auth';
 import { provideSneatIonicShell } from '@sneat/app-ionic';
 import { provideSneatPublicBootstrap } from '@sneat/app-public';
-import { EnvConfigToken, IEnvironmentConfig, TopMenuService } from '@sneat/core';
+import {
+  EnvConfigToken,
+  IEnvironmentConfig,
+  TopMenuService,
+} from '@sneat/core';
 import { RANDOM_ID_OPTIONS } from '@sneat/random';
 import { AppComponentService } from './app-component.service';
+import { standardSneatApiBaseUrl } from './init-helpers';
 
 /** Legacy all-in-one bootstrap. New PrimeNG public/cockpit apps should import
  * @sneat/app-public and add @sneat/app-auth only to their lazy private routes. */
@@ -18,11 +23,7 @@ export function getStandardSneatProviders(
   return [
     provideZonelessChangeDetection(),
     provideSneatPublicBootstrap({
-      apiBaseUrl: environmentConfig.useNgrok
-        ? `//${location.host}/v0/`
-        : environmentConfig.firebaseConfig.emulator
-          ? 'https://local-api.sneat.ws/v0/'
-          : undefined,
+      apiBaseUrl: standardSneatApiBaseUrl(environmentConfig),
     }),
     provideSneatAuthenticatedProviders(environmentConfig),
     provideSneatIonicShell(),
