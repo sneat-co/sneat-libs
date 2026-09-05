@@ -1,6 +1,6 @@
 {
   "name": "@sneat/auth-models",
-  "version": "0.27.10",
+  "version": "0.27.11",
   "publishConfig": {
     "access": "public"
   },
