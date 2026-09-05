@@ -9,6 +9,8 @@ import {
   Output,
   signal,
   SimpleChanges,
+  ChangeDetectionStrategy,
+  input
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -17,7 +19,7 @@ import {
   IonLabel,
   IonSegment,
   IonSegmentButton,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { ISelectItem, SelectFromListComponent } from '@sneat/ui';
 import { GeoRegion, ICountry } from './countries';
 import { CountriesLoaderService } from './countries-loader.service';
@@ -25,6 +27,7 @@ import { CountriesLoaderService } from './countries-loader.service';
 @Component({
   selector: 'sneat-country-selector',
   templateUrl: './country-selector.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     SelectFromListComponent,
@@ -48,14 +51,16 @@ export class CountrySelectorComponent implements OnInit, OnChanges {
     { id: 'Africa' },
   ];
 
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input({ required: true }) countryID?: string;
 
-  @Input() defaultCountryID?: string;
+  readonly defaultCountryID = input<string>();
 
-  @Input() readonly = false;
-  @Input() disabled = false;
-  @Input() label = 'search';
-  @Input() canBeUnknown = false;
+  readonly readonly = input(false);
+  readonly disabled = input(false);
+  readonly label = input('search');
+  readonly canBeUnknown = input(false);
 
   @Output() readonly countryIDChange = new EventEmitter<string>();
 
@@ -84,7 +89,7 @@ export class CountrySelectorComponent implements OnInit, OnChanges {
                 c.geoRegions.includes('South America'))) ||
             c.geoRegions.includes(this.geoRegion() as GeoRegion),
         );
-    if (this.canBeUnknown && this.unknownCountry()) {
+    if (this.canBeUnknown() && this.unknownCountry()) {
       countriesToShow = [...countriesToShow, this.unknownCountry()!];
     }
     return countriesToShow;
@@ -119,16 +124,17 @@ export class CountrySelectorComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['country'] && this.countryID === '--' && !this.canBeUnknown) {
+    if (changes['country'] && this.countryID === '--' && !this.canBeUnknown()) {
       this.countryID = undefined;
     }
+    const defaultCountryID = this.defaultCountryID();
     if (
       changes['defaultCountryID'] &&
       !this.countryID &&
-      this.defaultCountryID &&
-      this.defaultCountryID !== '--'
+      defaultCountryID &&
+      defaultCountryID !== '--'
     ) {
-      this.countryID = this.defaultCountryID;
+      this.countryID = defaultCountryID;
       this.countryIDChange.emit(this.countryID);
     }
   }

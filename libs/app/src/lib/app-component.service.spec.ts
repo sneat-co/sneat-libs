@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
-import { Platform } from '@ionic/angular/standalone';
+import { Platform } from '@ionic/angular';
 import { ErrorLogger } from '@sneat/core';
 import {
   AppComponentService,

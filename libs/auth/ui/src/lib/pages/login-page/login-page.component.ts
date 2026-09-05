@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject } from '@angular/core';
+import { Component, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -24,7 +24,7 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   AuthProviderID,
   AuthStatuses,
@@ -80,6 +80,7 @@ type Action = 'join' | 'refuse'; // TODO: inject provider for action description
     IonList,
     IonGrid,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: ClassName,
@@ -125,6 +126,12 @@ export class LoginPageComponent extends SneatBaseComponent {
   // is broken.
   protected readonly isAuthenticated = computed(
     () => this.authStatus() === 'authenticated',
+  );
+  // While Firebase is still resolving the session — the initial state, and the
+  // brief window right after a signInWithRedirect return — show a "signing you
+  // in" spinner instead of flashing the sign-in form before we navigate onward.
+  protected readonly isAuthenticating = computed(
+    () => this.authStatus() === 'authenticating',
   );
   private readonly authStatus = toSignal(this.authStateService.authStatus);
   private readonly authUser = toSignal(this.authStateService.authUser);

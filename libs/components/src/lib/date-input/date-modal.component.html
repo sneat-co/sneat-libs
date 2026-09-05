@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ title }}</ion-title>
+    <ion-title>{{ title() }}</ion-title>
     <ion-buttons slot="end">
       <ion-button
         (click)="dismiss()"
@@ -16,7 +16,7 @@
 <ion-content>
   <ion-datetime
     [value]="$date()"
-    [max]="max"
+    [max]="max()"
     (ionChange)="onDateChanged($event)"
     presentation="date"
   />

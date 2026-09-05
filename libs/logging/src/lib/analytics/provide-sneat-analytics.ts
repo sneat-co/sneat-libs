@@ -1,16 +1,16 @@
-import { Analytics, getAnalytics } from '@angular/fire/analytics';
-import { FirebaseApp } from '@angular/fire/app';
+import type { Analytics } from 'firebase/analytics';
 import {
   AnalyticsService,
   IAnalyticsService,
   IEnvironmentConfig,
+  SNEAT_FIREBASE_ANALYTICS,
 } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { FireAnalyticsService } from './fire-analytics.service';
 import { GtagAnalyticsService } from './gtag-analytics.service';
 import { MultiAnalyticsService } from './multi-analytics.service';
-import { PosthogAnalyticsService } from './posthog-analytics.service';
-import { Provider } from '@angular/core';
+import { DeferredPosthogAnalyticsService } from './deferred-posthog-analytics.service';
+import { Injector, Provider } from '@angular/core';
 
 export interface IAnalyticsConfig {
   addPosthog?: boolean;
@@ -24,7 +24,8 @@ function getAnalyticsConfig(
   environmentConfig: IEnvironmentConfig,
 ): IAnalyticsConfig {
   const useAnalytics =
-    location.host === 'sneat.app' || location.protocol === 'https:';
+    typeof location !== 'undefined' &&
+    (location.host === 'sneat.app' || location.protocol === 'https:');
 
   const firebaseMeasurementId = environmentConfig.firebaseConfig?.measurementId;
   const gaMeasurementId = environmentConfig.googleAnalytics?.measurementId;
@@ -44,25 +45,39 @@ export function provideSneatAnalytics(
 ): Provider {
   return {
     provide: AnalyticsService,
-    deps: [
-      ErrorLogger,
-      FirebaseApp,
-      // [new Optional(), Analytics], // TODO: The received Analytics instance does not have app property :(
-    ],
-    useFactory: (errorLogger: IErrorLogger, fbApp: FirebaseApp) => {
+    // `Injector` rather than `SNEAT_FIREBASE_ANALYTICS` directly: listing the
+    // token in `deps` would resolve it — and so initialize Firebase Analytics —
+    // on every app that injects `AnalyticsService`, including the ones where
+    // `addFirebaseAnalytics` is false (plain http, non-sneat.app host). Reading
+    // it through the injector inside the branch below keeps initialization as
+    // lazy as the pre-0.27.0 `getAnalytics(fbApp)` call it replaces.
+    deps: [ErrorLogger, Injector],
+    useFactory: (errorLogger: IErrorLogger, injector: Injector) => {
       const config = getAnalyticsConfig(environmentConfig);
       const as: IAnalyticsService[] = [];
       if (config?.addPosthog) {
-        as.push(new PosthogAnalyticsService());
+        as.push(
+          new DeferredPosthogAnalyticsService(
+            environmentConfig.posthog as NonNullable<
+              IEnvironmentConfig['posthog']
+            >,
+            errorLogger,
+          ),
+        );
       }
       if (config?.googleAnalyticsMeasurementId) {
         as.push(new GtagAnalyticsService(config.googleAnalyticsMeasurementId));
       }
       if (config?.addFirebaseAnalytics) {
-        const analytics: Analytics = fbApp && getAnalytics(fbApp); // Ideally we would want to get it from the DI
+        const analytics: Analytics | null = injector.get(
+          SNEAT_FIREBASE_ANALYTICS,
+          null,
+        );
         if (analytics) {
+          // Constructed inside this factory's injection context, so
+          // FireAnalyticsService's own inject(SNEAT_FIREBASE_ANALYTICS)
+          // resolves — to this same, already-instantiated instance.
           as.push(new FireAnalyticsService());
-          // as.push(new FireAnalyticsService(errorLogger, analytics));
         } else {
           errorLogger.logError(
             'addFirebaseAnalytics==true, but Firebase Analytics is not provided',

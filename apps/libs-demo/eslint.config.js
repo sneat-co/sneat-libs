@@ -4,6 +4,11 @@ module.exports = [
   ...baseConfig,
   {
     files: ['**/*.ts'],
-    rules: {},
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { paths: [{ name: '@ionic/angular', message: 'Use focused Ionic public entry points.' }] },
+      ],
+    },
   },
 ];

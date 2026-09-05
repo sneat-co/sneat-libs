@@ -15,9 +15,10 @@ import {
   IonItem,
   IonItemDivider,
   IonLabel,
+  IonSpinner,
   MenuController,
   NavController,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   ISneatAuthState,
   ISneatUserState,
@@ -39,6 +40,7 @@ import { PersonNamesPipe, personNames } from '../../pipes/person-names.pipe';
     IonIcon,
     IonButtons,
     IonButton,
+    IonSpinner,
     JsonPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

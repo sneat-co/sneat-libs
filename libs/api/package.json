@@ -1,16 +1,15 @@
 {
   "name": "@sneat/api",
-  "version": "0.25.0",
+  "version": "0.27.9",
   "publishConfig": {
     "access": "public"
   },
   "peerDependencies": {
-    "@angular/common": ">=21.0.0",
-    "@angular/core": ">=21.0.0",
+    "@angular/common": ">=22.0.0 <23.0.0",
+    "@angular/core": ">=22.0.0 <23.0.0",
     "firebase": "*",
-    "@angular/fire": ">=20",
-    "@sneat/api-public": "^0.25.0",
-    "@sneat/core": "^0.25.0",
+    "@sneat/api-public": "^0.27.0",
+    "@sneat/core": "^0.27.0",
     "rxjs": ">=7.8.0"
   },
   "dependencies": {

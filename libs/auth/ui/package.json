@@ -1,15 +1,15 @@
 {
   "name": "@sneat/auth-ui",
-  "version": "0.25.0",
+  "version": "0.27.9",
   "publishConfig": {
     "access": "public"
   },
   "peerDependencies": {
-    "@angular/common": ">=21.0.0",
-    "@angular/core": ">=21.0.0",
-    "@ionic/angular": ">=8",
+    "@angular/common": ">=22.0.0 <23.0.0",
+    "@angular/core": ">=22.0.0 <23.0.0",
+    "@ionic/angular": ">=9.0.0 <10.0.0",
     "firebase": "*",
-    "@angular/fire": ">=20",
+    "@sneat/core": "^0.27.0",
     "@sneat/random": "*"
   },
   "dependencies": {

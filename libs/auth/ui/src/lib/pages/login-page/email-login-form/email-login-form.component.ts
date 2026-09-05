@@ -7,13 +7,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-// import { getApp } from '@angular/fire/app';
-// import { getAuth } from '@angular/fire/auth';
 import {
   Auth,
   sendPasswordResetEmail,
   sendSignInLinkToEmail,
-} from '@angular/fire/auth';
+} from 'firebase/auth';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { FormsModule } from '@angular/forms';
 import {
   ToastController,
@@ -30,7 +29,7 @@ import {
   IonSegmentButton,
   IonSpinner,
   IonText,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
 import { IInitUserRecordRequest, UserRecordService } from '@sneat/auth-core';
 import { createSetFocusToInput } from '@sneat/ui';
@@ -78,7 +77,7 @@ export class EmailLoginFormComponent {
     inject<IAnalyticsService>(AnalyticsService);
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly toastController = inject(ToastController);
-  private readonly afAuth = inject(Auth);
+  private readonly afAuth = inject(SNEAT_FIREBASE_AUTH);
   private readonly randomIdService = inject(RandomIdService);
   private readonly sneatApiService = inject(SneatApiService);
   private readonly userRecordService = inject(UserRecordService);
@@ -120,7 +119,10 @@ export class EmailLoginFormComponent {
   }
 
   public getFirebaseAuth(): Auth {
-    return this.afAuth as unknown as Auth; // TODO: pending https://github.com/angular/angularfire/pull/3402
+    // Since 0.27.0 the injected instance IS the firebase modular `Auth`, so the
+    // `as unknown as Auth` cast this used to need (angular/angularfire#3402 —
+    // @angular/fire's `Auth` was a distinct nominal class) is gone.
+    return this.afAuth;
   }
 
   public async signUp(): Promise<void> {

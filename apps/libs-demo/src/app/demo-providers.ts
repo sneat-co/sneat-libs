@@ -1,6 +1,5 @@
 import { EnvironmentProviders, Provider } from '@angular/core';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { connectAuthEmulator, getAuth, provideAuth } from '@angular/fire/auth';
+import { provideSneatFirebase } from '@sneat/app-auth';
 import {
   AnalyticsService,
   APP_INFO,
@@ -59,18 +58,14 @@ const noopAnalytics: IAnalyticsService = {
  * NOTE: this is a best-effort skeleton. The full runtime auth wiring is
  * finalized later by reusing the working setup from `sneat-app`; this iteration
  * only needs to compile.
+ *
+ * Firebase wiring goes through `provideSneatFirebase()` (`@sneat/app-auth`) —
+ * the `@angular/fire`-free replacement for `provideFirebaseApp`/`provideAuth` —
+ * so this app builds and runs with no `@angular/fire` dependency at all. It
+ * doubles as the Step 1 reference example for the fleet migration recipe.
  */
 export const demoProviders: (Provider | EnvironmentProviders)[] = [
-  provideFirebaseApp(() => initializeApp(demoFirebaseConfig)),
-  provideAuth(() => {
-    const auth = getAuth();
-    connectAuthEmulator(
-      auth,
-      `http://localhost:${AUTH_EMULATOR_PORT}`,
-      { disableWarnings: true },
-    );
-    return auth;
-  }),
+  provideSneatFirebase(demoFirebaseConfig),
   { provide: APP_INFO, useValue: demoAppInfo },
   { provide: AnalyticsService, useValue: noopAnalytics },
   { provide: FirebaseConfigToken, useValue: demoFirebaseConfig },

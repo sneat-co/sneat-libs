@@ -3,9 +3,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  Input,
   Output,
   inject,
+  input
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
@@ -16,7 +16,7 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { UserRequiredFieldsService } from '@sneat/auth-ui';
 import { SpaceType } from '@sneat/core';
 import { ICreateSpaceRequest, ISpaceContext } from '@sneat/space-models';
@@ -56,12 +56,12 @@ export class SpacesListComponent extends SneatBaseComponent {
   );
 
   // Inputs
-  @Input({ required: true }) userID?: string;
-  @Input({ required: true }) spaces?: ISpaceContext[];
-  @Input() pathPrefix = '/space';
+  readonly userID = input.required<string | undefined>();
+  readonly spaces = input.required<ISpaceContext[] | undefined>();
+  readonly pathPrefix = input('/space');
   // Opt-in: render a per-row "leave" button. Off by default so existing
   // consumers (spaces menu, for-space-type-card) are unchanged.
-  @Input() allowLeave = false;
+  readonly allowLeave = input(false);
 
   // Outputs
   @Output() readonly beforeNavigateToSpace = new EventEmitter<ISpaceContext>();

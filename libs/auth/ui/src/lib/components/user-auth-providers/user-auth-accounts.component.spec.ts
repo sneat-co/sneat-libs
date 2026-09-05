@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SneatApiService } from '@sneat/api';
 import { SneatUserService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
@@ -11,7 +11,7 @@ describe('UserAuthAccountsComponent', () => {
   let component: UserAuthAccountsComponent;
   let fixture: ComponentFixture<UserAuthAccountsComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UserAuthAccountsComponent],
       providers: [
@@ -39,7 +39,9 @@ describe('UserAuthAccountsComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(UserAuthAccountsComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

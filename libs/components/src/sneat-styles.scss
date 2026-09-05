@@ -12,20 +12,20 @@
  */
 
 ///* Core CSS required for Ionic components to work properly */
-//@import '~@ionic/angular/css/core.css';
+//@import '@ionic/angular/css/core.css';
 //
 ///* Basic CSS for apps built with Ionic */
-//@import '~@ionic/angular/css/normalize.css';
-//@import '~@ionic/angular/css/structure.css';
-//@import '~@ionic/angular/css/typography.css';
-//@import '~@ionic/angular/css/display.css';
+//@import '@ionic/angular/css/normalize.css';
+//@import '@ionic/angular/css/structure.css';
+//@import '@ionic/angular/css/typography.css';
+//@import '@ionic/angular/css/display.css';
 //
 ///* Optional CSS utils that can be commented out */
-//@import '~@ionic/angular/css/padding.css';
-//@import '~@ionic/angular/css/float-elements.css';
-//@import '~@ionic/angular/css/text-alignment.css';
-//@import '~@ionic/angular/css/text-transformation.css';
-//@import '~@ionic/angular/css/flex-utils.css';
+//@import '@ionic/angular/css/padding.css';
+//@import '@ionic/angular/css/float-elements.css';
+//@import '@ionic/angular/css/text-alignment.css';
+//@import '@ionic/angular/css/text-transformation.css';
+//@import '@ionic/angular/css/flex-utils.css';
 
 @include meta.load-css('sneat-grid-layout');
 @include meta.load-css('theme/variables.scss');
@@ -35,21 +35,49 @@
 
 // https://ionicframework.com/docs/theming/colors
 :root {
-  --ion-color-divider: #f0f7ff;
-  --ion-color-divider-rgb: 240, 247, 255;
-  --ion-color-divider-contrast: #000000;
-  --ion-color-divider-contrast-rgb: 0, 0, 0;
-  --ion-color-divider-shade: #d3d9e0;
-  --ion-color-divider-tint: #f2f8ff;
+  // Semantic surface tokens. An app can override these at :root or on a
+  // narrower host to brand an individual card/menu without replacing shared
+  // component markup.
+  --sneat-card-header-background: #f0f7ff;
+  --sneat-card-header-background-rgb: 240, 247, 255;
+  --sneat-card-header-color: #000000;
+  --sneat-card-header-color-rgb: 0, 0, 0;
+  --sneat-card-header-background-shade: #d3d9e0;
+  --sneat-card-header-background-tint: #f2f8ff;
+
+  --sneat-pane-header-background: var(--ion-color-light);
+  --sneat-pane-header-color: var(--ion-color-light-contrast);
+
+  // Ionic color alias for headers such as <ion-item-divider color="header">.
+  --ion-color-header: var(--sneat-card-header-background);
+  --ion-color-header-rgb: var(--sneat-card-header-background-rgb);
+  --ion-color-header-contrast: var(--sneat-card-header-color);
+  --ion-color-header-contrast-rgb: var(--sneat-card-header-color-rgb);
+  --ion-color-header-shade: var(--sneat-card-header-background-shade);
+  --ion-color-header-tint: var(--sneat-card-header-background-tint);
 }
 
-.ion-color-divider {
-  --ion-color-base: var(--ion-color-divider);
-  --ion-color-base-rgb: var(--ion-color-divider-rgb);
-  --ion-color-contrast: var(--ion-color-divider-contrast);
-  --ion-color-contrast-rgb: var(--ion-color-divider-contrast-rgb);
-  --ion-color-shade: var(--ion-color-divider-shade);
-  --ion-color-tint: var(--ion-color-divider-tint);
+.ion-color-header {
+  --ion-color-base: var(--ion-color-header);
+  --ion-color-base-rgb: var(--ion-color-header-rgb);
+  --ion-color-contrast: var(--ion-color-header-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-header-contrast-rgb);
+  --ion-color-shade: var(--ion-color-header-shade);
+  --ion-color-tint: var(--ion-color-header-tint);
+}
+
+.sneat-card-header {
+  --background: var(--sneat-card-header-background);
+  --color: var(--sneat-card-header-color);
+  background: var(--sneat-card-header-background);
+  color: var(--sneat-card-header-color);
+}
+
+.sneat-pane-header {
+  --background: var(--sneat-pane-header-background);
+  --color: var(--sneat-pane-header-color);
+  background: var(--sneat-pane-header-background);
+  color: var(--sneat-pane-header-color);
 }
 .cardy {
   //--ion-background-color: #fcfcfc;

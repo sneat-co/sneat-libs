@@ -46,9 +46,7 @@ export function createBaseViteConfig(
         '@angular/router',
         '@angular/cdk',
         '@angular/material',
-        '@angular/fire',
         'rxjs',
-        'zone.js',
       ],
       alias: [
         //				{
@@ -85,7 +83,7 @@ export function createBaseViteConfig(
         reportsDirectory: reportsDirectory || coverageDir,
         provider: 'v8' as const,
         reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
-        all: true,
+
         include: ['src/**/*.ts'],
         exclude: [
           'src/**/*.spec.ts',
@@ -109,8 +107,6 @@ export function createBaseViteConfig(
         deps: {
           inline: [
             '@ionic/angular',
-            '@ionic/angular/standalone',
-            '@angular/fire',
             /@angular\//,
             /@stencil\//,
             /tslib/,

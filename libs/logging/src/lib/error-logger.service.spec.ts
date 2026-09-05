@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ErrorLoggerService } from './error-logger.service';
-import { ToastController } from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular';
 import { captureException, showReportDialog } from '@sentry/angular';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Mock } from 'vitest';
@@ -41,6 +41,21 @@ describe('ErrorLoggerService', () => {
   });
 
   describe('logError', () => {
+    it('logs without browser reporting or toast UI during server rendering', () => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      vi.stubGlobal('window', undefined);
+
+      service.logError(new Error('server render'));
+
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(captureException).not.toHaveBeenCalled();
+      expect(toastController.create).not.toHaveBeenCalled();
+      vi.unstubAllGlobals();
+      consoleSpy.mockRestore();
+    });
+
     it('should log to console.error', () => {
       const consoleSpy = vi
         .spyOn(console, 'error')
@@ -140,6 +155,31 @@ describe('ErrorLoggerService', () => {
       service.logError(new Error('test'), 'msg', { report: false });
       expect(captureException).not.toHaveBeenCalled();
       vi.unstubAllGlobals();
+    });
+
+    it('should warn when arguments look swapped (string e, non-string message)', () => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      const err = new Error('real error');
+      service.logError('a plain message' as unknown, err as unknown as string);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('arguments look swapped'),
+        { e: 'a plain message', message: err },
+      );
+      consoleSpy.mockRestore();
+    });
+
+    it('should NOT warn about swapped arguments for a plain string call with no message', () => {
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      service.logError('just an error string');
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining('arguments look swapped'),
+        expect.anything(),
+      );
+      consoleSpy.mockRestore();
     });
   });
 

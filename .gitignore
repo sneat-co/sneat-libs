@@ -9,3 +9,9 @@ coverage
 specscore.local.yaml
 .specscore/
 .DS_Store
+
+.claude/worktrees
+.claude/settings.local.json
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs

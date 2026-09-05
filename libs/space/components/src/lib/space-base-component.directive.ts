@@ -1,13 +1,15 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   computed,
   Directive,
   effect,
   inject,
   OnInit,
+  PLATFORM_ID,
   signal,
 } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
-import { NavController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular';
 import {
   equalSpaceRefs,
   ILogger,
@@ -50,6 +52,11 @@ export abstract class SpaceBaseComponent
     undefined,
   );
   private readonly $spaceDbo = signal<ISpaceDbo | undefined | null>(undefined);
+  private readonly $spaceAccessDenied = signal(false);
+
+  protected readonly $spaceNotFound = computed(
+    () => this.$spaceDbo() === null || this.$spaceAccessDenied(),
+  );
 
   // private readonly $_spaceID = signal<string | undefined>(undefined);
   // protected readonly $spaceID = this.$_spaceID.asReadonly();
@@ -73,8 +80,6 @@ export abstract class SpaceBaseComponent
   protected takeUntilSpaceIdChanged<T>(): MonoTypeOperatorFunction<T> {
     return takeUntil(this.spaceIDChanged$);
   }
-
-  protected noPermissions = false;
 
   protected readonly spaceBriefChanged = new Subject<
     ISpaceBrief | undefined | null
@@ -156,6 +161,7 @@ export abstract class SpaceBaseComponent
 
   protected readonly route = inject(ActivatedRoute);
   protected readonly spaceParams = inject(SpaceComponentBaseParams);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   public constructor() {
     super();
@@ -177,7 +183,7 @@ export abstract class SpaceBaseComponent
       this.unsubscribe('$spaceID() changed');
       this.$spaceBrief.set(undefined);
       this.$spaceDbo.set(undefined);
-      if (spaceID) {
+      if (spaceID && this.isBrowser) {
         setTimeout(() => this.subscribeForSpaceChanges(spaceID), 1);
       }
     });
@@ -225,7 +231,7 @@ export abstract class SpaceBaseComponent
   protected onUserIdChanged(): void {
     if (!this.currentUserId) {
       this.subs.unsubscribe();
-      if (this.space && this.space.dbo) {
+      if (this.space.brief || this.space.dbo) {
         this.setSpaceContext({
           ...this.space,
           brief: undefined,
@@ -313,7 +319,10 @@ export abstract class SpaceBaseComponent
         this.takeUntilDestroyed(),
         takeUntil(this.spaceIDChanged$),
         map((space) => {
-          return { ...space, type: space.dbo?.type };
+          return {
+            ...space,
+            type: space.dbo?.type || space.type || this.$spaceType(),
+          };
         }),
       )
       .subscribe({
@@ -323,7 +332,10 @@ export abstract class SpaceBaseComponent
             this.log(
               'subscribeForSpaceChanges() => permission denied to read space record',
             );
-            this.noPermissions = true;
+            // Firestore intentionally does not reveal whether a protected
+            // document exists. For navigation purposes this is a terminal
+            // unavailable-space state, just like a missing snapshot.
+            this.$spaceAccessDenied.set(true);
             return;
           }
           this.errorLogger.logError('failed to get team record');
@@ -332,7 +344,9 @@ export abstract class SpaceBaseComponent
   }
 
   private getSpaceContextFromRouteState(): void {
-    const space = history.state?.team as ISpaceContext;
+    const space = this.isBrowser
+      ? (history.state?.team as ISpaceContext)
+      : undefined;
     this.log(
       `${this.className}:SpaceBaseComponent.getSpaceContextFromRouteState()`,
       space,
@@ -350,8 +364,10 @@ export abstract class SpaceBaseComponent
         next: (uid) => {
           if (!uid) {
             this.unsubscribe('user signed out');
-            this.setSpaceContext(undefined);
           }
+          // A space's id and type come from the public URL and remain useful
+          // before authentication and after sign-out. Only loaded protected
+          // data is cleared by onUserIdChanged().
           this.onUserIdChanged();
         },
         error: (e) => this.logError(e, 'Failed to get user record'),
@@ -422,11 +438,14 @@ export abstract class SpaceBaseComponent
       return;
     }
     const idChanged = prevSpace?.id != spaceContext?.id;
+    if (idChanged) {
+      this.$spaceAccessDenied.set(false);
+    }
     const briefChanged = !equalSpaceBriefs(
       prevSpace?.brief,
       spaceContext?.brief,
     );
-    const dboChanged = prevSpace?.dbo != spaceContext?.dbo;
+    const dboChanged = prevSpace?.dbo !== spaceContext?.dbo;
     this.log(
       `${this.className}:SpaceBaseComponent.setSpaceContext(id=${spaceContext?.id}) => idChanged=${idChanged}, briefChanged=${briefChanged}, dtoChanged=${dboChanged}`,
     );
@@ -444,6 +463,7 @@ export abstract class SpaceBaseComponent
   }
 
   private readonly onSpaceContextChanged = (space: ISpaceContext): void => {
+    this.$spaceAccessDenied.set(false);
     const isDboChanged = space.dbo !== this.$space()?.dbo;
     // this.log(
     // 	`${this.className}:SpaceBaseComponent.onSpaceContextChanged() => dtoChanged=${dtoChanged}, space:`,
@@ -455,6 +475,8 @@ export abstract class SpaceBaseComponent
     if (!space.type) {
       if (space.brief?.type) {
         space = { ...space, type: space.brief.type };
+      } else if (this.$spaceType()) {
+        space = { ...space, type: this.$spaceType() };
       }
     }
     this.setSpaceContext(space);

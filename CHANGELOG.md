@@ -1,3 +1,184 @@
+## 0.27.9 (2026-09-05)
+
+### 🩹 Fixes
+
+- Connect standalone apps running on loopback hosts to the shared local HTTPS API when Firebase emulator mode is enabled. ([c056d7b](https://github.com/sneat-co/sneat-libs/commit/c056d7b))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.8 (2026-09-01)
+
+### 🩹 Fixes
+
+- Allow retry-safe POST requests to refresh an expired authentication token once while keeping mutation retries opt-in. ([#76](https://github.com/sneat-co/sneat-libs/pull/76))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+
+## 0.27.7 (2026-08-31)
+
+### 🩹 Fixes
+
+- Publish reusable space selection, shared card/pane styling, and list add/remove animations for consuming Sneat apps. ([f26b46f](https://github.com/sneat-co/sneat-libs/commit/f26b46f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.6 (2026-08-29)
+
+### 🩹 Fixes
+
+- Add progressive authentication and space-loading support, request blocking for local UI inspection, and shared space extension navigation. ([192ceef](https://github.com/sneat-co/sneat-libs/commit/192ceef))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.5 (2026-08-28)
+
+### 🩹 Fixes
+
+- Fix lazy Ionic NavController provider for authenticated space routes. ([faf690e](https://github.com/sneat-co/sneat-libs/commit/faf690e))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.4 (2026-08-27)
+
+### 🩹 Fixes
+
+- Avoid Ionic root barrels on Sneat.app bootstrap paths ([8fc7c2f](https://github.com/sneat-co/sneat-libs/commit/8fc7c2f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.3 (2026-08-27)
+
+### 🩹 Fixes
+
+- Defer Firebase session startup and allow local subdomains ([d10da56](https://github.com/sneat-co/sneat-libs/commit/d10da56))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.2 (2026-08-26)
+
+### 🩹 Fixes
+
+- fix: correct swapped logError(e, message) arguments so server error details reach the user ([cb555cf](https://github.com/sneat-co/sneat-libs/commit/cb555cf))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Opus 5
+
+## 0.27.1 (2026-08-26)
+
+### 🚀 Features
+
+- port EventHappening contract (event-happening.ts + happening.ts pricing/planned-slot additions) from the abandoned ext-calendarius 0.24.1 lineage ([e99040f](https://github.com/sneat-co/sneat-libs/commit/e99040f))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.0 (2026-08-25)
+
+### ⚠️  Breaking Changes
+
+- remove @angular/fire entirely: breaking removal of getAngularFireProviders/provideFireApp/redirectToLoginIfNotSignedIn/canLoad and the @angular/fire DI tokens ([9d95894](https://github.com/sneat-co/sneat-libs/commit/9d95894))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Fable 5
+
+## 0.26.6 (2026-08-25)
+
+### 🩹 Fixes
+
+- **testing:** run shared test harness zoneless, drop zone.js ([c9eaf8e](https://github.com/sneat-co/sneat-libs/commit/c9eaf8e))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.26.5 (2026-08-25)
+
+### 🚀 Features
+
+- **app-auth,auth-core:** add @angular/fire-free Firebase providers and auth guard ([a292975](https://github.com/sneat-co/sneat-libs/commit/a292975))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+- Claude Fable 5
+
+## 0.26.4 (2026-08-24)
+
+### 🩹 Fixes
+
+- align capacitor peers with supported v8 ([cb3028e](https://github.com/sneat-co/sneat-libs/commit/cb3028e))
+- align Capacitor peers with stable 8 line ([693bb40](https://github.com/sneat-co/sneat-libs/commit/693bb40))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+
+## 0.26.3 (2026-08-24)
+
+### 🩹 Fixes
+
+- **auth:** resolve current Firebase token per request ([#54](https://github.com/sneat-co/sneat-libs/pull/54))
+- **demo:** enable zoneless demo bootstrap ([b238798](https://github.com/sneat-co/sneat-libs/commit/b238798))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+
+## 0.26.2 (2026-08-24)
+
+### 🚀 Features
+
+- **app:** enable zoneless standard providers ([ac234cd](https://github.com/sneat-co/sneat-libs/commit/ac234cd))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.26.1 (2026-08-24)
+
+### 🚀 Features
+
+- migrate libraries to Ionic Framework 9 and Angular 22 ([cfcd230](https://github.com/sneat-co/sneat-libs/commit/cfcd230))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.26.0 (2026-08-20)
+
+### 🚀 Features
+
+- **core:** add 'community-center' space type (NoticeBoard.cc) ([#46](https://github.com/sneat-co/sneat-libs/pull/46))
+
+### 🩹 Fixes
+
+- **app:** default authDomain to shared auth.sneat.co (fixes Google sign-in on Cloudflare) ([#47](https://github.com/sneat-co/sneat-libs/pull/47))
+- **auth-ui:** show a spinner while authenticating instead of flashing the form ([#48](https://github.com/sneat-co/sneat-libs/pull/48))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok @trakhimenok
+- Claude Opus 4.8
+
 ## 0.25.0 (2026-08-15)
 
 ### 🚀 Features

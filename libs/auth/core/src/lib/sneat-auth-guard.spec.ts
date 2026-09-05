@@ -6,13 +6,8 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from '@angular/router';
-import { Auth } from '@angular/fire/auth';
-import {
-  SneatAuthGuard,
-  redirectToLoginIfNotSignedIn,
-} from './sneat-auth-guard';
+import { SneatAuthGuard, SNEAT_AUTH_GUARDS } from './sneat-auth-guard';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of, firstValueFrom } from 'rxjs';
 
 describe('SneatAuthGuard', () => {
   let guard: SneatAuthGuard;
@@ -28,14 +23,7 @@ describe('SneatAuthGuard', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [
-        SneatAuthGuard,
-        { provide: Router, useValue: routerMock },
-        {
-          provide: Auth,
-          useValue: {},
-        },
-      ],
+      providers: [SneatAuthGuard, { provide: Router, useValue: routerMock }],
     });
 
     guard = TestBed.inject(SneatAuthGuard);
@@ -43,6 +31,14 @@ describe('SneatAuthGuard', () => {
 
   it('should be created', () => {
     expect(guard).toBeTruthy();
+  });
+
+  // Regression guard for the 0.27.0 @angular/fire removal: this guard used to
+  // `inject(Auth)` from '@angular/fire/auth' without ever reading the instance.
+  // It must now construct with no Firebase provider in the injector at all —
+  // note the TestBed above deliberately provides none.
+  it('should be constructible without any Firebase Auth provider', () => {
+    expect(() => TestBed.inject(SneatAuthGuard)).not.toThrow();
   });
 
   describe('canLoad', () => {
@@ -76,93 +72,9 @@ describe('SneatAuthGuard', () => {
   });
 });
 
-describe('redirectToLoginIfNotSignedIn', () => {
-  it('should return true for authenticated user', async () => {
-    const user = { uid: 'test-uid' };
-
-    const result = await firstValueFrom(
-      of(user).pipe(redirectToLoginIfNotSignedIn),
-    );
-    expect(result).toBe(true);
-  });
-
-  it('should return login URL for unauthenticated user at root', async () => {
-    const originalPathname = location.pathname;
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: '/',
-    });
-
-    const result = await firstValueFrom(
-      of(null).pipe(redirectToLoginIfNotSignedIn),
-    );
-    expect(result).toBe('/login');
-
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: originalPathname,
-    });
-  });
-
-  it('should return login URL with hash for unauthenticated user at non-root path', async () => {
-    const originalPathname = location.pathname;
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: '/protected',
-    });
-
-    const result = await firstValueFrom(
-      of(null).pipe(redirectToLoginIfNotSignedIn),
-    );
-    expect(result).toBe('/login#/protected');
-
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: originalPathname,
-    });
-  });
-
-  it('should strip the <base href> prefix so the return path is router-relative', async () => {
-    const originalPathname = location.pathname;
-    const base = document.createElement('base');
-    base.setAttribute('href', '/app/');
-    document.head.appendChild(base);
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: '/app/new-game',
-    });
-
-    const result = await firstValueFrom(
-      of(null).pipe(redirectToLoginIfNotSignedIn),
-    );
-    expect(result).toBe('/login#/new-game');
-
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: originalPathname,
-    });
-    document.head.removeChild(base);
-  });
-
-  it('should treat the base href root as the app root (no hash)', async () => {
-    const originalPathname = location.pathname;
-    const base = document.createElement('base');
-    base.setAttribute('href', '/app/');
-    document.head.appendChild(base);
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: '/app',
-    });
-
-    const result = await firstValueFrom(
-      of(null).pipe(redirectToLoginIfNotSignedIn),
-    );
-    expect(result).toBe('/login');
-
-    Object.defineProperty(window.location, 'pathname', {
-      writable: true,
-      value: originalPathname,
-    });
-    document.head.removeChild(base);
+describe('SNEAT_AUTH_GUARDS', () => {
+  it('should wire both router hooks to SneatAuthGuard', () => {
+    expect(SNEAT_AUTH_GUARDS.canActivate).toEqual([SneatAuthGuard]);
+    expect(SNEAT_AUTH_GUARDS.canLoad).toEqual([SneatAuthGuard]);
   });
 });

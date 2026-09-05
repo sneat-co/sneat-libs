@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 import { UserRequiredFieldsService } from './user-required-fields.service';
 import { UserRequiredFieldsModalComponent } from './user-required-fields-modal.component';
 

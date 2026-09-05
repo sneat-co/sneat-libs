@@ -1,5 +1,9 @@
 import { IEnvironmentConfig } from '@sneat/core';
-import { appEnvironmentConfig, isLocalhost } from './init-helpers';
+import {
+  appEnvironmentConfig,
+  isLocalhost,
+  standardSneatApiBaseUrl,
+} from './init-helpers';
 
 const PROD: IEnvironmentConfig = {
   production: true,
@@ -17,8 +21,46 @@ function setHostname(hostname: string): void {
   vi.stubGlobal('location', { hostname });
 }
 
+describe('standardSneatApiBaseUrl', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it.each(['localhost', '127.0.0.1', 'debtus.dev.localhost'])(
+    'connects %s emulator mode to the shared HTTPS backend',
+    (hostname) => {
+      setHostname(hostname);
+      expect(standardSneatApiBaseUrl(appEnvironmentConfig(PROD))).toBe(
+        'https://sneat-api.dev.localhost:4300/v0/',
+      );
+    },
+  );
+
+  it('keeps production API selection on deployed Debtus.app', () => {
+    setHostname('debtus.app');
+    expect(standardSneatApiBaseUrl(appEnvironmentConfig(PROD))).toBeUndefined();
+  });
+
+  it('preserves same-origin tunnel routing', () => {
+    vi.stubGlobal('location', {
+      hostname: 'preview.ngrok.app',
+      host: 'preview.ngrok.app',
+    });
+    expect(standardSneatApiBaseUrl({ ...PROD, useNgrok: true })).toBe(
+      '//preview.ngrok.app/v0/',
+    );
+  });
+});
+
 describe('appEnvironmentConfig (fail-safe env selection)', () => {
   afterEach(() => vi.unstubAllGlobals());
+
+  it('can load the emulator environment on a server without location', async () => {
+    vi.stubGlobal('location', undefined);
+    vi.resetModules();
+
+    await expect(
+      import('../environments/environment.base'),
+    ).resolves.toBeDefined();
+  });
 
   it('returns the production config verbatim on a deployed domain', () => {
     setHostname('listus-app.web.app');
@@ -36,14 +78,14 @@ describe('appEnvironmentConfig (fail-safe env selection)', () => {
     );
   });
 
-  it('defaults authDomain to the current origin when omitted', () => {
+  it('defaults authDomain to the shared auth.sneat.co when omitted', () => {
     setHostname('listus.app');
     const noAuthDomain = {
       ...PROD,
       firebaseConfig: { ...PROD.firebaseConfig, authDomain: undefined },
     } as IEnvironmentConfig;
     expect(appEnvironmentConfig(noAuthDomain).firebaseConfig.authDomain).toBe(
-      'listus.app',
+      'auth.sneat.co',
     );
   });
 

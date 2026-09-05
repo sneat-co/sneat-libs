@@ -1,3 +1,4 @@
+import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { SNEAT_AUTHENTICATED_LIFECYCLE } from '@sneat/app-public';
 import { IEnvironmentConfig, TopMenuService } from '@sneat/core';
@@ -29,5 +30,23 @@ describe('legacy app bootstrap compatibility', () => {
       },
     };
     expect(getStandardSneatProviders(config).length).toBeGreaterThan(5);
+  });
+
+  it('enables zoneless change detection for standard app bootstraps', () => {
+    const config: IEnvironmentConfig = {
+      production: false,
+      agents: {},
+      firebaseConfig: {
+        projectId: 'test',
+        appId: 'test-app',
+        apiKey: 'test-key',
+        measurementId: 'G-PROVIDE_IF_NEEDED',
+      },
+    };
+    TestBed.configureTestingModule({
+      providers: [...getStandardSneatProviders(config)],
+    });
+
+    expect(TestBed.inject(NgZone).constructor.name).toBe('NoopNgZone');
   });
 });

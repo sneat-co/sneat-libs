@@ -14,7 +14,7 @@
         "index": "apps/libs-demo/src/index.html",
         "browser": "apps/libs-demo/src/main.ts",
         "tsConfig": "apps/libs-demo/tsconfig.app.json",
-        "polyfills": ["zone.js"],
+        "polyfills": [],
         "assets": [],
         "styles": [
           "node_modules/@ionic/angular/css/ionic.bundle.css",
@@ -55,6 +55,13 @@
         }
       },
       "defaultConfiguration": "development"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/apps/libs-demo"],
+      "options": {
+        "tsConfig": "apps/libs-demo/tsconfig.spec.json"
+      }
     },
     "lint": {
       "executor": "@nx/eslint:lint"

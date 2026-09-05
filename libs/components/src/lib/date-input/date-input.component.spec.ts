@@ -1,6 +1,6 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { PopoverController } from '@ionic/angular/standalone';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { PopoverController } from '@ionic/angular';
 import { DateInputComponent } from './date-input.component';
 
 describe('DateInputComponent', () => {
@@ -10,7 +10,7 @@ describe('DateInputComponent', () => {
     create: ReturnType<typeof vi.fn>;
   };
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     popoverController = {
       create: vi.fn(),
     };
@@ -35,7 +35,9 @@ describe('DateInputComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('$label', 'Test Label');
     fixture.componentRef.setInput('$value', '2024-01-01');
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

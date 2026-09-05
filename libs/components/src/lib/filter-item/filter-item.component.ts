@@ -11,7 +11,7 @@ import {
   IonIcon,
   IonInput,
   IonItem,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 @Component({
   selector: 'sneat-filter-item',

@@ -1,13 +1,17 @@
 import { TestBed } from '@angular/core/testing';
-import { Auth, UserCredential } from '@angular/fire/auth';
-import { AnalyticsService, ErrorLogger } from '@sneat/core';
+import {
+  AnalyticsService,
+  ErrorLogger,
+  SNEAT_FIREBASE_AUTH,
+  SneatUrlOperationBlocker,
+} from '@sneat/core';
 import {
   SneatAuthStateService,
   AuthStatuses,
 } from './sneat-auth-state-service';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { firstValueFrom, Observer } from 'rxjs';
-import { User } from '@angular/fire/auth';
+import { User, UserCredential } from 'firebase/auth';
 
 // Mock Capacitor
 vi.mock('@capacitor/core', () => ({
@@ -64,8 +68,12 @@ describe('SneatAuthStateService', () => {
   };
   let onAuthStateChangedCallback: Observer<User | null>;
   let onIdTokenChangedCallback: Observer<User | null>;
+  let operationBlockerMock: { isBlocked: Mock };
 
   beforeEach(() => {
+    operationBlockerMock = {
+      isBlocked: vi.fn().mockReturnValue(false),
+    };
     authMock = {
       onIdTokenChanged: vi.fn().mockImplementation((obs) => {
         onIdTokenChangedCallback = obs;
@@ -92,8 +100,12 @@ describe('SneatAuthStateService', () => {
           },
         },
         {
-          provide: Auth,
+          provide: SNEAT_FIREBASE_AUTH,
           useValue: authMock,
+        },
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: operationBlockerMock,
         },
       ],
     });
@@ -121,6 +133,32 @@ describe('SneatAuthStateService', () => {
 
     const user = await firstValueFrom(service.authUser);
     expect(user?.uid).toBe('u1');
+  });
+
+  it('keeps auth state pending and suppresses Firebase events when auth is blocked', async () => {
+    operationBlockerMock.isBlocked.mockImplementation(
+      (operation) => operation === 'auth',
+    );
+    const fbUser = {
+      uid: 'blocked-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'blocked@example.com',
+      providerId: 'password',
+      providerData: [],
+      getIdToken: vi.fn().mockResolvedValue('must-not-be-read'),
+    };
+
+    onAuthStateChangedCallback.next(fbUser as unknown as User);
+    onIdTokenChangedCallback.next(fbUser as unknown as User);
+
+    await Promise.resolve();
+    expect(await firstValueFrom(service.authState)).toEqual({
+      status: AuthStatuses.authenticating,
+      loadingPhase: 'checking-session',
+    });
+    expect(await firstValueFrom(service.authUser)).toBeUndefined();
+    expect(fbUser.getIdToken).not.toHaveBeenCalled();
   });
 
   it('should call fbAuth.signOut when signOut is called', async () => {
@@ -185,6 +223,7 @@ describe('SneatAuthStateService', () => {
       getIdToken: vi.fn().mockResolvedValue('mock-token-123'),
     };
 
+    authMock.currentUser = fbUser as unknown as User;
     // First set auth user
     onAuthStateChangedCallback.next(fbUser as unknown as User);
 
@@ -199,6 +238,80 @@ describe('SneatAuthStateService', () => {
     expect(state.token).toBe('mock-token-123');
   });
 
+  it('clears the token on sign-out and ignores a late token lookup', async () => {
+    let resolveToken!: (token: string) => void;
+    const fbUser = {
+      uid: 'signing-out-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'signout@example.com',
+      providerId: 'google.com',
+      providerData: [],
+      getIdToken: vi.fn(
+        () => new Promise<string>((resolve) => (resolveToken = resolve)),
+      ),
+    };
+    authMock.currentUser = fbUser as unknown as User;
+    onAuthStateChangedCallback.next(fbUser as unknown as User);
+    onIdTokenChangedCallback.next(fbUser as unknown as User);
+
+    authMock.currentUser = null;
+    onAuthStateChangedCallback.next(null);
+    onIdTokenChangedCallback.next(null);
+    resolveToken('stale-token');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const state = await firstValueFrom(service.authState);
+    expect(state).toMatchObject({
+      status: AuthStatuses.notAuthenticated,
+      token: null,
+      user: null,
+    });
+  });
+
+  it('ignores a late token lookup from the previous user', async () => {
+    let resolveOldToken!: (token: string) => void;
+    const oldUser = {
+      uid: 'old-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'old@example.com',
+      providerId: 'google.com',
+      providerData: [],
+      getIdToken: vi.fn(
+        () => new Promise<string>((resolve) => (resolveOldToken = resolve)),
+      ),
+    };
+    const currentUser = {
+      uid: 'current-user',
+      isAnonymous: false,
+      emailVerified: true,
+      email: 'current@example.com',
+      providerId: 'google.com',
+      providerData: [],
+      getIdToken: vi.fn().mockResolvedValue('current-token'),
+    };
+    authMock.currentUser = oldUser as unknown as User;
+    onAuthStateChangedCallback.next(oldUser as unknown as User);
+    onIdTokenChangedCallback.next(oldUser as unknown as User);
+
+    authMock.currentUser = currentUser as unknown as User;
+    onAuthStateChangedCallback.next(currentUser as unknown as User);
+    onIdTokenChangedCallback.next(currentUser as unknown as User);
+    await Promise.resolve();
+    resolveOldToken('stale-token');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const state = await firstValueFrom(service.authState);
+    expect(state).toMatchObject({
+      status: AuthStatuses.authenticated,
+      token: 'current-token',
+      user: { uid: 'current-user' },
+    });
+  });
+
   it('should handle error in getIdToken', async () => {
     const errorLogger = TestBed.inject(ErrorLogger);
     const fbUser = {
@@ -211,6 +324,7 @@ describe('SneatAuthStateService', () => {
       getIdToken: vi.fn().mockRejectedValue(new Error('Token error')),
     };
 
+    authMock.currentUser = fbUser as unknown as User;
     onAuthStateChangedCallback.next(fbUser as unknown as User);
     onIdTokenChangedCallback.next(fbUser as unknown as User);
 

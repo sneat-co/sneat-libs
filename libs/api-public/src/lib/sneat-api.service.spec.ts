@@ -1,9 +1,10 @@
-import { HttpClient, HttpHeaders, HttpParams, provideHttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, provideHttpClient, withXhr } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { SneatUrlOperationBlocker } from '@sneat/core-public';
 import { firstValueFrom } from 'rxjs';
 import {
   SneatApiAuthTokenBridge,
@@ -19,13 +20,21 @@ describe('SneatApiService public transport', () => {
   let api: SneatApiService;
   let bridge: SneatApiAuthTokenBridge;
   let http: HttpTestingController;
+  let operationBlockerMock: { isBlocked: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    operationBlockerMock = {
+      isBlocked: vi.fn().mockReturnValue(false),
+    };
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         { provide: SneatApiBaseUrl, useValue: undefined },
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: operationBlockerMock,
+        },
       ],
     });
     api = TestBed.inject(SneatApiService);
@@ -40,6 +49,28 @@ describe('SneatApiService public transport', () => {
       SneatApiNotAuthenticatedError,
     );
     http.expectNone(`${DefaultSneatAppApiBaseUrl}private`);
+  });
+
+  it('keeps protected and anonymous requests pending when server requests are blocked', () => {
+    operationBlockerMock.isBlocked.mockImplementation(
+      (operation) => operation === 'server-requests',
+    );
+    const events: string[] = [];
+
+    api.get('private').subscribe({
+      next: () => events.push('protected-next'),
+      error: () => events.push('protected-error'),
+      complete: () => events.push('protected-complete'),
+    });
+    api.getAsAnonymous('public').subscribe({
+      next: () => events.push('anonymous-next'),
+      error: () => events.push('anonymous-error'),
+      complete: () => events.push('anonymous-complete'),
+    });
+
+    http.expectNone(`${DefaultSneatAppApiBaseUrl}private`);
+    http.expectNone(`${DefaultSneatAppApiBaseUrl}public`);
+    expect(events).toEqual([]);
   });
 
   it('defers a request while Firebase token readiness is pending', async () => {
@@ -96,6 +127,119 @@ describe('SneatApiService public transport', () => {
     await response;
   });
 
+  it('rejects a token that resolves after the auth session changes', async () => {
+    let resolveToken!: (token: string) => void;
+    const pendingToken = new Promise<string>(
+      (resolve) => (resolveToken = resolve),
+    );
+    bridge
+      .beginAuthentication()
+      .resolveWithTokenResolver(() => pendingToken);
+    const response = firstValueFrom(api.get('private'));
+
+    bridge.setExplicitToken(undefined);
+    resolveToken('stale-token');
+
+    await expect(response).rejects.toBe(SneatApiNotAuthenticatedError);
+    http.expectNone(`${DefaultSneatAppApiBaseUrl}private`);
+  });
+
+  it('force-refreshes once and retries a protected request after a 401', async () => {
+    const resolveToken = vi.fn((forceRefresh: boolean) =>
+      Promise.resolve(forceRefresh ? 'refreshed-token' : 'expired-token'),
+    );
+    bridge
+      .beginAuthentication()
+      .resolveWithTokenResolver(resolveToken);
+    const response = firstValueFrom(api.get<{ ok: boolean }>('private'));
+    await Promise.resolve();
+
+    const expiredRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}private`,
+    );
+    expect(expiredRequest.request.headers.get('Authorization')).toBe(
+      'Bearer expired-token',
+    );
+    expiredRequest.flush('expired', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+    await Promise.resolve();
+
+    const retriedRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}private`,
+    );
+    expect(retriedRequest.request.headers.get('Authorization')).toBe(
+      'Bearer refreshed-token',
+    );
+    retriedRequest.flush({ ok: true });
+
+    await expect(response).resolves.toEqual({ ok: true });
+    expect(resolveToken.mock.calls).toEqual([[false], [true]]);
+  });
+
+  it('does not automatically retry a mutation after a 401', async () => {
+    const resolveToken = vi.fn((forceRefresh: boolean) =>
+      Promise.resolve(forceRefresh ? 'refreshed-token' : 'expired-token'),
+    );
+    bridge
+      .beginAuthentication()
+      .resolveWithTokenResolver(resolveToken);
+    const response = firstValueFrom(api.post('private', { value: 1 }));
+    await Promise.resolve();
+
+    const request = http.expectOne(`${DefaultSneatAppApiBaseUrl}private`);
+    expect(request.request.headers.get('Authorization')).toBe(
+      'Bearer expired-token',
+    );
+    request.flush('expired', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+
+    await expect(response).rejects.toMatchObject({ status: 401 });
+    expect(resolveToken.mock.calls).toEqual([[false]]);
+  });
+
+  it('force-refreshes once and retries an explicitly retry-safe POST after a 401', async () => {
+    const resolveToken = vi.fn((forceRefresh: boolean) =>
+      Promise.resolve(forceRefresh ? 'refreshed-token' : 'expired-token'),
+    );
+    bridge.beginAuthentication().resolveWithTokenResolver(resolveToken);
+    const body = { spaceID: 'space-1' };
+    const response = firstValueFrom(
+      api.post<{ ok: boolean }>('status', body, {
+        retryUnauthorizedOnce: true,
+      }),
+    );
+    await Promise.resolve();
+
+    const expiredRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}status`,
+    );
+    expect(expiredRequest.request.body).toEqual(body);
+    expect(expiredRequest.request.headers.get('Authorization')).toBe(
+      'Bearer expired-token',
+    );
+    expiredRequest.flush('expired', {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+    await Promise.resolve();
+
+    const retriedRequest = http.expectOne(
+      `${DefaultSneatAppApiBaseUrl}status`,
+    );
+    expect(retriedRequest.request.body).toEqual(body);
+    expect(retriedRequest.request.headers.get('Authorization')).toBe(
+      'Bearer refreshed-token',
+    );
+    retriedRequest.flush({ ok: true });
+
+    await expect(response).resolves.toEqual({ ok: true });
+    expect(resolveToken.mock.calls).toEqual([[false], [true]]);
+  });
+
   it('keeps anonymous GET and POST independent of auth readiness', async () => {
     bridge.beginAuthentication();
     const getResult = firstValueFrom(
@@ -120,6 +264,7 @@ describe('SneatApiService public transport', () => {
       TestBed.inject(HttpClient),
       bridge,
       'https://custom-api.example/',
+      operationBlockerMock as unknown as SneatUrlOperationBlocker,
     );
     customApi.setApiAuthToken('custom-token');
     const params = new HttpParams().set('id', '123');

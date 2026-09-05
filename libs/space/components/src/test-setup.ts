@@ -1,7 +1,7 @@
 import { setupTestEnvironment } from '@sneat/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
-import { NavController } from '@ionic/angular/standalone';
+import { NavController } from '@ionic/angular';
 
 setupTestEnvironment();
 

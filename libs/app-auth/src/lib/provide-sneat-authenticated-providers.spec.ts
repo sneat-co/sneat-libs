@@ -1,14 +1,15 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import {
   createEnvironmentInjector,
   EnvironmentInjector,
+  PLATFORM_ID,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
+import type { Auth } from 'firebase/auth';
 import {
   CollectionReference,
   Firestore as AngularFirestore,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { NavigationEnd, Router } from '@angular/router';
 import { provideSneatPublicBootstrap } from '@sneat/app-public';
 import {
@@ -25,9 +26,10 @@ import {
   ErrorLogger,
   IAnalyticsService,
   IEnvironmentConfig,
+  SNEAT_FIREBASE_ANALYTICS,
+  SNEAT_FIREBASE_AUTH,
 } from '@sneat/core';
 import { Subject } from 'rxjs';
-import { getAngularFireProviders, provideFireApp } from './init-firebase';
 import {
   provideSneatAuthenticatedProviders,
   SneatAuthenticatedLifecycle,
@@ -36,7 +38,11 @@ import {
 const mocks = vi.hoisted(() => ({
   app: { name: 'test-app' },
   firestore: { name: 'test-firestore' },
-  auth: { name: 'test-auth' },
+  auth: {
+    name: 'test-auth',
+    onIdTokenChanged: vi.fn(() => () => undefined),
+    onAuthStateChanged: vi.fn(() => () => undefined),
+  },
   analytics: { name: 'test-analytics' },
   native: false,
   initializeApp: vi.fn(),
@@ -52,9 +58,9 @@ const mocks = vi.hoisted(() => ({
   onIdTokenChanged: vi.fn(),
 }));
 
-vi.mock('@angular/fire/app', async () => {
-  const actual = await vi.importActual<typeof import('@angular/fire/app')>(
-    '@angular/fire/app',
+vi.mock('firebase/app', async () => {
+  const actual = await vi.importActual<typeof import('firebase/app')>(
+    'firebase/app',
   );
   return {
     ...actual,
@@ -62,17 +68,13 @@ vi.mock('@angular/fire/app', async () => {
       mocks.initializeApp(...args);
       return mocks.app;
     },
-    provideFirebaseApp: (factory: () => unknown) => {
-      factory();
-      return { ɵproviders: [] };
-    },
   };
 });
 
-vi.mock('@angular/fire/firestore', async () => {
+vi.mock('firebase/firestore', async () => {
   const actual =
-    await vi.importActual<typeof import('@angular/fire/firestore')>(
-      '@angular/fire/firestore',
+    await vi.importActual<typeof import('firebase/firestore')>(
+      'firebase/firestore',
     );
   return {
     ...actual,
@@ -85,55 +87,18 @@ vi.mock('@angular/fire/firestore', async () => {
     collection: vi
       .fn()
       .mockReturnValue({ id: 'users' } as unknown as CollectionReference),
-    provideFirestore: (
-      factory: (injector: { get: () => unknown }) => unknown,
-    ) => {
-      factory({ get: () => mocks.app });
-      return { ɵproviders: [] };
-    },
   };
 });
 
-vi.mock('@angular/fire/auth', async () => {
-  const actual = await vi.importActual<typeof import('@angular/fire/auth')>(
-    '@angular/fire/auth',
-  );
-  return {
-    ...actual,
-    getAuth: (...args: unknown[]) => {
-      mocks.getAuth(...args);
-      return mocks.auth;
-    },
-    initializeAuth: (...args: unknown[]) => {
-      mocks.initializeAuth(...args);
-      return mocks.auth;
-    },
-    connectAuthEmulator: (...args: unknown[]) =>
-      mocks.connectAuthEmulator(...args),
-    onIdTokenChanged: (...args: unknown[]) => {
-      mocks.onIdTokenChanged(...args);
-      return vi.fn();
-    },
-    provideAuth: (factory: (injector: { get: () => unknown }) => unknown) => {
-      factory({ get: () => mocks.app });
-      return { ɵproviders: [] };
-    },
-  };
-});
-
-vi.mock('@angular/fire/analytics', async () => {
-  const actual = await vi.importActual<typeof import('@angular/fire/analytics')>(
-    '@angular/fire/analytics',
+vi.mock('firebase/analytics', async () => {
+  const actual = await vi.importActual<typeof import('firebase/analytics')>(
+    'firebase/analytics',
   );
   return {
     ...actual,
     getAnalytics: (...args: unknown[]) => {
       mocks.getAnalytics(...args);
       return mocks.analytics;
-    },
-    provideAnalytics: (factory: () => unknown) => {
-      factory();
-      return { ɵproviders: [] };
     },
   };
 });
@@ -160,6 +125,16 @@ vi.mock('firebase/auth', async () => {
     getAuth: (...args: unknown[]) => {
       mocks.getAuth(...args);
       return mocks.auth;
+    },
+    initializeAuth: (...args: unknown[]) => {
+      mocks.initializeAuth(...args);
+      return mocks.auth;
+    },
+    connectAuthEmulator: (...args: unknown[]) =>
+      mocks.connectAuthEmulator(...args),
+    onIdTokenChanged: (...args: unknown[]) => {
+      mocks.onIdTokenChanged(...args);
+      return vi.fn();
     },
     getRedirectResult: (...args: unknown[]) => mocks.getRedirectResult(...args),
   };
@@ -207,11 +182,80 @@ function environmentConfig(
   };
 }
 
+/**
+ * Builds the lazy authenticated-route injector the way an app does, and
+ * resolves the Firebase tokens out of it.
+ *
+ * Before 0.27.0 these specs asserted against `getAngularFireProviders()`,
+ * whose `provideFirestore`/`provideAuth`/`provideAnalytics` shims ran their
+ * factories the moment the provider array was built — so counting the returned
+ * providers was enough to prove the SDK had been driven. `provideSneatFirebase()`
+ * (its replacement) uses plain `useFactory` providers, which Angular runs
+ * lazily on first injection. Driving the tokens through a real injector is
+ * therefore what now exercises the same wiring — and it exercises strictly
+ * more of it, since it proves the providers are reachable through
+ * `provideSneatAuthenticatedProviders()` rather than merely constructed.
+ */
+function createAuthenticatedRouteInjector(config: IEnvironmentConfig) {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(withXhr()), provideSneatPublicBootstrap()],
+  });
+  const router = {
+    events: new Subject<NavigationEnd>(),
+    routerState: {
+      snapshot: {
+        root: { firstChild: null, data: {}, paramMap: { get: () => null } },
+      },
+    },
+  };
+  return createEnvironmentInjector(
+    [
+      provideSneatAuthenticatedProviders(config),
+      {
+        provide: ErrorLogger,
+        useValue: {
+          logError: vi.fn(),
+          logErrorHandler: vi.fn().mockReturnValue(() => undefined),
+        },
+      },
+      {
+        provide: AnalyticsService,
+        useValue: {
+          identify: vi.fn(),
+          logEvent: vi.fn(),
+          loggedOut: vi.fn(),
+          setCurrentScreen: vi.fn(),
+        },
+      },
+      { provide: Router, useValue: router },
+    ],
+    TestBed.inject(EnvironmentInjector),
+    'authenticated-route',
+  );
+}
+
 describe('authenticated bootstrap providers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.native = false;
     mocks.getRedirectResult.mockResolvedValue(null);
+  });
+
+  it('does not start the browser auth lifecycle while rendering on the server', () => {
+    TestBed.configureTestingModule({});
+    const lifecycle = { start: vi.fn() };
+    const injector = createEnvironmentInjector(
+      [
+        provideSneatAuthenticatedProviders(environmentConfig()),
+        { provide: PLATFORM_ID, useValue: 'server' },
+        { provide: SneatAuthenticatedLifecycle, useValue: lifecycle },
+      ],
+      TestBed.inject(EnvironmentInjector),
+      'server-authenticated-route',
+    );
+
+    expect(lifecycle.start).not.toHaveBeenCalled();
+    injector.destroy();
   });
 
   it('constructs web Firebase, emulator, analytics, PostHog, and Sentry adapters', () => {
@@ -230,9 +274,13 @@ describe('authenticated bootstrap providers', () => {
       sentry: { dsn: 'https://example.invalid/1' },
     });
 
-    expect(getAngularFireProviders(config.firebaseConfig)).toHaveLength(4);
-    expect(provideFireApp(config.firebaseConfig)).toBeTruthy();
     expect(provideSneatAuthenticatedProviders(config)).toBeTruthy();
+    const injector = createAuthenticatedRouteInjector(config);
+    // Force the lazy firebase factories that provideSneatFirebase() installed.
+    expect(injector.get(AngularFirestore)).toBe(mocks.firestore);
+    expect(injector.get(SNEAT_FIREBASE_AUTH)).toBe(mocks.auth);
+    expect(injector.get(SNEAT_FIREBASE_ANALYTICS)).toBe(mocks.analytics);
+
     expect(mocks.initializeApp).toHaveBeenCalled();
     expect(mocks.getFirestore).toHaveBeenCalledWith(mocks.app);
     expect(mocks.connectFirestoreEmulator).toHaveBeenCalledWith(
@@ -246,11 +294,11 @@ describe('authenticated bootstrap providers', () => {
       'http://127.0.0.1:9099',
     );
     expect(mocks.getAnalytics).toHaveBeenCalled();
-    expect(mocks.posthogInit).toHaveBeenCalledWith(
-      'posthog-token',
-      expect.objectContaining({ capture_pageview: false }),
-    );
+    // PostHog is loaded by the analytics service only after its first event, so
+    // merely creating the authenticated injector must not pull it into startup.
+    expect(mocks.posthogInit).not.toHaveBeenCalled();
     expect(mocks.provideSentry).toHaveBeenCalled();
+    injector.destroy();
   });
 
   it('uses native persistence without optional analytics', () => {
@@ -263,18 +311,23 @@ describe('authenticated bootstrap providers', () => {
         measurementId: 'G-PROVIDE_IF_NEEDED',
       },
     });
-    expect(getAngularFireProviders(config.firebaseConfig)).toHaveLength(3);
+    const injector = createAuthenticatedRouteInjector(config);
+    expect(injector.get(SNEAT_FIREBASE_AUTH)).toBe(mocks.auth);
+    // The G-PROVIDE_IF_NEEDED sentinel must resolve to null, never throw.
+    expect(injector.get(SNEAT_FIREBASE_ANALYTICS)).toBeNull();
+
     expect(mocks.initializeAuth).toHaveBeenCalledWith(
       mocks.app,
       expect.objectContaining({ persistence: expect.anything() }),
     );
     expect(mocks.getAuth).not.toHaveBeenCalled();
     expect(mocks.getAnalytics).not.toHaveBeenCalled();
+    injector.destroy();
   });
 
   it('hydrates Firebase-dependent auth services in the lazy route injector', () => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideSneatPublicBootstrap()],
+      providers: [provideHttpClient(withXhr()), provideSneatPublicBootstrap()],
     });
     const rootInjector = TestBed.inject(EnvironmentInjector);
     const authStateObservers: unknown[] = [];
@@ -303,7 +356,7 @@ describe('authenticated bootstrap providers', () => {
     const routeInjector = createEnvironmentInjector(
       [
         provideSneatAuthenticatedProviders(environmentConfig()),
-        { provide: Auth, useValue: fakeAuth },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: fakeAuth as unknown as Auth },
         {
           provide: AngularFirestore,
           useValue: { app: mocks.app, type: 'firestore' },

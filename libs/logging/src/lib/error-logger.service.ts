@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, Optional } from '@angular/core';
-import { ToastController } from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular';
 import { captureException, showReportDialog } from '@sentry/angular';
 import { IErrorLogger, ILogErrorOptions } from '@sneat/core';
 
@@ -19,12 +19,34 @@ export class ErrorLoggerService implements IErrorLogger {
     message?: string,
     options?: ILogErrorOptions,
   ): void => {
+    // logError(e, message, options) is easy to call with `e` and `message`
+    // swapped (both a string and unknown/undefined are type-legal in either
+    // slot, so the compiler can't catch it). A string `e` combined with a
+    // non-string `message` is the tell-tale sign of that swap — e.g. a real
+    // Error/HttpErrorResponse landing in `message`, where its fields (like
+    // HttpErrorResponse's server-provided message) are never read. Warn
+    // loudly so it isn't silently swallowed again.
+    if (
+      typeof e === 'string' &&
+      message !== undefined &&
+      typeof message !== 'string'
+    ) {
+      console.error(
+        'ErrorLoggerService.logError: arguments look swapped — got a string for `e` and a non-string for `message`. Expected logError(error: unknown, message?: string, options?).',
+        { e, message },
+      );
+    }
     console.error(
       `ErrorLoggerService.logError: ${message || 'Error'}:`,
       e,
       '; Logging options:',
       options,
     );
+    // Server rendering must record the error without invoking browser-only
+    // Sentry feedback UI or Ionic toasts.
+    if (typeof window === 'undefined') {
+      return;
+    }
     if (e === true || e === false) {
       try {
         // noinspection ExceptionCaughtLocallyJS

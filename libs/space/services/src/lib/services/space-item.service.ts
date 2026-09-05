@@ -4,7 +4,7 @@ import {
   doc,
   collection,
   CollectionReference,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { QuerySnapshot } from '@firebase/firestore-types';
 import { IQueryArgs, SneatApiService, SneatFirestoreService } from '@sneat/api';
 import {

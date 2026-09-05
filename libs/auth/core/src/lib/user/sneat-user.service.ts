@@ -13,10 +13,14 @@ import {
   doc,
   onSnapshot,
   Unsubscribe,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { IUserRecord } from '@sneat/auth-models';
-import { ErrorLogger, IErrorLogger } from '@sneat/core';
+import {
+  ErrorLogger,
+  IErrorLogger,
+  SneatUrlOperationBlocker,
+} from '@sneat/core';
 import {
   initialSneatAuthState,
   ISneatAuthState,
@@ -40,6 +44,7 @@ export class SneatUserService {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly sneatApiService = inject(SneatApiService);
   private readonly userRecordService = inject(UserRecordService);
+  private readonly operationBlocker = inject(SneatUrlOperationBlocker);
 
   // private userDocSubscription?: Subscription;
   private readonly injector = inject(Injector);
@@ -128,9 +133,15 @@ export class SneatUserService {
     //   `SneatUserService.watchUserRecord(uid=${uid}): Loading user record...`,
     // );
     this.unsubscribeFromUserDoc('whatUserRecord()');
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return;
+    }
 
     // TODO: Remove - setTimeout() not needed but trying to troubleshoot user record issue
     setTimeout(() => {
+      if (this.operationBlocker.isBlocked('server-requests')) {
+        return;
+      }
       try {
         const userDocRef = this.userDocRef(uid);
         this._unsubscribeFromUserDoc = runInInjectionContext(

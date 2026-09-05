@@ -1,6 +1,6 @@
 <ion-card>
   <ion-item-divider color="light">
-    <ion-label color="medium">{{ title }}</ion-label>
+    <ion-label color="medium">{{ title() }}</ion-label>
     <ion-buttons slot="end">
       <ion-button color="medium">
         <ion-icon name="add-outline" />
@@ -13,7 +13,7 @@
     @for (item of selectedItems; track item.id) {
       <ion-item>
         <ion-label>{{ item.title }}</ion-label>
-        @if (canRemove) {
+        @if (canRemove()) {
           <ion-buttons slot="end">
             <ion-button title="Remove" (click)="removeItem($event, item)">
               <ion-icon name="close-outline" />

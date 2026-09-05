@@ -1,4 +1,9 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+  HttpParams,
+} from '@angular/common/http';
 import {
   Inject,
   Injectable,
@@ -6,10 +11,12 @@ import {
   OnDestroy,
   Optional,
 } from '@angular/core';
-import { Observable, switchMap } from 'rxjs';
+import { SneatUrlOperationBlocker } from '@sneat/core-public';
+import { NEVER, Observable, catchError, switchMap, throwError } from 'rxjs';
 import { SneatApiAuthTokenBridge } from './sneat-api-auth-token.bridge';
 import {
   IHttpRequestOptions,
+  ISneatApiPostOptions,
   ISneatApiService,
 } from './sneat-api-service.interface';
 
@@ -29,6 +36,7 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
     private readonly httpClient: HttpClient,
     private readonly authTokenBridge: SneatApiAuthTokenBridge,
     @Inject(SneatApiBaseUrl) @Optional() baseUrl: string | null,
+    private readonly operationBlocker: SneatUrlOperationBlocker,
   ) {
     this.baseUrl = baseUrl ?? DefaultSneatAppApiBaseUrl;
   }
@@ -39,13 +47,16 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
   post<T>(
     endpoint: string,
     body: unknown,
-    options?: IHttpRequestOptions,
+    options?: ISneatApiPostOptions,
   ): Observable<T> {
-    return this.withAuth((headers) =>
-      this.httpClient.post<T>(this.baseUrl + endpoint, body, {
-        ...options,
-        headers: this.withAuthorization(options?.headers, headers),
-      }),
+    const { retryUnauthorizedOnce = false, ...httpOptions } = options ?? {};
+    return this.withAuth(
+      (headers) =>
+        this.httpClient.post<T>(this.baseUrl + endpoint, body, {
+          ...httpOptions,
+          headers: this.withAuthorization(httpOptions.headers, headers),
+        }),
+      retryUnauthorizedOnce,
     );
   }
 
@@ -67,12 +78,14 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
     params?: HttpParams,
     options?: IHttpRequestOptions,
   ): Observable<T> {
-    return this.withAuth((headers) =>
-      this.httpClient.get<T>(this.baseUrl + endpoint, {
-        ...options,
-        headers: this.withAuthorization(options?.headers, headers),
-        params: params ?? options?.params,
-      }),
+    return this.withAuth(
+      (headers) =>
+        this.httpClient.get<T>(this.baseUrl + endpoint, {
+          ...options,
+          headers: this.withAuthorization(options?.headers, headers),
+          params: params ?? options?.params,
+        }),
+      true,
     );
   }
 
@@ -81,6 +94,9 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
     params?: HttpParams,
     options?: IHttpRequestOptions,
   ): Observable<T> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     return this.httpClient.get<T>(this.baseUrl + endpoint, {
       ...options,
       params: params ?? options?.params,
@@ -88,6 +104,9 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
   }
 
   postAsAnonymous<T>(endpoint: string, body: unknown): Observable<T> {
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
     return this.httpClient.post<T>(this.baseUrl + endpoint, body);
   }
 
@@ -112,11 +131,37 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
 
   private withAuth<T>(
     request: (headers: HttpHeaders) => Observable<T>,
+    retryUnauthorized = false,
   ): Observable<T> {
-    return this.authTokenBridge.resolvedToken().pipe(
-      switchMap((token) =>
-        request(new HttpHeaders({ Authorization: `Bearer ${token}` })),
-      ),
+    if (this.operationBlocker.isBlocked('server-requests')) {
+      return NEVER;
+    }
+    return this.authTokenBridge.resolvedToken(false).pipe(
+      switchMap((token) => {
+        const authenticatedRequest = request(
+          new HttpHeaders({ Authorization: `Bearer ${token}` }),
+        );
+        return authenticatedRequest.pipe(
+          catchError((error: unknown) => {
+            if (
+              !retryUnauthorized ||
+              !(error instanceof HttpErrorResponse) ||
+              error.status !== 401
+            ) {
+              return throwError(() => error);
+            }
+            return this.authTokenBridge.resolvedToken(true).pipe(
+              switchMap((refreshedToken) =>
+                request(
+                  new HttpHeaders({
+                    Authorization: `Bearer ${refreshedToken}`,
+                  }),
+                ),
+              ),
+            );
+          }),
+        );
+      }),
     );
   }
 

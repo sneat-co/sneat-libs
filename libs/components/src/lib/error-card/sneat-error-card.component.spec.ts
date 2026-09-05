@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { SneatErrorCardComponent } from './sneat-error-card.component';
 
@@ -6,7 +6,7 @@ describe('SneatErrorCardComponent', () => {
   let component: SneatErrorCardComponent;
   let fixture: ComponentFixture<SneatErrorCardComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SneatErrorCardComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -22,7 +22,9 @@ describe('SneatErrorCardComponent', () => {
 
     fixture = TestBed.createComponent(SneatErrorCardComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

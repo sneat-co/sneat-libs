@@ -1,36 +1,37 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, input } from '@angular/core';
 import {
   NavController,
   MenuController,
   IonIcon,
   IonItem,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SpacesListComponent } from '../spaces-list';
 import { SpacesMenuComponent } from './spaces-menu.component';
 import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService, APP_INFO, LOGGER_FACTORY } from '@sneat/core';
 import { of } from 'rxjs';
 import { SneatUserService } from '@sneat/auth-core';
-import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
+import { Firestore } from 'firebase/firestore';
 
 @Component({
   selector: 'sneat-spaces-list',
   template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
 class SpacesListStubComponent {
-  @Input() spaces?: unknown[];
-  @Input() pathPrefix = '/space';
+  readonly spaces = input<unknown[]>();
+  readonly pathPrefix = input('/space');
 }
 
 describe('SpacesMenuComponent', () => {
   let component: SpacesMenuComponent;
   let fixture: ComponentFixture<SpacesMenuComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SpacesMenuComponent],
       providers: [
@@ -48,7 +49,7 @@ describe('SpacesMenuComponent', () => {
         { provide: NavController, useValue: {} },
         { provide: MenuController, useValue: {} },
         {
-          provide: Auth,
+          provide: SNEAT_FIREBASE_AUTH,
           useValue: {
             onIdTokenChanged: vi.fn(() => () => void 0),
             onAuthStateChanged: vi.fn(() => () => void 0),
@@ -66,7 +67,7 @@ describe('SpacesMenuComponent', () => {
         },
       })
       .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SpacesMenuComponent);

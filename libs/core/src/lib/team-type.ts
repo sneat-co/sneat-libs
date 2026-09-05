@@ -19,6 +19,12 @@ const concreteSpaceTypes = new Set<Exclude<SpaceType, 'unknown'>>([
   'realtor',
   'sport_club',
   'cohabit',
+  // Backend types this set was missing (decision 0006): a space/club URL
+  // segment must parse as its real type. community-center is retired — a
+  // centre registers as company.
+  'club',
+  'space',
+  'spot',
 ]);
 
 /** Returns whether a value is a concrete space type accepted at an external boundary. */

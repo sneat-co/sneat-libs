@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -8,11 +8,11 @@ import {
   EnvironmentInjector,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
+import type { Auth } from 'firebase/auth';
 import {
   CollectionReference,
   Firestore as AngularFirestore,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api-public';
 import { provideFirebaseSneatApiAuth } from '@sneat/api-firebase-auth';
 import {
@@ -22,14 +22,28 @@ import {
   TelegramAuthService,
   UserRecordService,
 } from '@sneat/auth-core';
-import { ErrorLogger } from '@sneat/core';
+import { ErrorLogger, SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { firstValueFrom, NEVER, Observable } from 'rxjs';
 
-const listener = vi.fn();
+/**
+ * Drains every pending microtask.
+ *
+ * These specs used to rely on zone.js patching `Promise`: a couple of
+ * `await`s were enough to run the whole token → interceptor → HttpClient
+ * chain. With native promises the exact number of turns is an implementation
+ * detail of that chain, so hop a macrotask instead — `setTimeout(…, 0)` fires
+ * only after every already-queued microtask has run, however long the chain.
+ */
+const settlePendingWork = () =>
+  new Promise<void>((resolve) => setTimeout(resolve, 0));
 
-vi.mock('@angular/fire/auth', async () => {
-  const actual = await vi.importActual<typeof import('@angular/fire/auth')>(
-    '@angular/fire/auth',
+const listener = vi.fn();
+type TestUser = { getIdToken: () => Promise<string> };
+let authMock: { currentUser: TestUser | null };
+
+vi.mock('firebase/auth', async () => {
+  const actual = await vi.importActual<typeof import('firebase/auth')>(
+    'firebase/auth',
   );
   return {
     ...actual,
@@ -40,9 +54,9 @@ vi.mock('@angular/fire/auth', async () => {
   };
 });
 
-vi.mock('@angular/fire/firestore', async () => {
-  const actual = await vi.importActual<typeof import('@angular/fire/firestore')>(
-    '@angular/fire/firestore',
+vi.mock('firebase/firestore', async () => {
+  const actual = await vi.importActual<typeof import('firebase/firestore')>(
+    'firebase/firestore',
   );
   return {
     ...actual,
@@ -55,11 +69,12 @@ vi.mock('@angular/fire/firestore', async () => {
 describe('root API auth bridge integration', () => {
   beforeEach(() => {
     listener.mockReset();
+    authMock = { currentUser: null };
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        { provide: Auth, useValue: {} },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: authMock as unknown as Auth },
         {
           provide: AngularFirestore,
           useValue: { app: {}, type: 'firestore' },
@@ -109,7 +124,9 @@ describe('root API auth bridge integration', () => {
     const observer = listener.mock.calls[0][0] as {
       next: (user: { getIdToken: () => Promise<string> }) => void;
     };
-    observer.next({ getIdToken: () => token });
+    const user = { getIdToken: () => token };
+    authMock.currentUser = user;
+    observer.next(user);
 
     const initUser = firstValueFrom(
       userRecord.initUserRecord({ ianaTimezone: 'UTC' }),
@@ -121,7 +138,7 @@ describe('root API auth bridge integration', () => {
 
     resolveToken('route-token');
     await token;
-    await Promise.resolve();
+    await settlePendingWork();
     const requests = http.match(() => true);
     expect(requests).toHaveLength(2);
     for (const request of requests) {

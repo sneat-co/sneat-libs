@@ -3,10 +3,12 @@ import {
   EnvironmentProviders,
   Provider,
   makeEnvironmentProviders,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { RouteReuseStrategy } from '@angular/router';
-import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
+import { IonicRouteStrategy, NavController } from '@ionic/angular/common';
+import { provideIonicAngular } from '@ionic/angular/provide';
 
 /** Route-level Ionic setup for a lazily-loaded Ionic island (e.g. calendar,
  * or a form not yet ported to PrimeNG) inside an otherwise PrimeNG app.
@@ -23,6 +25,9 @@ export function provideSneatIonicShell(): EnvironmentProviders {
     provideIonicAngular(),
     provideAnimationsAsync(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    // Keep the token explicit: lazy consumers import it through Ionic's
+    // focused entry point and must not depend on tree-shakable root metadata.
+    NavController,
   ];
   return makeEnvironmentProviders(providers);
 }
@@ -32,6 +37,7 @@ export function provideSneatIonicShell(): EnvironmentProviders {
 @Component({
   selector: 'sneat-ionic-island-host',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content />',
 })
 export class SneatIonicIslandHostComponent {}

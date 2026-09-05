@@ -1,10 +1,14 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { Auth } from '@angular/fire/auth';
-import { ToastController } from '@ionic/angular/standalone';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ToastController } from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
 import { UserRecordService } from '@sneat/auth-core';
-import { AnalyticsService, APP_INFO, ErrorLogger } from '@sneat/core';
+import {
+  AnalyticsService,
+  APP_INFO,
+  ErrorLogger,
+  SNEAT_FIREBASE_AUTH,
+} from '@sneat/core';
 import { RandomIdService } from '@sneat/random';
 import { EmailLoginFormComponent } from './email-login-form.component';
 
@@ -12,7 +16,7 @@ describe('EmailLoginFormComponent', () => {
   let component: EmailLoginFormComponent;
   let fixture: ComponentFixture<EmailLoginFormComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EmailLoginFormComponent],
       providers: [
@@ -29,7 +33,7 @@ describe('EmailLoginFormComponent', () => {
           useValue: { logError: vi.fn(), logErrorHandler: () => vi.fn() },
         },
         { provide: ToastController, useValue: { create: vi.fn() } },
-        { provide: Auth, useValue: {} },
+        { provide: SNEAT_FIREBASE_AUTH, useValue: {} },
         {
           provide: RandomIdService,
           useValue: { newRandomId: () => 'test-id' },
@@ -51,7 +55,9 @@ describe('EmailLoginFormComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(EmailLoginFormComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

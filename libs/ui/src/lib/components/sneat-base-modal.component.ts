@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { SneatBaseComponent } from './sneat-base.component';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 
 @Injectable()
 export abstract class SneatBaseModalComponent extends SneatBaseComponent {

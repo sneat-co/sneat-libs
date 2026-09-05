@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ToastController } from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular';
 
 import { SpacesCardComponent } from './spaces-card.component';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -11,15 +11,15 @@ import { UserRequiredFieldsService } from '@sneat/auth-ui';
 import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService } from '@sneat/core';
 import { BehaviorSubject } from 'rxjs';
-import { Auth } from '@angular/fire/auth';
-import { Firestore } from '@angular/fire/firestore';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
+import { Firestore } from 'firebase/firestore';
 
 describe('SpacesCardComponent', () => {
   let component: SpacesCardComponent;
   let fixture: ComponentFixture<SpacesCardComponent>;
   let userState$: BehaviorSubject<ISneatUserState>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     userState$ = new BehaviorSubject<ISneatUserState>({
       status: 'authenticating',
     });
@@ -47,7 +47,7 @@ describe('SpacesCardComponent', () => {
         },
         { provide: AnalyticsService, useValue: { logEvent: vi.fn() } },
         {
-          provide: Auth,
+          provide: SNEAT_FIREBASE_AUTH,
           useValue: {
             onIdTokenChanged: vi.fn(() => () => void 0),
             onAuthStateChanged: vi.fn(() => () => void 0),
@@ -63,7 +63,7 @@ describe('SpacesCardComponent', () => {
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SpacesCardComponent);
@@ -73,6 +73,15 @@ describe('SpacesCardComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('uses the shared blue card-header treatment', () => {
+    const header = fixture.nativeElement.querySelector(
+      'ion-card > ion-item',
+    ) as HTMLElement;
+
+    expect(header.classList.contains('sneat-card-header')).toBe(true);
+    expect(header.getAttribute('lines')).toBe('full');
   });
 
   // Regression guard: before the fix the card stayed on "Authenticating..." even

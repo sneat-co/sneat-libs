@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CountryInputComponent } from './country-input.component';
 import { CountriesLoaderService } from '../country-selector';
 
@@ -13,7 +13,7 @@ describe('CountryInputComponent', () => {
     { id: 'UA', emoji: '🇺🇦', title: 'Ukraine' },
   ];
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     countriesLoader = {
       getCountries: vi.fn().mockResolvedValue(mockCountries),
     };
@@ -34,15 +34,17 @@ describe('CountryInputComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(CountryInputComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
   it('should initialize with default values', () => {
-    expect(component.canReset).toBe(true);
-    expect(component.label).toBe('Country');
+    expect(component.canReset()).toBe(true);
+    expect(component.label()).toBe('Country');
     expect(component.countryID).toBe('');
   });
 

@@ -1,5 +1,5 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideIonicAngular } from '@ionic/angular';
 import { SimpleChange } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { vi } from 'vitest';
@@ -15,7 +15,7 @@ describe('DataGridComponent', () => {
     logErrorHandler: ReturnType<typeof vi.fn>;
   };
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     // Create mock error logger
     mockErrorLogger = {
       logError: vi.fn(),
@@ -25,14 +25,19 @@ describe('DataGridComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [DataGridComponent, IonicModule.forRoot()],
-      providers: [{ provide: ErrorLogger, useValue: mockErrorLogger }],
+      imports: [DataGridComponent],
+      providers: [
+        provideIonicAngular(),
+        { provide: ErrorLogger, useValue: mockErrorLogger },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DataGridComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -73,7 +78,7 @@ describe('DataGridComponent', () => {
   });
 
   describe('ngOnChanges', () => {
-    it('should handle data changes when both data and columns are present', () => {
+    it('should handle data changes when both data and columns are present', async () => {
       const mockColumns: IGridColumn[] = [
         { field: 'id', title: 'ID', dbType: 'int' },
         { field: 'name', title: 'Name', dbType: 'string' },
@@ -93,6 +98,12 @@ describe('DataGridComponent', () => {
       });
 
       expect((component as any).drawTable).toHaveBeenCalled();
+
+      // Tabulator finishes wiring its registered modules on a macrotask.
+      // zone.js used to flush that incidentally; drain it explicitly so the
+      // grid is fully built before the fixture is torn down.
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      expect((component as any).tabulator).toBeTruthy();
     });
 
     it('should handle columns changes', () => {

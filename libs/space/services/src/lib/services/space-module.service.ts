@@ -3,14 +3,13 @@ import {
   collection,
   CollectionReference,
   Firestore as AngularFirestore,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { IIdAndBrief, IIdAndOptionalDbo } from '@sneat/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ModuleSpaceItemService } from './space-item.service';
 
-// import firebase from "firebase/compat";
 // import Item = firebase.analytics.Item;
 
 export abstract class SpaceModuleService<Dbo> extends ModuleSpaceItemService<

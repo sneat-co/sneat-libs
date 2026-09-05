@@ -7,6 +7,7 @@ import {
   computed,
   OnDestroy,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   IonButton,
@@ -15,7 +16,7 @@ import {
   IonItem,
   IonLabel,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   AuthProviderID,
   ISneatAuthUser,
@@ -45,6 +46,7 @@ interface provider {
 @Component({
   selector: 'sneat-user-auth-provider-status',
   templateUrl: './user-auth-provider-status.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonItem, IonIcon, IonLabel, IonButtons, IonButton, IonSpinner],
 })
 export class UserAuthAProviderStatusComponent implements OnDestroy {

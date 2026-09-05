@@ -1,11 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange } from '@angular/core';
-import {
-  ComponentFixture,
-  fakeAsync,
-  TestBed,
-  tick,
-  waitForAsync,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 import { SelectFromListComponent } from './select-from-list.component';
 import { of } from 'rxjs';
@@ -22,7 +16,7 @@ describe('SelectFromListComponent', () => {
     { id: '3', title: 'Cherry' },
   ];
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     errorLoggerMock = {
       logError: vi.fn(),
       logErrorHandler: vi.fn(() => vi.fn()),
@@ -40,7 +34,9 @@ describe('SelectFromListComponent', () => {
     fixture = TestBed.createComponent(SelectFromListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -226,15 +222,24 @@ describe('SelectFromListComponent', () => {
   });
 
   describe('focus', () => {
-    it('should call setFocus on filterInput after timeout', fakeAsync(() => {
-      const filterInputMock = {
-        setFocus: vi.fn(() => Promise.resolve()),
-      };
-      component.filterInput = filterInputMock as unknown;
-      component.focus();
-      tick(100);
-      expect(filterInputMock.setFocus).toHaveBeenCalled();
-    }));
+    it('should call setFocus on filterInput after timeout', async () => {
+      // `focus()` defers to `setTimeout(…, 100)`; vitest fake timers replace
+      // what `tick(100)` used to advance inside the zone. The async variant
+      // yields to the microtask queue between timers, so the promise returned
+      // by `setFocus()` settles the way it did under `tick()`.
+      vi.useFakeTimers();
+      try {
+        const filterInputMock = {
+          setFocus: vi.fn(() => Promise.resolve()),
+        };
+        component.filterInput = filterInputMock as unknown;
+        component.focus();
+        await vi.advanceTimersByTimeAsync(100);
+        expect(filterInputMock.setFocus).toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   describe('onAdd', () => {

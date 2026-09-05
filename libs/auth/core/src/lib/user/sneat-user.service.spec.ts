@@ -2,9 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import {
   Firestore as AngularFirestore,
   CollectionReference,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
-import { ErrorLogger } from '@sneat/core';
+import { ErrorLogger, SneatUrlOperationBlocker } from '@sneat/core';
 import {
   SneatAuthStateService,
   ISneatAuthState,
@@ -15,8 +15,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of, Subject, firstValueFrom } from 'rxjs';
 
 // Mock firestore functions
-vi.mock('@angular/fire/firestore', async () => {
-  const actual = await vi.importActual('@angular/fire/firestore');
+vi.mock('firebase/firestore', async () => {
+  const actual = await vi.importActual('firebase/firestore');
   return {
     ...actual,
     collection: vi
@@ -33,6 +33,7 @@ describe('SneatUserService', () => {
   let sneatApiServiceMock: { post: ReturnType<typeof vi.fn> };
   let userRecordServiceMock: { initUserRecord: ReturnType<typeof vi.fn> };
   let firestoreMock: Record<string, unknown>;
+  let operationBlockerMock: { isBlocked: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     authStateSubject = new Subject<ISneatAuthState>();
@@ -50,6 +51,9 @@ describe('SneatUserService', () => {
     firestoreMock = {
       app: {},
       type: 'firestore',
+    };
+    operationBlockerMock = {
+      isBlocked: vi.fn().mockReturnValue(false),
     };
 
     TestBed.configureTestingModule({
@@ -79,6 +83,10 @@ describe('SneatUserService', () => {
         {
           provide: UserRecordService,
           useValue: userRecordServiceMock,
+        },
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: operationBlockerMock,
         },
       ],
     });
@@ -122,6 +130,36 @@ describe('SneatUserService', () => {
     service.onUserSignedIn(authState);
 
     expect(service.currentUserID).toBe('test-uid-123');
+  });
+
+  it('does not start the user-record listener when server requests are blocked', async () => {
+    vi.useFakeTimers();
+    try {
+      operationBlockerMock.isBlocked.mockImplementation(
+        (operation) => operation === 'server-requests',
+      );
+      service.onUserSignedIn({
+        status: 'authenticated',
+        user: {
+          uid: 'blocked-user',
+          email: 'blocked@example.com',
+          emailVerified: true,
+          displayName: 'Blocked User',
+          providerId: 'google.com',
+          isAnonymous: false,
+          providerData: [],
+          photoURL: null,
+          phoneNumber: null,
+        },
+      });
+
+      await vi.advanceTimersByTimeAsync(100);
+
+      const { onSnapshot } = await import('firebase/firestore');
+      expect(onSnapshot).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('should not change currentUserID if uid is the same', () => {

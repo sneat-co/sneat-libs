@@ -4,10 +4,10 @@ import {
   Component,
   computed,
   effect,
-  Input,
   OnDestroy,
   signal,
   inject,
+  input
 } from '@angular/core';
 import {
   IonButton,
@@ -17,7 +17,7 @@ import {
   IonCardTitle,
   IonIcon,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { SneatUserService } from '@sneat/auth-core';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 import { map, race, takeUntil } from 'rxjs';
@@ -68,7 +68,7 @@ export class UserCountryComponent
   protected readonly $detectingCountry = signal(false);
   protected readonly $saving = signal(false);
 
-  @Input() public doNotHide = false;
+  public readonly doNotHide = input(false);
 
   private trackUserRecord(): void {
     this.userService.userState
@@ -162,8 +162,8 @@ export class UserCountryComponent
       },
       error: (err) => {
         this.errorLogger.logError(
-          'UserCountryComponent: Failed to set user country',
           err,
+          'UserCountryComponent: Failed to set user country',
         );
         this.$saving.set(false);
       },

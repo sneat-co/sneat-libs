@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { SneatCardListComponent } from './sneat-card-list.component';
 import { ErrorLogger } from '@sneat/core';
@@ -9,7 +9,7 @@ describe('SneatCardListComponent', () => {
   let fixture: ComponentFixture<SneatCardListComponent>;
   let errorLogger: { logError: ReturnType<typeof vi.fn> };
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     errorLogger = {
       logError: vi.fn(),
     };
@@ -35,7 +35,9 @@ describe('SneatCardListComponent', () => {
 
     fixture = TestBed.createComponent(SneatCardListComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -59,17 +61,30 @@ describe('SneatCardListComponent', () => {
     expect(itemClickSpy).toHaveBeenCalledWith(mockItem);
   });
 
-  it('should change mode to add when showAddForm is called', () => {
-    const mockEvent = {
-      preventDefault: vi.fn(),
-      stopPropagation: vi.fn(),
-    } as unknown as Event;
+  it('should change mode to add when showAddForm is called', async () => {
+    vi.useFakeTimers();
+    try {
+      const mockEvent = {
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      } as unknown as Event;
 
-    component['showAddForm'](mockEvent);
+      component['showAddForm'](mockEvent);
 
-    expect(mockEvent.preventDefault).toHaveBeenCalled();
-    expect(mockEvent.stopPropagation).toHaveBeenCalled();
-    expect(component['mode']).toBe('add');
+      expect(mockEvent.preventDefault).toHaveBeenCalled();
+      expect(mockEvent.stopPropagation).toHaveBeenCalled();
+      expect(component['mode']).toBe('add');
+
+      // `showAddForm` defers focusing the new-item input by 200ms. zone.js
+      // used to run that callback incidentally, before the file finished;
+      // drive it explicitly instead and assert the branch it takes while no
+      // input is rendered (the template is overridden to '').
+      await vi.advanceTimersByTimeAsync(200);
+      expect(component['addInput']).toBeUndefined();
+      expect(errorLogger.logError).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('should successfully create item when tryCreate is called', () => {

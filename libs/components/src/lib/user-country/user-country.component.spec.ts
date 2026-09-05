@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { ErrorLogger } from '@sneat/core';
 import { SneatUserService } from '@sneat/auth-core';
@@ -24,30 +24,30 @@ describe('UserCountryComponent', () => {
     getCountries: ReturnType<typeof vi.fn>;
   };
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     httpClient = {
       get: vi.fn(() => of('US')),
     };
-    
+
     userService = {
-      userState: new BehaviorSubject<{ record?: { countryID?: string } }>({ 
-        record: undefined 
+      userState: new BehaviorSubject<{ record?: { countryID?: string } }>({
+        record: undefined
       }),
       user$: new BehaviorSubject({}),
       userChanged: new BehaviorSubject(undefined),
       setUserCountry: vi.fn(() => of({})),
     };
-    
+
     errorLogger = {
       logError: vi.fn(),
       logErrorHandler: () => vi.fn(),
     };
 
     countriesLoader = {
-      getCountryByID: vi.fn(() => Promise.resolve({ 
-        id: 'US', 
-        emoji: '🇺🇸', 
-        title: 'United States' 
+      getCountryByID: vi.fn(() => Promise.resolve({
+        id: 'US',
+        emoji: '🇺🇸',
+        title: 'United States'
       })),
       getCountries: vi.fn(() => Promise.resolve([])),
     };
@@ -69,7 +69,9 @@ describe('UserCountryComponent', () => {
       .compileComponents();
     fixture = TestBed.createComponent(UserCountryComponent);
     component = fixture.componentInstance;
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -105,22 +107,22 @@ describe('UserCountryComponent', () => {
   it('should handle error when setting user country fails', () => {
     const error = new Error('Set country failed');
     userService.setUserCountry = vi.fn(() => throwError(() => error));
-    
+
     component['setCountry']('US');
-    
+
     expect(errorLogger.logError).toHaveBeenCalledWith(
+      error,
       'UserCountryComponent: Failed to set user country',
-      error
     );
   });
 
   it('should compute userHasCountry correctly', () => {
     component['$userCountryID'].set('US');
     expect(component['$userHasCountry']()).toBe(true);
-    
+
     component['$userCountryID'].set('--');
     expect(component['$userHasCountry']()).toBe(false);
-    
+
     component['$userCountryID'].set('');
     expect(component['$userHasCountry']()).toBe(false);
   });
@@ -131,6 +133,6 @@ describe('UserCountryComponent', () => {
     expect(component['isCountryDetectionStarted']).toBe(false);
     expect(component['$detectingCountry']()).toBe(false);
     expect(component['$saving']()).toBe(false);
-    expect(component.doNotHide).toBe(false);
+    expect(component.doNotHide()).toBe(false);
   });
 });

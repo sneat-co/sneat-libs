@@ -1,6 +1,9 @@
-<ion-img
+<img
+  alt=""
+  decoding="async"
+  loading="lazy"
   title="avatar"
   [src]="
-    avatar?.external ? '' : '//www.gravatar.com/avatar/' + avatar?.gravatar
+    avatar()?.external ? '' : '//www.gravatar.com/avatar/' + $safeNavigationMigration(avatar()?.gravatar)
   "
 />

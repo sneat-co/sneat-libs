@@ -6,14 +6,15 @@ import {
   makeEnvironmentProviders,
   provideEnvironmentInitializer,
 } from '@angular/core';
-import { Auth, onIdTokenChanged } from '@angular/fire/auth';
+import { onIdTokenChanged } from 'firebase/auth';
+import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { SneatApiAuthTokenBridge } from '@sneat/api-public';
 
 /** Firebase-only adapter. It writes to the root bridge; it never creates a
  * route-local API client, so services created before this route see readiness. */
 @Injectable()
 export class FirebaseSneatApiAuthAdapter {
-  private readonly auth = inject(Auth);
+  private readonly auth = inject(SNEAT_FIREBASE_AUTH);
   private readonly bridge = inject(SneatApiAuthTokenBridge);
   private readonly destroyRef = inject(DestroyRef);
   private started = false;
@@ -29,11 +30,24 @@ export class FirebaseSneatApiAuthAdapter {
           readiness.resolve();
           return;
         }
+        const resolveCurrentToken = async (
+          forceRefresh: boolean,
+        ): Promise<string | undefined> => {
+          const currentUser = this.auth.currentUser;
+          if (currentUser !== user) return undefined;
+          const token = await currentUser.getIdToken(forceRefresh);
+          return this.auth.currentUser === currentUser ? token : undefined;
+        };
         user
-          .getIdToken()
-          .then((token) => readiness.resolve(token))
+          .getIdToken(false)
+          .then(() =>
+            readiness.resolveWithTokenResolver(resolveCurrentToken),
+          )
           .catch((error) => {
-            readiness.resolve();
+            // A transient network failure must not convert an existing Firebase
+            // session into a signed-out state. The next protected request asks
+            // Firebase again and receives either a current token or that error.
+            readiness.resolveWithTokenResolver(resolveCurrentToken);
             console.error('getIdToken() error:', error);
           });
       },

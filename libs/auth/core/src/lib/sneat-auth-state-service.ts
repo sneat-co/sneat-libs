@@ -9,22 +9,20 @@ import {
   EnumAsUnionOfKeys,
   EnvConfigToken,
   IAnalyticsService,
+  SNEAT_FIREBASE_AUTH,
+  SneatUrlOperationBlocker,
 } from '@sneat/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { Injectable, inject } from '@angular/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { distinctUntilChanged, shareReplay } from 'rxjs/operators';
 import {
-  Auth,
   AuthProvider,
   getAuth,
   signInWithCredential,
   User,
   UserCredential,
   UserInfo,
-} from '@angular/fire/auth';
-
-import {
   GoogleAuthProvider,
   OAuthProvider,
   GithubAuthProvider,
@@ -49,6 +47,16 @@ export enum AuthStatuses {
 
 export type AuthStatus = EnumAsUnionOfKeys<typeof AuthStatuses>;
 
+/**
+ * A user-visible, evidence-based session progress phase. The UI maps these to
+ * friendly copy (for example “Checking your sign-in”), never SDK terminology.
+ */
+export type SneatAuthLoadingPhase =
+  | 'checking-session'
+  | 'getting-token'
+  | 'ready'
+  | 'failed';
+
 export interface ISneatAuthUser extends UserInfo {
   readonly isAnonymous: boolean;
   readonly emailVerified: boolean;
@@ -57,20 +65,28 @@ export interface ISneatAuthUser extends UserInfo {
 
 export interface ISneatAuthState {
   readonly status: AuthStatus;
+  readonly loadingPhase?: SneatAuthLoadingPhase;
   readonly token?: string | null;
   readonly user?: ISneatAuthUser | null;
   readonly err?: unknown;
 }
 
 const initialAuthStatus = AuthStatuses.authenticating;
-export const initialSneatAuthState = { status: initialAuthStatus };
+export const initialSneatAuthState = {
+  status: initialAuthStatus,
+  loadingPhase: 'checking-session' as const,
+};
 
-@Injectable({ providedIn: 'root' })
+// The host must provide this from its authenticated route/session boundary.
+// Keeping it out of the root injector is what allows public shells to render
+// before Firebase Auth and Firestore are downloaded.
+@Injectable()
 export class SneatAuthStateService {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
-  readonly fbAuth = inject(Auth);
+  readonly fbAuth = inject(SNEAT_FIREBASE_AUTH);
+  private readonly operationBlocker = inject(SneatUrlOperationBlocker);
 
   // Web OAuth sign-in strategy from the app's environment config (default popup).
   private readonly signInMethod =
@@ -98,46 +114,84 @@ export class SneatAuthStateService {
     shareReplay(1),
   );
 
+  private tokenGeneration = 0;
+  private tokenUserID?: string;
+
   // private readonly fbAuth: Auth;
 
   constructor() {
     const errorLogger = this.errorLogger;
     this.fbAuth.onIdTokenChanged({
       next: (firebaseUser) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
+        const tokenGeneration = ++this.tokenGeneration;
         const status: AuthStatus = firebaseUser
           ? AuthStatuses.authenticated
           : AuthStatuses.notAuthenticated;
+        if (!firebaseUser) {
+          this.publishSignedOutState();
+          return;
+        }
+        this.authState$.next({
+          ...this.authState$.value,
+          status: AuthStatuses.authenticating,
+          loadingPhase: 'getting-token',
+        });
         if (
-          firebaseUser &&
           this.authState$.value?.user?.uid !== firebaseUser?.uid
         ) {
           this.analyticsService.identify(firebaseUser.uid);
         }
         firebaseUser
-          ?.getIdToken()
+          .getIdToken(false)
           .then((token) => {
+            if (
+              tokenGeneration !== this.tokenGeneration ||
+              this.fbAuth.currentUser !== firebaseUser
+            ) {
+              return;
+            }
+            this.tokenUserID = firebaseUser.uid;
+            const authUser = createSneatAuthUserFromFbUser(firebaseUser);
+            if (this.authUser$.value?.uid !== authUser?.uid) {
+              this.authUser$.next(authUser);
+            }
             const current = this.authState$.value || {};
             this.authState$.next({
               ...current,
               status,
+              loadingPhase: 'ready',
               token,
-              user: this.authUser$.value,
+              user: authUser,
             });
             this.authStatus$.next(status); // Should be after authState$
           })
           .catch((err) => {
+            if (
+              tokenGeneration !== this.tokenGeneration ||
+              this.fbAuth.currentUser !== firebaseUser
+            ) {
+              return;
+            }
             const current = this.authState$.value || {};
             this.authState$.next({
               ...current,
+              loadingPhase: 'failed',
               err: `fbUser.getIdToken() failed: ${err}`,
             });
             this.errorLogger.logError(err, 'Failed in fbUser.getIdToken()');
           });
       },
       error: (err) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
         const current = this.authState$.value || {};
         this.authState$.next({
           ...current,
+          loadingPhase: 'failed',
           err: `fbAuth.onIdTokenChanged() failed: ${err}`,
         });
         errorLogger.logError(err, 'failed in fbAuth.onIdTokenChanged');
@@ -147,25 +201,37 @@ export class SneatAuthStateService {
     this.fbAuth.onAuthStateChanged({
       complete: () => void 0,
       next: (fbUser) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
         // console.log(
         //   `SneatAuthStateService => authStatus: ${this.authStatus$.value}; fbUser`,
         //   fbUser,
         // );
-
         const authUser = createSneatAuthUserFromFbUser(fbUser);
-
-        const status = authUser
-          ? AuthStatuses.authenticated
-          : AuthStatuses.notAuthenticated;
-        this.authStatus$.next(status);
+        if (!authUser) {
+          ++this.tokenGeneration;
+          this.publishSignedOutState();
+          return;
+        }
+        const status = AuthStatuses.authenticated;
         this.authUser$.next(authUser);
         this.authState$.next({
           ...this.authState$.value,
+          token:
+            this.tokenUserID === authUser.uid
+              ? this.authState$.value.token
+              : null,
           user: authUser,
           status,
+          loadingPhase: 'ready',
         });
+        this.authStatus$.next(status);
       },
       error: (err) => {
+        if (this.operationBlocker.isBlocked('auth')) {
+          return;
+        }
         this.errorLogger.logError(
           err,
           'failed to retrieve Firebase auth user information',
@@ -173,10 +239,24 @@ export class SneatAuthStateService {
         const current = this.authState$.value || {};
         this.authState$.next({
           ...current,
+          loadingPhase: 'failed',
           err: `fbAuth.onAuthStateChanged() failed: ${err}`,
         });
       },
     });
+  }
+
+  private publishSignedOutState(): void {
+    this.tokenUserID = undefined;
+    this.authUser$.next(null);
+    this.authState$.next({
+      ...this.authState$.value,
+      status: AuthStatuses.notAuthenticated,
+      loadingPhase: 'ready',
+      token: null,
+      user: null,
+    });
+    this.authStatus$.next(AuthStatuses.notAuthenticated);
   }
 
   public signOut(): Promise<void> {

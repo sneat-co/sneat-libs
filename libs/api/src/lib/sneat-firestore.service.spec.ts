@@ -1,11 +1,12 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { Injector } from '@angular/core';
+import { SneatUrlOperationBlocker } from '@sneat/core';
 import {
   CollectionReference,
   DocumentReference,
   DocumentSnapshot,
   QuerySnapshot,
-} from '@angular/fire/firestore';
+} from 'firebase/firestore';
 import { Subject } from 'rxjs';
 import {
   SneatFirestoreService,
@@ -21,7 +22,7 @@ const mockQuery = vi.fn();
 const mockWhere = vi.fn();
 const mockLimit = vi.fn();
 
-vi.mock('@angular/fire/firestore', () => ({
+vi.mock('firebase/firestore', () => ({
   doc: (...args: unknown[]) => mockDoc(...args),
   getDoc: (...args: unknown[]) => mockGetDoc(...args),
   onSnapshot: (...args: unknown[]) => mockOnSnapshot(...args),
@@ -29,6 +30,21 @@ vi.mock('@angular/fire/firestore', () => ({
   where: (...args: unknown[]) => mockWhere(...args),
   limit: (...args: unknown[]) => mockLimit(...args),
 }));
+
+/**
+ * Zoneless replacement for the bare `tick()` these specs used to call when the
+ * code under test settles through a promise rather than a timer
+ * (`getByDocRef` wraps `getDoc()` in `from(...)`). A real `setTimeout(…, 0)`
+ * is a macrotask: every already-queued microtask runs to completion before it
+ * fires, which is what `tick()` did inside the zone.
+ *
+ * The timer-driven specs in this file use `vi.useFakeTimers()` +
+ * `vi.advanceTimersByTimeAsync(0)` instead, because there the Firestore mock
+ * schedules its snapshot callback on `setTimeout(…, 0)` and the test has to
+ * advance that timer explicitly.
+ */
+const settlePendingWork = () =>
+  new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 interface TestBrief {
   id: string;
@@ -43,10 +59,19 @@ describe('SneatFirestoreService', () => {
   let service: SneatFirestoreService<TestBrief, TestDbo>;
   let injector: Injector;
   let dto2brief: (id: string, dto: TestDbo) => TestBrief;
+  let operationBlockerMock: { isBlocked: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    operationBlockerMock = {
+      isBlocked: vi.fn().mockReturnValue(false),
+    };
     TestBed.configureTestingModule({
-      providers: [],
+      providers: [
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: operationBlockerMock,
+        },
+      ],
     });
     injector = TestBed.inject(Injector);
     dto2brief = (id: string, dto: TestDbo) => ({ id, name: dto.name });
@@ -63,6 +88,35 @@ describe('SneatFirestoreService', () => {
   it('should be created', () => {
     service = new SneatFirestoreService(injector, dto2brief);
     expect(service).toBeTruthy();
+  });
+
+  it('keeps reads pending without touching Firestore when server requests are blocked', () => {
+    operationBlockerMock.isBlocked.mockImplementation(
+      (operation) => operation === 'server-requests',
+    );
+    service = new SneatFirestoreService(injector, dto2brief);
+    const docRef = {
+      id: 'blocked-doc',
+      path: 'test-collection/blocked-doc',
+    } as DocumentReference<TestDbo>;
+    const collectionRef = {
+      path: 'test-collection',
+    } as CollectionReference<TestDbo>;
+    const events: string[] = [];
+    const observer = {
+      next: () => events.push('next'),
+      error: () => events.push('error'),
+      complete: () => events.push('complete'),
+    };
+
+    service.watchByDocRef(docRef).subscribe(observer);
+    service.getByDocRef(docRef).subscribe(observer);
+    service.watchSnapshotsByFilter(collectionRef).subscribe(observer);
+
+    expect(mockGetDoc).not.toHaveBeenCalled();
+    expect(mockOnSnapshot).not.toHaveBeenCalled();
+    expect(mockQuery).not.toHaveBeenCalled();
+    expect(events).toEqual([]);
   });
 
   it('should use default dto2brief if not provided', () => {
@@ -94,127 +148,147 @@ describe('SneatFirestoreService', () => {
   });
 
   describe('watchByID', () => {
-    it('should watch document by ID', fakeAsync(() => {
-      service = new SneatFirestoreService(injector, dto2brief);
-      const mockCollection = {
-        path: 'test-collection',
-      } as CollectionReference<TestDbo>;
-      const mockDocRef = {
-        id: 'doc1',
-        path: 'test-collection/doc1',
-      } as DocumentReference<TestDbo>;
-      const mockSnapshot = {
-        exists: () => true,
-        data: () => ({ id: 'doc1', name: 'Test', email: 'test1@example.com' }),
-      } as unknown as DocumentSnapshot<TestDbo>;
+    it('should watch document by ID', async () => {
+      vi.useFakeTimers();
+      try {
+        service = new SneatFirestoreService(injector, dto2brief);
+        const mockCollection = {
+          path: 'test-collection',
+        } as CollectionReference<TestDbo>;
+        const mockDocRef = {
+          id: 'doc1',
+          path: 'test-collection/doc1',
+        } as DocumentReference<TestDbo>;
+        const mockSnapshot = {
+          exists: () => true,
+          data: () => ({ id: 'doc1', name: 'Test', email: 'test1@example.com' }),
+        } as unknown as DocumentSnapshot<TestDbo>;
 
-      mockDoc.mockReturnValue(mockDocRef);
-      mockOnSnapshot.mockImplementation((docRef, next) => {
-        // Simulate snapshot
-        setTimeout(() => next(mockSnapshot), 0);
-      });
+        mockDoc.mockReturnValue(mockDocRef);
+        mockOnSnapshot.mockImplementation((docRef, next) => {
+          // Simulate snapshot
+          setTimeout(() => next(mockSnapshot), 0);
+        });
 
-      const result$ = service.watchByID(mockCollection, 'doc1');
-      let result: unknown;
-      result$.subscribe((data) => {
-        result = data;
-      });
+        const result$ = service.watchByID(mockCollection, 'doc1');
+        let result: unknown;
+        result$.subscribe((data) => {
+          result = data;
+        });
 
-      tick();
+        await vi.advanceTimersByTimeAsync(0);
 
-      expect(mockDoc).toHaveBeenCalledWith(mockCollection, 'doc1');
-      expect(result).toEqual({
-        id: 'doc1',
-        dbo: { id: 'doc1', name: 'Test', email: 'test1@example.com' },
-        brief: { id: 'doc1', name: 'Test' },
-      });
-    }));
+        expect(mockDoc).toHaveBeenCalledWith(mockCollection, 'doc1');
+        expect(result).toEqual({
+          id: 'doc1',
+          dbo: { id: 'doc1', name: 'Test', email: 'test1@example.com' },
+          brief: { id: 'doc1', name: 'Test' },
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   describe('watchByDocRef', () => {
-    it('should watch document by reference', fakeAsync(() => {
-      service = new SneatFirestoreService(injector, dto2brief);
-      const mockDocRef = {
-        id: 'doc2',
-        path: 'test-collection/doc2',
-      } as DocumentReference<TestDbo>;
-      const mockSnapshot = {
-        exists: () => true,
-        data: () => ({ id: 'doc2', name: 'Test2', email: 'test2@example.com' }),
-      } as unknown as DocumentSnapshot<TestDbo>;
+    it('should watch document by reference', async () => {
+      vi.useFakeTimers();
+      try {
+        service = new SneatFirestoreService(injector, dto2brief);
+        const mockDocRef = {
+          id: 'doc2',
+          path: 'test-collection/doc2',
+        } as DocumentReference<TestDbo>;
+        const mockSnapshot = {
+          exists: () => true,
+          data: () => ({ id: 'doc2', name: 'Test2', email: 'test2@example.com' }),
+        } as unknown as DocumentSnapshot<TestDbo>;
 
-      mockOnSnapshot.mockImplementation((docRef, next) => {
-        setTimeout(() => next(mockSnapshot), 0);
-      });
+        mockOnSnapshot.mockImplementation((docRef, next) => {
+          setTimeout(() => next(mockSnapshot), 0);
+        });
 
-      const result$ = service.watchByDocRef(mockDocRef);
-      let result: unknown;
-      result$.subscribe((data) => {
-        result = data;
-      });
+        const result$ = service.watchByDocRef(mockDocRef);
+        let result: unknown;
+        result$.subscribe((data) => {
+          result = data;
+        });
 
-      tick();
+        await vi.advanceTimersByTimeAsync(0);
 
-      expect(mockOnSnapshot).toHaveBeenCalled();
-      expect(result).toEqual({
-        id: 'doc2',
-        dbo: { id: 'doc2', name: 'Test2', email: 'test2@example.com' },
-        brief: { id: 'doc2', name: 'Test2' },
-      });
-    }));
+        expect(mockOnSnapshot).toHaveBeenCalled();
+        expect(result).toEqual({
+          id: 'doc2',
+          dbo: { id: 'doc2', name: 'Test2', email: 'test2@example.com' },
+          brief: { id: 'doc2', name: 'Test2' },
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
 
-    it('should handle errors', fakeAsync(() => {
-      service = new SneatFirestoreService(injector, dto2brief);
-      const mockDocRef = {
-        id: 'doc3',
-        path: 'test-collection/doc3',
-      } as DocumentReference<TestDbo>;
-      const testError = new Error('Firestore error');
+    it('should handle errors', async () => {
+      vi.useFakeTimers();
+      try {
+        service = new SneatFirestoreService(injector, dto2brief);
+        const mockDocRef = {
+          id: 'doc3',
+          path: 'test-collection/doc3',
+        } as DocumentReference<TestDbo>;
+        const testError = new Error('Firestore error');
 
-      mockOnSnapshot.mockImplementation((docRef, next, error) => {
-        setTimeout(() => error(testError), 0);
-      });
+        mockOnSnapshot.mockImplementation((docRef, next, error) => {
+          setTimeout(() => error(testError), 0);
+        });
 
-      const result$ = service.watchByDocRef(mockDocRef);
-      let caughtError: unknown;
-      result$.subscribe({
-        error: (err) => {
-          caughtError = err;
-        },
-      });
+        const result$ = service.watchByDocRef(mockDocRef);
+        let caughtError: unknown;
+        result$.subscribe({
+          error: (err) => {
+            caughtError = err;
+          },
+        });
 
-      tick();
+        await vi.advanceTimersByTimeAsync(0);
 
-      expect(caughtError).toBe(testError);
-    }));
+        expect(caughtError).toBe(testError);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
 
-    it('should handle complete', fakeAsync(() => {
-      service = new SneatFirestoreService(injector, dto2brief);
-      const mockDocRef = {
-        id: 'doc5',
-        path: 'test-collection/doc5',
-      } as DocumentReference<TestDbo>;
+    it('should handle complete', async () => {
+      vi.useFakeTimers();
+      try {
+        service = new SneatFirestoreService(injector, dto2brief);
+        const mockDocRef = {
+          id: 'doc5',
+          path: 'test-collection/doc5',
+        } as DocumentReference<TestDbo>;
 
-      mockOnSnapshot.mockImplementation((docRef, next, error, complete) => {
-        setTimeout(() => complete(), 0);
-      });
+        mockOnSnapshot.mockImplementation((docRef, next, error, complete) => {
+          setTimeout(() => complete(), 0);
+        });
 
-      const result$ = service.watchByDocRef(mockDocRef);
-      let completed = false;
-      result$.subscribe({
-        complete: () => {
-          completed = true;
-        },
-      });
+        const result$ = service.watchByDocRef(mockDocRef);
+        let completed = false;
+        result$.subscribe({
+          complete: () => {
+            completed = true;
+          },
+        });
 
-      tick();
+        await vi.advanceTimersByTimeAsync(0);
 
-      expect(completed).toBe(true);
-    }));
+        expect(completed).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   describe('getByDocRef', () => {
-    it('should get document by reference', fakeAsync(() => {
+    it('should get document by reference', async () => {
       service = new SneatFirestoreService(injector, dto2brief);
       const mockDocRef = {
         id: 'doc4',
@@ -233,7 +307,7 @@ describe('SneatFirestoreService', () => {
         result = data;
       });
 
-      tick();
+      await settlePendingWork();
 
       expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef);
       expect(result).toEqual({
@@ -241,7 +315,7 @@ describe('SneatFirestoreService', () => {
         dbo: { id: 'doc4', name: 'Test4', email: 'test4@example.com' },
         brief: { id: 'doc4', name: 'Test4' },
       });
-    }));
+    });
   });
 
   describe('watchSnapshotsByFilter', () => {
@@ -314,43 +388,48 @@ describe('SneatFirestoreService', () => {
   });
 
   describe('watchByFilter', () => {
-    it('should watch and transform documents by filter', fakeAsync(() => {
-      service = new SneatFirestoreService(injector, dto2brief);
-      const mockCollection = {
-        path: 'test-collection',
-      } as CollectionReference<TestDbo>;
-      const mockSnapshot1 = {
-        id: 'doc1',
-        exists: () => true,
-        data: () => ({ id: 'doc1', name: 'Test1', email: 'test1@example.com' }),
-      } as unknown as DocumentSnapshot<TestDbo>;
-      const mockQuerySnapshot = {
-        docs: [mockSnapshot1],
-      } as QuerySnapshot<TestDbo>;
-
-      mockQuery.mockReturnValue({});
-      mockOnSnapshot.mockImplementation(
-        (q, subj: Subject<QuerySnapshot<TestDbo>>) => {
-          setTimeout(() => subj.next(mockQuerySnapshot), 0);
-        },
-      );
-
-      const result$ = service.watchByFilter(mockCollection);
-      let result: unknown;
-      result$.subscribe((data) => {
-        result = data;
-      });
-
-      tick();
-
-      expect(result).toEqual([
-        {
+    it('should watch and transform documents by filter', async () => {
+      vi.useFakeTimers();
+      try {
+        service = new SneatFirestoreService(injector, dto2brief);
+        const mockCollection = {
+          path: 'test-collection',
+        } as CollectionReference<TestDbo>;
+        const mockSnapshot1 = {
           id: 'doc1',
-          dto: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
-          brief: { id: 'doc1', name: 'Test1' },
-        },
-      ]);
-    }));
+          exists: () => true,
+          data: () => ({ id: 'doc1', name: 'Test1', email: 'test1@example.com' }),
+        } as unknown as DocumentSnapshot<TestDbo>;
+        const mockQuerySnapshot = {
+          docs: [mockSnapshot1],
+        } as QuerySnapshot<TestDbo>;
+
+        mockQuery.mockReturnValue({});
+        mockOnSnapshot.mockImplementation(
+          (q, subj: Subject<QuerySnapshot<TestDbo>>) => {
+            setTimeout(() => subj.next(mockQuerySnapshot), 0);
+          },
+        );
+
+        const result$ = service.watchByFilter(mockCollection);
+        let result: unknown;
+        result$.subscribe((data) => {
+          result = data;
+        });
+
+        await vi.advanceTimersByTimeAsync(0);
+
+        expect(result).toEqual([
+          {
+            id: 'doc1',
+            dto: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
+            brief: { id: 'doc1', name: 'Test1' },
+          },
+        ]);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   describe('docSnapshotsToContext', () => {

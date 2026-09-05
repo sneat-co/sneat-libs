@@ -1,0 +1,42 @@
+@for (item of $visibleItems(); track item.id; let last = $last) {
+  <ion-item
+    tappable
+    [attr.data-extension-id]="item.id"
+    [routerLink]="itemUrl(item.path)"
+    [routerDirection]="$presentation() === 'menu' ? 'root' : undefined"
+    [detail]="$presentation() === 'card'"
+    [disabled]="$disabled()"
+    [lines]="last ? 'none' : undefined"
+    [class.last-extension-item]="last"
+    [class.currentPage]="isCurrent(item)"
+    (click)="onLinkSelected()"
+  >
+    <ion-icon [icon]="item.icon" slot="start" />
+    <ion-label class="extension-title">{{ item.title }}</ion-label>
+    @if (visibleActions(item).length) {
+      <ion-buttons slot="end">
+        @for (action of visibleActions(item); track action.id) {
+          <ion-button
+            [attr.title]="action.title"
+            [routerLink]="itemUrl(action.path)"
+            [routerDirection]="$presentation() === 'menu' ? 'root' : undefined"
+            (click)="onActionSelected($event)"
+          >
+            <ion-label style="text-transform: none">
+              @if (action.emoji) {
+                <span>{{ action.emoji }}</span>
+              }
+              @if ($presentation() === 'card' || !action.emoji) {
+                <span
+                  class="sneat-hide-if-width-less-320"
+                  [style.margin-left]="action.emoji ? '0.5em' : undefined"
+                  >{{ action.title }}</span
+                >
+              }
+            </ion-label>
+          </ion-button>
+        }
+      </ion-buttons>
+    }
+  </ion-item>
+}

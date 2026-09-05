@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 import { ClassName } from '../../components';
 import { OverlayController } from '../selector-base.component';
@@ -44,7 +44,7 @@ describe('MultiSelectorComponent', () => {
     { id: '2', title: 'Item 2' },
   ];
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MultiSelectorComponent],
       providers: [
@@ -77,7 +77,9 @@ describe('MultiSelectorComponent', () => {
     fixture = TestBed.createComponent(MultiSelectorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
