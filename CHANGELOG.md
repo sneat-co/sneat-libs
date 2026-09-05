@@ -1,3 +1,13 @@
+## 0.27.9 (2026-09-05)
+
+### 🩹 Fixes
+
+- Connect standalone apps running on loopback hosts to the shared local HTTPS API when Firebase emulator mode is enabled. ([c056d7b](https://github.com/sneat-co/sneat-libs/commit/c056d7b))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.8 (2026-09-01)
 
 ### 🩹 Fixes
