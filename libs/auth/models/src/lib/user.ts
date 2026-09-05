@@ -1,4 +1,4 @@
-import { EnumAsUnionOfKeys, SpaceType } from '@sneat/core';
+import { EnumAsUnionOfKeys, GroupKind, SpaceType } from '@sneat/core';
 import { IAvatar } from './avatar';
 import { IPersonNames } from './person-names';
 
@@ -29,6 +29,7 @@ export type SpaceMemberType = EnumAsUnionOfKeys<typeof SpaceMemberTypeEnum>;
 export interface IUserSpaceBrief {
   readonly title: string;
   readonly type: SpaceType;
+  readonly groupKind?: GroupKind;
   readonly roles: string[];
   readonly userContactID: string;
 }

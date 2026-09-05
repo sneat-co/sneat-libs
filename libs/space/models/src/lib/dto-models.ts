@@ -1,9 +1,11 @@
-import { SpaceType } from '@sneat/core';
+import { GroupKind, SpaceType } from '@sneat/core';
 import { IRecord } from '@sneat/data';
 import { ISpaceDbo } from '@sneat/dto';
 
 export interface ICreateSpaceRequest {
   type: SpaceType;
+  groupKind?: GroupKind;
+  requestID?: string;
   // memberType: MemberType;
   title?: string;
 }

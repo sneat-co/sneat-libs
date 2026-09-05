@@ -30,7 +30,7 @@ import { IUserSpaceBrief } from '@sneat/auth-models';
 import { IIdAndBrief } from '@sneat/core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { ICreateSpaceRequest, ISpaceContext } from '@sneat/space-models';
-import { SpaceType } from '@sneat/core';
+import { GroupKind, SpaceType } from '@sneat/core';
 import { SpaceNavService, SpaceService } from '@sneat/space-services';
 import { SneatUserService } from '@sneat/auth-core';
 import { SpacesListComponent } from '../spaces-list';
@@ -74,6 +74,9 @@ export class SpacesCardComponent {
    */
   @Input() spaceType?: SpaceType;
 
+  /** Narrows group spaces and tags new groups with a product-specific purpose. */
+  @Input() groupKind?: GroupKind;
+
   /**
    * Whether the card offers its quick-add form. A product whose spaces are
    * created by a registration flow (decision 0006) passes false and offers
@@ -103,7 +106,11 @@ export class SpacesCardComponent {
     }
     return Object.entries(record.spaces ?? {})
       .map(([id, brief]) => ({ id, brief }))
-      .filter(({ brief }) => !this.spaceType || brief.type === this.spaceType)
+      .filter(
+        ({ brief }) =>
+          (!this.spaceType || brief.type === this.spaceType) &&
+          (!this.groupKind || brief.groupKind === this.groupKind),
+      )
       .sort((a, b) => (a.brief.title > b.brief.title ? 1 : -1));
   });
 
@@ -115,7 +122,12 @@ export class SpacesCardComponent {
       this.spaces()?.map(({ id, brief }) => ({
         id,
         type: brief.type,
-        brief: { title: brief.title, type: brief.type, roles: brief.roles },
+        brief: {
+          title: brief.title,
+          type: brief.type,
+          groupKind: brief.groupKind,
+          roles: brief.roles,
+        },
       })),
   );
 
@@ -161,7 +173,8 @@ export class SpacesCardComponent {
       return;
     }
     const request: ICreateSpaceRequest = {
-      type: 'team',
+      type: this.spaceType ?? 'team',
+      groupKind: this.groupKind,
       title,
     };
     this.adding.set(true);

@@ -1,6 +1,7 @@
 import { SpaceType } from '@sneat/core-public';
 
-export type { SpaceType } from '@sneat/core-public';
+export type { GroupKind, SpaceType } from '@sneat/core-public';
+export { groupKinds, isGroupKind } from '@sneat/core-public';
 
 export const SpaceTypeFamily = 'family';
 export const SpaceTypePersonal = 'personal';

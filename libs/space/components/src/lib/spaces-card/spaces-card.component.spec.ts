@@ -11,6 +11,7 @@ import { UserRequiredFieldsService } from '@sneat/auth-ui';
 import { ErrorLogger } from '@sneat/core';
 import { AnalyticsService } from '@sneat/core';
 import { BehaviorSubject } from 'rxjs';
+import { of } from 'rxjs';
 import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { Firestore } from 'firebase/firestore';
 
@@ -18,11 +19,22 @@ describe('SpacesCardComponent', () => {
   let component: SpacesCardComponent;
   let fixture: ComponentFixture<SpacesCardComponent>;
   let userState$: BehaviorSubject<ISneatUserState>;
+  let createSpace: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     userState$ = new BehaviorSubject<ISneatUserState>({
       status: 'authenticating',
     });
+    createSpace = vi.fn(() =>
+      of({
+        id: 'home-1',
+        brief: {
+          title: 'Our home',
+          type: 'group',
+          groupKind: 'housemates',
+        },
+      }),
+    );
     await TestBed.configureTestingModule({
       imports: [
         SpacesCardComponent,
@@ -30,8 +42,11 @@ describe('SpacesCardComponent', () => {
         HttpClientTestingModule,
       ],
       providers: [
-        { provide: SpaceService, useValue: {} },
-        { provide: SpaceNavService, useValue: {} },
+        { provide: SpaceService, useValue: { createSpace } },
+        {
+          provide: SpaceNavService,
+          useValue: { navigateToSpace: vi.fn(() => Promise.resolve()) },
+        },
         // The card now embeds the real SpacesListComponent, which injects this.
         { provide: UserRequiredFieldsService, useValue: { open: vi.fn() } },
         {
@@ -114,5 +129,48 @@ describe('SpacesCardComponent', () => {
 
     await fixture.whenStable();
     expect(c.spaces()?.[0]?.brief?.title).toBe('Family');
+  });
+
+  it('filters and creates the configured group kind', async () => {
+    component.spaceType = 'group';
+    component.groupKind = 'housemates';
+    userState$.next({
+      status: 'authenticated',
+      user: { uid: 'u1' },
+      record: {
+        title: 'Test User',
+        spaces: {
+          home: {
+            title: 'Our home',
+            type: 'group',
+            groupKind: 'housemates',
+            roles: ['owner'],
+            userContactID: 'u1',
+          },
+          friends: {
+            title: 'Friends',
+            type: 'group',
+            groupKind: 'friends',
+            roles: ['owner'],
+            userContactID: 'u1',
+          },
+        },
+      },
+    } as ISneatUserState);
+    await fixture.whenStable();
+
+    const internal = component as unknown as {
+      spaces(): readonly { id: string }[] | undefined;
+      spaceName: { set(value: string): void };
+      addSpace(): void;
+    };
+    expect(internal.spaces()?.map(({ id }) => id)).toEqual(['home']);
+    internal.spaceName.set('New home');
+    internal.addSpace();
+    expect(createSpace).toHaveBeenCalledWith({
+      type: 'group',
+      groupKind: 'housemates',
+      title: 'New home',
+    });
   });
 });
