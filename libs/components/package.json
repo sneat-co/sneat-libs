@@ -4,6 +4,12 @@
   "publishConfig": {
     "access": "public"
   },
+  "exports": {
+    "./styles": {
+      "sass": "./src/sneat-styles.scss",
+      "default": "./src/sneat-styles.scss"
+    }
+  },
   "peerDependencies": {
     "@angular/common": ">=22.0.0 <23.0.0",
     "@angular/core": ">=22.0.0 <23.0.0",
