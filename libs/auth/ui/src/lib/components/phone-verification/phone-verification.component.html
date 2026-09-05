@@ -1,0 +1,92 @@
+<section aria-labelledby="phone-verification-heading">
+  <h2 id="phone-verification-heading">Verify your phone number</h2>
+
+  @if (verifiedPhoneNumber(); as verifiedNumber) {
+    <p role="status">
+      <strong>{{ verifiedNumber }}</strong> is verified and linked to your
+      account.
+    </p>
+  } @else if (verificationId()) {
+    <form (ngSubmit)="verifyCode()" novalidate>
+      <p>
+        Enter the six-digit code sent to
+        <strong>{{ phoneNumber() }}</strong>.
+      </p>
+      <ion-item>
+        <ion-input
+          name="verificationCode"
+          label="Verification code"
+          labelPlacement="stacked"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          [disabled]="!!pending()"
+          [ngModel]="verificationCode()"
+          (ngModelChange)="verificationCode.set($event)"
+        />
+      </ion-item>
+      <div class="actions">
+        <ion-button
+          type="submit"
+          [disabled]="!!pending() || !isVerificationCodeValid"
+        >
+          @if (pending() === 'verifying') {
+            <ion-spinner name="lines-small" aria-hidden="true" />
+            Verifying…
+          } @else {
+            Verify phone
+          }
+        </ion-button>
+        <ion-button
+          type="button"
+          fill="clear"
+          [disabled]="!!pending()"
+          (click)="useAnotherNumber()"
+        >
+          Request another code or change number
+        </ion-button>
+      </div>
+    </form>
+  } @else {
+    <form (ngSubmit)="requestCode()" novalidate>
+      <ion-item>
+        <ion-input
+          name="phoneNumber"
+          type="tel"
+          inputmode="tel"
+          autocomplete="tel"
+          label="Phone number"
+          labelPlacement="stacked"
+          placeholder="+353…"
+          [disabled]="!!pending()"
+          [ngModel]="phoneNumber()"
+          (ngModelChange)="phoneNumber.set($event)"
+        />
+      </ion-item>
+      <ion-note>
+        Use the international format beginning with “+”. Google Firebase will
+        send an authentication SMS and process your phone number for spam and
+        abuse prevention. Standard SMS rates may apply. We will not use this
+        verification message for marketing.
+      </ion-note>
+      <div #recaptchaContainer class="recaptcha" aria-label="Security check"></div>
+      <ion-button
+        type="submit"
+        [disabled]="!!pending() || !isPhoneNumberValid"
+      >
+        @if (pending() === 'sending') {
+          <ion-spinner name="lines-small" aria-hidden="true" />
+          Sending code…
+        } @else {
+          Send verification code
+        }
+      </ion-button>
+    </form>
+  }
+
+  @if (errorMessage(); as message) {
+    <ion-text color="danger">
+      <p class="error" role="alert">{{ message }}</p>
+    </ion-text>
+  }
+</section>
