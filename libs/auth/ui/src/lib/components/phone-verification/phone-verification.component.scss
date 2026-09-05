@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin-top: 0;
+}
+
+ion-note {
+  display: block;
+  line-height: 1.4;
+  margin: 0.75rem 1rem;
+}
+
+.recaptcha {
+  margin: 1rem;
+  min-height: 78px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.error {
+  margin: 0.75rem 1rem;
+}
