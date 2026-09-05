@@ -30,11 +30,11 @@ export abstract class SelectorBaseService<T = ISelectItem> {
     options = {
       ...options,
       onSelected: async (items?: T[]): Promise<void> => {
+        result = items;
         if (onSelected) {
           await onSelected(items);
         }
         await this.modalController.dismiss(items);
-        result = items;
       },
     };
     let componentProps: ComponentProps<unknown> = {
