@@ -23,3 +23,16 @@ export type SpaceType =
   | 'sport_club'
   | 'cohabit'
   | 'unknown';
+
+export const groupKinds = [
+  'general',
+  'friends',
+  'event',
+  'housemates',
+] as const;
+
+/** A purpose-specific subtype of a group space. Omitted means a legacy/general group. */
+export type GroupKind = (typeof groupKinds)[number];
+
+export const isGroupKind = (value: unknown): value is GroupKind =>
+  typeof value === 'string' && groupKinds.includes(value as GroupKind);
