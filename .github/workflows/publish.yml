@@ -62,7 +62,9 @@ jobs:
     needs: candidate
     if: needs.candidate.outputs.release == 'true'
     permissions:
-      contents: read
+      # Match the pinned reusable workflow's required permission. The command
+      # below only publishes the already-checked candidate; tagging stays separate.
+      contents: write
     uses: sneat-co/cicd/.github/workflows/npm-publish.yml@dbdae22aef3805ed592f34ce72119c65b220e20f
     with:
       working-directory: .
