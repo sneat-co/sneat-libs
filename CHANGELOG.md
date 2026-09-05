@@ -1,3 +1,9 @@
+## 0.27.13 (2026-09-05)
+
+### Fixes
+
+- **auth-ui:** replace the universal free/open-source claim with product-neutral Sneat account sign-in copy ([#88](https://github.com/sneat-co/sneat-libs/pull/88))
+
 ## 0.27.12 (2026-09-05)
 
 This was a version bump only, there were no code changes.
