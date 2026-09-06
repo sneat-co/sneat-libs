@@ -90,6 +90,55 @@ describe('SneatFirestoreService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('attaches document reads on subscription and detaches when leaving a Space', () => {
+    const detach = vi.fn();
+    mockOnSnapshot.mockReturnValue(detach);
+    service = new SneatFirestoreService(injector, dto2brief);
+    const ref = { id: 'entry', path: 'spaces/a/ext/budgetus/entries/entry' } as DocumentReference<TestDbo>;
+    const read = service.watchByDocRef(ref);
+    expect(mockOnSnapshot).not.toHaveBeenCalled();
+    const subscription = read.subscribe();
+    expect(mockOnSnapshot).toHaveBeenCalledTimes(1);
+    subscription.unsubscribe();
+    expect(detach).toHaveBeenCalledTimes(1);
+  });
+
+  it('detaches a collection listener on error and never drops a synchronous first snapshot', () => {
+    const detach = vi.fn();
+    const permissionError = new Error('permission-denied');
+    const snapshot = { docs: [{ id: 'revision-2',
+      data: () => ({ id: 'revision-2', name: 'Corrected amount', email: 'actor@example.test' }),
+    }] } as unknown as QuerySnapshot<TestDbo>;
+    mockOnSnapshot.mockImplementation((_query, observer) => {
+      observer.next(snapshot);
+      observer.error(permissionError);
+      return detach;
+    });
+    service = new SneatFirestoreService(injector, dto2brief);
+    const names: string[] = [];
+    const errors: unknown[] = [];
+    service.watchByFilter({ path: 'spaces/a/ext/budgetus/entries/entry/revisions' } as CollectionReference<TestDbo>).subscribe({
+      next: (records) => names.push(...records.map((record) => record.dbo?.name ?? 'missing')),
+      error: (error: unknown) => errors.push(error),
+    });
+    expect(names).toEqual(['Corrected amount']);
+    expect(errors).toEqual([permissionError]);
+    expect(detach).toHaveBeenCalledTimes(1);
+  });
+
+  it('detaches the old collection before subscribing to another Space', () => {
+    const detached: string[] = [];
+    mockQuery.mockImplementation((ref) => ref);
+    mockOnSnapshot.mockImplementation((ref) => () => detached.push(ref.path));
+    service = new SneatFirestoreService(injector, dto2brief);
+    const first = service.watchByFilter({ path: 'spaces/a/ext/budgetus/entries' } as CollectionReference<TestDbo>).subscribe();
+    first.unsubscribe();
+    const second = service.watchByFilter({ path: 'spaces/b/ext/budgetus/entries' } as CollectionReference<TestDbo>).subscribe();
+    expect(detached).toEqual(['spaces/a/ext/budgetus/entries']);
+    second.unsubscribe();
+    expect(detached).toEqual(['spaces/a/ext/budgetus/entries', 'spaces/b/ext/budgetus/entries']);
+  });
+
   it('keeps reads pending without touching Firestore when server requests are blocked', () => {
     operationBlockerMock.isBlocked.mockImplementation(
       (operation) => operation === 'server-requests',
@@ -422,6 +471,7 @@ describe('SneatFirestoreService', () => {
         expect(result).toEqual([
           {
             id: 'doc1',
+            dbo: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
             dto: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
             brief: { id: 'doc1', name: 'Test1' },
           },
@@ -454,6 +504,7 @@ describe('SneatFirestoreService', () => {
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
         id: 'doc1',
+        dbo: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
         dto: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
         brief: { id: 'doc1', name: 'Test1' },
       });
@@ -473,6 +524,7 @@ describe('SneatFirestoreService', () => {
 
       expect(result).toEqual({
         id: 'doc1',
+        dbo: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
         dto: { id: 'doc1', name: 'Test1', email: 'test1@example.com' },
         brief: { id: 'doc1', name: 'Test1' },
       });
@@ -490,6 +542,7 @@ describe('SneatFirestoreService', () => {
 
       expect(result).toEqual({
         id: 'doc1',
+        dbo: undefined,
         dto: undefined,
         brief: undefined,
       });
@@ -499,7 +552,7 @@ describe('SneatFirestoreService', () => {
   describe('docSnapshotToDto', () => {
     it('should convert existing snapshot to dto', () => {
       const mockSnapshot = {
-        exists: true,
+        exists: () => true,
         data: () => ({ id: 'doc1', name: 'Test1', email: 'test1@example.com' }),
       } as unknown as DocumentSnapshot<TestDbo>;
 
@@ -514,7 +567,7 @@ describe('SneatFirestoreService', () => {
 
     it('should handle non-existing snapshot', () => {
       const mockSnapshot = {
-        exists: false,
+        exists: () => false,
       } as unknown as DocumentSnapshot<TestDbo>;
 
       const result = docSnapshotToDto('doc1', dto2brief, mockSnapshot);
@@ -528,7 +581,7 @@ describe('SneatFirestoreService', () => {
 
     it('should handle snapshot with undefined data', () => {
       const mockSnapshot = {
-        exists: true,
+        exists: () => true,
         data: () => undefined,
       } as unknown as DocumentSnapshot<TestDbo>;
 

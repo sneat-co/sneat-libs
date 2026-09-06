@@ -18,7 +18,7 @@ import {
 } from '@sneat/core';
 import { WhereFilterOp } from '@firebase/firestore-types';
 import { INavContext } from '@sneat/core';
-import { from, map, NEVER, Observable, Subject } from 'rxjs';
+import { from, map, NEVER, Observable } from 'rxjs';
 
 export interface IFilter {
   readonly field: string;
@@ -71,28 +71,21 @@ export class SneatFirestoreService<Brief, Dbo extends Brief> {
     if (this.operationBlocker.isBlocked('server-requests')) {
       return NEVER;
     }
-    return runInInjectionContext(this.injector, () => {
-      const subj = new Subject<DocumentSnapshot<Dbo2>>();
-      // const snapshots = docSnapshots<Dbo2>(docRef);
-      onSnapshot(
-        docRef,
-        (snapshot) => subj.next(snapshot),
-        (err) => subj.error(err),
-        () => subj.complete(),
-      );
-      // const snapshots = from(getDoc<Dbo2>(docRef));
-      return subj.asObservable().pipe(
-        // tap((snapshot) =>
-        // 	console.log(
-        // 		`SneatFirestoreService.watchByDocRef(${docRef.path}): snapshot:`,
-        // 		snapshot,
-        // 	),
-        // ),
-        map((changes) =>
-          docSnapshotToDto<Brief, Dbo2>(docRef.id, this.dto2brief, changes),
-        ),
-      );
-    });
+    return new Observable<DocumentSnapshot<Dbo2>>((subscriber) =>
+      runInInjectionContext(this.injector, () => {
+        if (this.operationBlocker.isBlocked('server-requests')) return;
+        return onSnapshot(
+          docRef,
+          (snapshot) => subscriber.next(snapshot),
+          (err) => subscriber.error(err),
+          () => subscriber.complete(),
+        );
+      }),
+    ).pipe(
+      map((changes) =>
+        docSnapshotToDto<Brief, Dbo2>(docRef.id, this.dto2brief, changes),
+      ),
+    );
   }
 
   getByDocRef<Dbo2 extends Dbo>(
@@ -125,9 +118,10 @@ export class SneatFirestoreService<Brief, Dbo extends Brief> {
       ...(queryArgs?.orderBy || []),
       ...(queryArgs?.limit ? [limit(queryArgs.limit)] : []),
     );
-    const subj = new Subject<QuerySnapshot<Dbo2>>();
-    onSnapshot(q, subj);
-    return subj;
+    return new Observable<QuerySnapshot<Dbo2>>((subscriber) => {
+      if (this.operationBlocker.isBlocked('server-requests')) return;
+      return onSnapshot(q, subscriber);
+    });
   }
 
   watchByFilter<Dbo2 extends Dbo>(
@@ -155,11 +149,14 @@ export class SneatFirestoreService<Brief, Dbo extends Brief> {
     const { id } = doc;
     const dto: Dbo2 | undefined = doc.data();
     const brief = dto && this.dto2brief(id, dto);
-    return {
+    const context = {
       id,
+      dbo: dto,
+      // Preserve the legacy runtime alias while satisfying the declared contract.
       dto,
       brief,
-    } as unknown as INavContext<Brief, Dbo2>; // TODO: try to remove this cast
+    };
+    return context;
   }
 }
 
@@ -168,7 +165,7 @@ export function docSnapshotToDto<Brief, Dbo extends Brief>(
   dto2brief: (id: string, dto: Dbo) => Brief,
   docSnapshot: DocumentSnapshot<Dbo>,
 ): INavContext<Brief, Dbo> {
-  if (!docSnapshot.exists) {
+  if (!docSnapshot.exists()) {
     return { id, brief: null, dbo: null };
   }
   const dto: Dbo | undefined = docSnapshot.data();
