@@ -1,10 +1,12 @@
 import { inject, Injector, runInInjectionContext } from '@angular/core';
 import {
   Firestore as AngularFirestore,
+  getFirestore,
   doc,
   collection,
   CollectionReference,
 } from 'firebase/firestore';
+import { SNEAT_FIREBASE_APP } from '@sneat/core';
 import { QuerySnapshot } from '@firebase/firestore-types';
 import { IQueryArgs, SneatApiService, SneatFirestoreService } from '@sneat/api';
 import {
@@ -206,7 +208,9 @@ export class ModuleSpaceItemService<
     const hasExplicitFirestore = dependencies.length === 2;
     const afs = hasExplicitFirestore
       ? (dependencies[0] as AngularFirestore)
-      : runInInjectionContext(injector, () => inject(AngularFirestore));
+      : runInInjectionContext(injector, () =>
+          getFirestore(inject(SNEAT_FIREBASE_APP)),
+        );
     const api = hasExplicitFirestore
       ? (dependencies[1] as SneatApiService)
       : (dependencies[0] as SneatApiService);
