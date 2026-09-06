@@ -54,6 +54,8 @@ vi.mock('firebase/auth', () => {
     linkWithPopup: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
     unlink: vi.fn().mockResolvedValue({ uid: 'test', providerData: [] }),
     signInWithCredential: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
+    createUserWithEmailAndPassword: vi.fn(),
+    signInWithEmailAndPassword: vi.fn(),
     getAuth: vi.fn().mockReturnValue({}),
   };
 });
@@ -383,6 +385,64 @@ describe('SneatAuthStateService', () => {
 
       expect(signInWithEmailLink).toHaveBeenCalled();
       expect(result.user.uid).toBe('test');
+    });
+  });
+
+  describe('email and password authentication', () => {
+    it.each([
+      ['createUserWithEmailAndPassword', 'new-user'],
+      ['signInWithEmailAndPassword', 'existing-user'],
+    ] as const)(
+      'returns a provider-neutral identity and token from %s',
+      async (method, userID) => {
+        const firebaseAuth = await import('firebase/auth');
+        const providerMethod = firebaseAuth[method] as Mock;
+        const getIdToken = vi.fn().mockResolvedValue(`${userID}-token`);
+        providerMethod.mockResolvedValueOnce({
+          user: { uid: userID, getIdToken },
+        });
+
+        const result = await service[method](
+          'member@example.com',
+          'password',
+        );
+
+        expect(providerMethod).toHaveBeenCalledWith(
+          authMock,
+          'member@example.com',
+          'password',
+        );
+        expect(getIdToken).toHaveBeenCalledOnce();
+        expect(result).toEqual({ userID, token: `${userID}-token` });
+      },
+    );
+
+    it('preserves provider authentication failures', async () => {
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      const providerError = new Error('invalid credentials');
+      (signInWithEmailAndPassword as Mock).mockRejectedValueOnce(providerError);
+
+      await expect(
+        service.signInWithEmailAndPassword('member@example.com', 'wrong'),
+      ).rejects.toBe(providerError);
+    });
+
+    it('preserves token retrieval failures', async () => {
+      const { createUserWithEmailAndPassword } = await import('firebase/auth');
+      const tokenError = new Error('token unavailable');
+      (createUserWithEmailAndPassword as Mock).mockResolvedValueOnce({
+        user: {
+          uid: 'new-user',
+          getIdToken: vi.fn().mockRejectedValue(tokenError),
+        },
+      });
+
+      await expect(
+        service.createUserWithEmailAndPassword(
+          'member@example.com',
+          'password',
+        ),
+      ).rejects.toBe(tokenError);
     });
   });
 

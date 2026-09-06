@@ -131,7 +131,7 @@ describe('SpacesCardComponent', () => {
     expect(c.spaces()?.[0]?.brief?.title).toBe('Family');
   });
 
-  it('filters and creates the configured group kind', async () => {
+  it('uses neutral copy while preserving a group/housemates creation request', async () => {
     component.spaceType = 'group';
     component.groupKind = 'housemates';
     userState$.next({
@@ -163,7 +163,13 @@ describe('SpacesCardComponent', () => {
       spaces(): readonly { id: string }[] | undefined;
       spaceName: { set(value: string): void };
       addSpace(): void;
+      newSpaceNamePlaceholder: string;
+      addSpaceHelp: string;
     };
+    expect(internal.newSpaceNamePlaceholder).toBe('New space name');
+    expect(internal.addSpaceHelp).toBe(
+      'Enter a space name and click "Create" to add it.',
+    );
     expect(internal.spaces()?.map(({ id }) => id)).toEqual(['home']);
     internal.spaceName.set('New home');
     internal.addSpace();

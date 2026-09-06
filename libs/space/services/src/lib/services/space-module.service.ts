@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { inject, Injector, runInInjectionContext } from '@angular/core';
 import {
   collection,
   CollectionReference,
@@ -17,17 +17,25 @@ export abstract class SpaceModuleService<Dbo> extends ModuleSpaceItemService<
   Dbo
 > {
   // protected readonly sfs: SneatFirestoreService<Brief, Dto>;
+  protected constructor(injector: Injector, moduleID: string);
   protected constructor(
     injector: Injector,
     moduleID: string,
     afs: AngularFirestore,
+  );
+  protected constructor(
+    injector: Injector,
+    moduleID: string,
+    afs?: AngularFirestore,
   ) {
+    const firestore =
+      afs ?? runInInjectionContext(injector, () => inject(AngularFirestore));
     // this.sfs = new SneatFirestoreService<Brief, Dto>(collectionName, afs);
     super(
       injector,
       moduleID,
       'ext',
-      afs,
+      firestore,
       undefined as unknown as SneatApiService,
     );
   }

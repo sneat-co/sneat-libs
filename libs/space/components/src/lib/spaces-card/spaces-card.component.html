@@ -38,11 +38,11 @@
     <ion-item [disabled]="adding()">
       <ion-input
         (keyup.enter)="addSpace()"
-        #addTeamInput
+        #addSpaceInput
         [ngModel]="spaceName()"
         (ngModelChange)="spaceName.set($event)"
         (keyup.escape)="cancelAdd()"
-        placeholder="New team name"
+        [placeholder]="newSpaceNamePlaceholder"
       />
       <ion-buttons slot="end">
         <ion-button color="primary" fill="solid" (click)="addSpace()">
@@ -62,7 +62,7 @@
   }
   @if (showAdd()) {
     <ion-card-content>
-      <p>Enter team name and click "Create" button to add a new team.</p>
+      <p>{{ addSpaceHelp }}</p>
     </ion-card-content>
   }
 </ion-card>

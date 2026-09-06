@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { inject, Injector, runInInjectionContext } from '@angular/core';
 import {
   Firestore as AngularFirestore,
   doc,
@@ -184,12 +184,33 @@ export class ModuleSpaceItemService<
 
   constructor(
     injector: Injector,
-    public readonly moduleID: string,
+    moduleID: string,
+    collectionName: string,
+    sneatApiService: SneatApiService,
+  );
+  constructor(
+    injector: Injector,
+    moduleID: string,
     collectionName: string,
     afs: AngularFirestore,
     sneatApiService: SneatApiService,
+  );
+  constructor(
+    injector: Injector,
+    public readonly moduleID: string,
+    collectionName: string,
+    ...dependencies:
+      | [sneatApiService: SneatApiService]
+      | [afs: AngularFirestore, sneatApiService?: SneatApiService]
   ) {
-    super(injector, collectionName, afs, sneatApiService);
+    const hasExplicitFirestore = dependencies.length === 2;
+    const afs = hasExplicitFirestore
+      ? (dependencies[0] as AngularFirestore)
+      : runInInjectionContext(injector, () => inject(AngularFirestore));
+    const api = hasExplicitFirestore
+      ? (dependencies[1] as SneatApiService)
+      : (dependencies[0] as SneatApiService);
+    super(injector, collectionName, afs, api);
     if (!moduleID) {
       throw new Error('moduleID is required');
     }

@@ -1,7 +1,7 @@
-import { TestBed } from '@angular/core/testing';
 import { Injector } from '@angular/core';
 import { Firestore, collection } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
+import { SneatUrlOperationBlocker } from '@sneat/core';
 import { firstValueFrom, of } from 'rxjs';
 import {
   GlobalSpaceItemService,
@@ -24,7 +24,6 @@ describe('GlobalSpaceItemService', () => {
   let mockSneatApiService: SneatApiService;
 
   beforeEach(() => {
-    mockInjector = TestBed.inject(Injector);
     mockFirestore = {
       type: 'Firestore',
       toJSON: () => ({}),
@@ -33,6 +32,14 @@ describe('GlobalSpaceItemService', () => {
       post: vi.fn(),
       delete: vi.fn(),
     } as unknown as SneatApiService;
+    mockInjector = Injector.create({
+      providers: [
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: { isBlocked: vi.fn().mockReturnValue(false) },
+        },
+      ],
+    });
 
     service = new GlobalSpaceItemService(
       mockInjector,
@@ -127,17 +134,30 @@ describe('ModuleSpaceItemService', () => {
   let service: ModuleSpaceItemService<unknown, unknown>;
   let mockInjector: Injector;
   let mockFirestore: Firestore;
+  let injectedFirestore: Firestore;
   let mockSneatApiService: SneatApiService;
 
   beforeEach(() => {
-    mockInjector = TestBed.inject(Injector);
     mockFirestore = {
+      type: 'Firestore',
+      toJSON: () => ({}),
+    } as unknown as Firestore;
+    injectedFirestore = {
       type: 'Firestore',
       toJSON: () => ({}),
     } as unknown as Firestore;
     mockSneatApiService = {
       post: vi.fn(),
     } as unknown as SneatApiService;
+    mockInjector = Injector.create({
+      providers: [
+        { provide: Firestore, useValue: injectedFirestore },
+        {
+          provide: SneatUrlOperationBlocker,
+          useValue: { isBlocked: vi.fn().mockReturnValue(false) },
+        },
+      ],
+    });
 
     vi.mocked(collection).mockReturnValue({ id: 'spaces' } as unknown);
 
@@ -152,6 +172,22 @@ describe('ModuleSpaceItemService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('keeps the explicit Firestore dependency for legacy consumers', () => {
+    expect(service.afs).toBe(mockFirestore);
+  });
+
+  it('resolves Firestore internally for SDK-free consumers', () => {
+    const sdkFreeService = new ModuleSpaceItemService(
+      mockInjector,
+      'test-module',
+      'items',
+      mockSneatApiService,
+    );
+
+    expect(sdkFreeService.afs).toBe(injectedFirestore);
+    expect(sdkFreeService.sneatApiService).toBe(mockSneatApiService);
   });
 
   it('should throw error if moduleID is not provided', () => {
