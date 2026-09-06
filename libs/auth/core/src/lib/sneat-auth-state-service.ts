@@ -33,6 +33,8 @@ import {
   signInWithRedirect,
   linkWithPopup,
   unlink,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
 } from 'firebase/auth';
 
 // TODO: fix & remove this eslint hint @nrwl/nx/enforce-module-boundaries
@@ -69,6 +71,11 @@ export interface ISneatAuthState {
   readonly token?: string | null;
   readonly user?: ISneatAuthUser | null;
   readonly err?: unknown;
+}
+
+export interface ISneatEmailAuthResult {
+  readonly userID: string;
+  readonly token: string;
 }
 
 const initialAuthStatus = AuthStatuses.authenticating;
@@ -269,6 +276,34 @@ export class SneatAuthStateService {
 
   public signInWithEmailLink(email: string): Observable<UserCredential> {
     return from(signInWithEmailLink(this.fbAuth, email));
+  }
+
+  public createUserWithEmailAndPassword(
+    email: string,
+    password: string,
+  ): Promise<ISneatEmailAuthResult> {
+    return this.toEmailAuthResult(
+      createUserWithEmailAndPassword(this.fbAuth, email, password),
+    );
+  }
+
+  public signInWithEmailAndPassword(
+    email: string,
+    password: string,
+  ): Promise<ISneatEmailAuthResult> {
+    return this.toEmailAuthResult(
+      signInWithEmailAndPassword(this.fbAuth, email, password),
+    );
+  }
+
+  private async toEmailAuthResult(
+    credential: Promise<UserCredential>,
+  ): Promise<ISneatEmailAuthResult> {
+    const { user } = await credential;
+    return {
+      userID: user.uid,
+      token: await user.getIdToken(),
+    };
   }
 
   private isSigningInWith?: AuthProviderName;

@@ -92,7 +92,7 @@ export class SpacesCardComponent {
     inject<IAnalyticsService>(AnalyticsService);
   private readonly toastController = inject(ToastController);
 
-  private readonly addSpaceInput = viewChild<IonInput>('addTeamInput');
+  private readonly addSpaceInput = viewChild<IonInput>('addSpaceInput');
 
   private readonly userState = toSignal(this.userService.userState);
 
@@ -142,6 +142,9 @@ export class SpacesCardComponent {
   protected readonly showAdd = signal(false);
   protected readonly spaceName = signal('');
   protected readonly adding = signal(false);
+  protected readonly newSpaceNamePlaceholder = 'New space name';
+  protected readonly addSpaceHelp =
+    'Enter a space name and click "Create" to add it.';
 
   public constructor() {
     // Auto-open the "add space" form once we know the user has no spaces —
@@ -169,7 +172,7 @@ export class SpacesCardComponent {
       return;
     }
     if (this.spaces()?.find((t) => t.brief.title === title)) {
-      this.presentToast('You already have a team with the same name', 'danger');
+      this.presentToast('You already have a space with the same name', 'danger');
       return;
     }
     const request: ICreateSpaceRequest = {
@@ -187,7 +190,7 @@ export class SpacesCardComponent {
         this.navigateToSpace(space);
       },
       error: (err) => {
-        this.errorLogger.logError(err, 'Failed to create new team record');
+        this.errorLogger.logError(err, 'Failed to create new space record');
         this.adding.set(false);
       },
     });
@@ -223,7 +226,10 @@ export class SpacesCardComponent {
       input
         .setFocus()
         .catch((err) =>
-          this.errorLogger.logError(err, 'Failed to set focus to addTeamInput'),
+          this.errorLogger.logError(
+            err,
+            'Failed to set focus to addSpaceInput',
+          ),
         );
     }, 200);
   }
