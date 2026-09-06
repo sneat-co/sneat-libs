@@ -3,6 +3,7 @@ import { IWithCreatedShort } from './dto-with-modified';
 export interface IRelatedItemKey {
   readonly itemID: string;
   readonly spaceID?: string;
+  readonly subPath?: string;
 }
 
 // specscore: decisions/0002-reserved-extension-space-ids
@@ -17,6 +18,9 @@ export interface ISpaceModuleItemRef {
   // (sneat-specs Decision 0002).
   readonly spaceID?: string;
   readonly itemID: string;
+  // Optional stable-key path inside the document, e.g. /items/@id=item-123.
+  // The owner resolves and authorizes it; array positions are never identities.
+  readonly subPath?: string;
 }
 
 export interface IRelationshipRole {
@@ -33,6 +37,9 @@ export interface IRelatedItem {
   // readonly keys: readonly IRelatedItemKey[];
   readonly rolesOfItem?: IRelationshipRoles; // if related item is a child of the current record, then rolesOfItem = {"child": ...}
   readonly rolesToItem?: IRelationshipRoles; // if related item is a child of the current contact, then rolesToItem = {"parent": ...}
+  // Embedded relationships share the containing document key without being
+  // mistaken for a relationship to the document itself.
+  readonly subPaths?: Readonly<Record<string, IRelatedItem>>;
 }
 
 export type IRelatedItems = Readonly<Record<string, IRelatedItem>>;
@@ -87,9 +94,16 @@ export const addRelatedItem = (
   let collectionRelated = related[key.module] || {};
   let relatedItems = collectionRelated[key.collection] || {};
   if (!hasRelated(related, key)) {
+    const storedKey = relatedStorageKey(relatedItems, key);
+    const parent = relatedItems[storedKey];
     relatedItems = {
       ...relatedItems,
-      [key.itemID]: { rolesOfItem },
+      [storedKey]: key.subPath
+        ? {
+            ...parent,
+            subPaths: { ...parent?.subPaths, [key.subPath]: { rolesOfItem } },
+          }
+        : { ...parent, rolesOfItem },
     };
     collectionRelated = {
       ...collectionRelated,
@@ -117,7 +131,25 @@ export const removeRelatedItem = (
   }
   if (hasRelated(related, key)) {
     const collectionItems = { ...relatedItems };
-    delete collectionItems[key.itemID];
+    const storedKey = relatedStorageKey(relatedItems, key);
+    const parent = collectionItems[storedKey];
+    if (key.subPath && parent?.subPaths) {
+      const subPaths = { ...parent.subPaths };
+      delete subPaths[key.subPath];
+      const { subPaths: previousPaths, ...documentLink } = parent;
+      void previousPaths;
+      if (Object.keys(subPaths).length) {
+        collectionItems[storedKey] = { ...documentLink, subPaths };
+      } else if (documentLink.rolesOfItem || documentLink.rolesToItem) {
+        collectionItems[storedKey] = documentLink;
+      } else {
+        delete collectionItems[storedKey];
+      }
+    } else if (parent?.subPaths && Object.keys(parent.subPaths).length) {
+      collectionItems[storedKey] = { subPaths: parent.subPaths };
+    } else {
+      delete collectionItems[storedKey];
+    }
     collectionRelated = {
       ...collectionRelated,
       [key.collection]: collectionItems,
@@ -149,7 +181,8 @@ export const getRelatedItemByKey = (
 ): IRelatedItem | undefined => {
   const items = related?.[key.module]?.[key.collection];
   const { itemID, spaceID } = key;
-  return getRelatedItemByIDs(items, itemID, spaceID);
+  const item = getRelatedItemByIDs(items, itemID, spaceID);
+  return key.subPath ? item?.subPaths?.[key.subPath] : documentRelationship(item);
 };
 
 export const getRelatedItemIDs = (
@@ -187,5 +220,17 @@ const hasRelatedItem = (
   itemKey: IRelatedItemKey,
 ): boolean => {
   const { itemID, spaceID } = itemKey;
-  return !!getRelatedItemByIDs(relatedItems, itemID, spaceID);
+  const item = getRelatedItemByIDs(relatedItems, itemID, spaceID);
+  return !!(itemKey.subPath
+    ? item?.subPaths?.[itemKey.subPath]
+    : documentRelationship(item));
+};
+
+const documentRelationship = (item: IRelatedItem | undefined) =>
+  item?.subPaths && !item.rolesOfItem && !item.rolesToItem ? undefined : item;
+
+const relatedStorageKey = (items: IRelatedItems, key: IRelatedItemKey): string => {
+  if (items[key.itemID]) return key.itemID;
+  const qualified = getLongRelatedItemID(key.itemID, key.spaceID);
+  return items[qualified] || key.subPath ? qualified : key.itemID;
 };
