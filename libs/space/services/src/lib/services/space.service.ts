@@ -18,7 +18,6 @@ import {
 } from '@sneat/auth-core';
 import { IUserSpaceBrief } from '@sneat/auth-models';
 import { IIdAndBrief } from '@sneat/core';
-import { IRecord } from '@sneat/data';
 import { ISpaceBrief, ISpaceDbo, ISpaceMetric } from '@sneat/dto';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import {
@@ -125,12 +124,47 @@ export class SpaceService {
     zipMapBriefsWithIDs(user.spaces).forEach(this.subscribeForUserSpaceChanges);
   };
 
-  public createSpace(
-    request: ICreateSpaceRequest,
-  ): Observable<IRecord<ISpaceDbo>> {
+  public createSpace(request: ICreateSpaceRequest): Observable<ISpaceContext> {
     return this.sneatApiService
       .post<ICreateSpaceResponse>('spaces/create_space', request)
-      .pipe(map((response: ICreateSpaceResponse) => response.space));
+      .pipe(
+        map((response: ICreateSpaceResponse): ISpaceContext => {
+          const responseContext = response.space as ISpaceContext;
+          const type =
+            response.space.dbo?.type ??
+            responseContext.type ??
+            responseContext.brief?.type ??
+            request.type;
+          const title =
+            response.space.dbo?.title ??
+            responseContext.brief?.title ??
+            request.title;
+          const groupKind =
+            type === 'group'
+              ? (response.space.dbo?.groupKind ??
+                responseContext.brief?.groupKind ??
+                request.groupKind)
+              : undefined;
+          const brief = title
+            ? {
+                title,
+                type,
+                ...(groupKind ? { groupKind } : {}),
+                ...(responseContext.brief?.parentSpaceID
+                  ? { parentSpaceID: responseContext.brief.parentSpaceID }
+                  : {}),
+                ...(responseContext.brief?.roles
+                  ? { roles: responseContext.brief.roles }
+                  : {}),
+              }
+            : responseContext.brief;
+          return {
+            ...response.space,
+            type,
+            brief,
+          };
+        }),
+      );
   }
 
   // public getSpace(ref: ISpaceRef): Observable<ISpaceContext> {
