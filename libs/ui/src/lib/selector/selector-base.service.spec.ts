@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
-import { ErrorLogger } from '@sneat/core';
 import type { ComponentProps, ComponentRef } from '@ionic/core';
 import { SelectorBaseService } from './selector-base.service';
 import { ISelectorOptions } from './selector-options';
@@ -39,7 +38,6 @@ describe('SelectorBaseService', () => {
       providers: [
         TestSelectorService,
         { provide: ModalController, useValue: modalController },
-        { provide: ErrorLogger, useValue: {} },
       ],
     });
     const service = TestBed.inject(TestSelectorService);
@@ -74,7 +72,6 @@ describe('SelectorBaseService', () => {
       providers: [
         TestSelectorService,
         { provide: ModalController, useValue: modalController },
-        { provide: ErrorLogger, useValue: {} },
       ],
     });
     const service = TestBed.inject(TestSelectorService);

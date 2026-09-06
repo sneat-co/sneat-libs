@@ -1,12 +1,10 @@
 import { inject } from '@angular/core';
 import { ModalController, ModalOptions } from '@ionic/angular';
 import type { ComponentProps, ComponentRef } from '@ionic/core';
-import { ErrorLogger } from '@sneat/core';
 import { ISelectItem } from './selector-interfaces';
 import { ISelectorOptions } from './selector-options';
 
 export abstract class SelectorBaseService<T = ISelectItem> {
-  protected readonly errorLogger = inject(ErrorLogger);
   private readonly modalController = inject(ModalController);
 
   protected constructor(private readonly component: ComponentRef) {}
