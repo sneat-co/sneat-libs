@@ -12,7 +12,7 @@ describe('embedded Linkage relationships', () => {
     expect(hasRelated(initial, parent)).toBe(false);
     expect(hasRelated(initial, second)).toBe(false);
     const both = addRelatedItem(initial, second);
-    const withParent = addRelatedItem(both, parent, {});
+    const withParent = addRelatedItem(both, parent);
     expect(getRelatedItemByKey(withParent, first)).toEqual({ rolesOfItem: undefined });
     expect(hasRelated(withParent, second)).toBe(true);
     expect(hasRelated(withParent, parent)).toBe(true);

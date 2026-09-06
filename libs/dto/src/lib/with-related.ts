@@ -103,7 +103,10 @@ export const addRelatedItem = (
             ...parent,
             subPaths: { ...parent?.subPaths, [key.subPath]: { rolesOfItem } },
           }
-        : { ...parent, rolesOfItem },
+        : {
+            ...parent,
+            rolesOfItem: rolesOfItem ?? (parent?.subPaths ? {} : undefined),
+          },
     };
     collectionRelated = {
       ...collectionRelated,
