@@ -1,3 +1,4 @@
+import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
 import type { ComponentProps, ComponentRef } from '@ionic/core';
@@ -41,8 +42,12 @@ describe('SelectorBaseService', () => {
       ],
     });
     const service = TestBed.inject(TestSelectorService);
+    const callerInjector = TestBed.inject(Injector);
     const selection = service.select();
     await vi.waitFor(() => expect(componentProps).toBeDefined());
+    expect(modalController.create).toHaveBeenCalledWith(
+      expect.objectContaining({ injector: callerInjector }),
+    );
     const selectedItems = [{ id: 'alice' }, { id: 'bob' }];
 
     const callback = (

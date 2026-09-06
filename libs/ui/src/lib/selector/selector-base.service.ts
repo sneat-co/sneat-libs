@@ -1,4 +1,4 @@
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { ModalController, ModalOptions } from '@ionic/angular';
 import type { ComponentProps, ComponentRef } from '@ionic/core';
 import { ISelectItem } from './selector-interfaces';
@@ -6,6 +6,7 @@ import { ISelectorOptions } from './selector-options';
 
 export abstract class SelectorBaseService<T = ISelectItem> {
   private readonly modalController = inject(ModalController);
+  private readonly injector = inject(Injector);
 
   protected constructor(private readonly component: ComponentRef) {}
 
@@ -48,6 +49,10 @@ export abstract class SelectorBaseService<T = ISelectItem> {
       component: this.component,
       componentProps: componentProps,
       keyboardClose: true,
+      // ModalController is commonly provided at the application root, while
+      // selector dependencies belong to the routed feature. Preserve the
+      // caller's injector so the overlay inherits those feature providers.
+      injector: this.injector,
     };
     const modal = await this.modalController.create(modalOptions);
     await modal.present();
