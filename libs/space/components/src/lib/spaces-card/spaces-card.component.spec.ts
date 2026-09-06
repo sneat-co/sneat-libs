@@ -20,6 +20,7 @@ describe('SpacesCardComponent', () => {
   let fixture: ComponentFixture<SpacesCardComponent>;
   let userState$: BehaviorSubject<ISneatUserState>;
   let createSpace: ReturnType<typeof vi.fn>;
+  let navigateToSpace: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     userState$ = new BehaviorSubject<ISneatUserState>({
@@ -28,6 +29,7 @@ describe('SpacesCardComponent', () => {
     createSpace = vi.fn(() =>
       of({
         id: 'home-1',
+        type: 'group',
         brief: {
           title: 'Our home',
           type: 'group',
@@ -35,6 +37,7 @@ describe('SpacesCardComponent', () => {
         },
       }),
     );
+    navigateToSpace = vi.fn(() => Promise.resolve());
     await TestBed.configureTestingModule({
       imports: [
         SpacesCardComponent,
@@ -45,7 +48,7 @@ describe('SpacesCardComponent', () => {
         { provide: SpaceService, useValue: { createSpace } },
         {
           provide: SpaceNavService,
-          useValue: { navigateToSpace: vi.fn(() => Promise.resolve()) },
+          useValue: { navigateToSpace },
         },
         // The card now embeds the real SpacesListComponent, which injects this.
         { provide: UserRequiredFieldsService, useValue: { open: vi.fn() } },
@@ -178,5 +181,9 @@ describe('SpacesCardComponent', () => {
       groupKind: 'housemates',
       title: 'New home',
     });
+    expect(navigateToSpace).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'home-1', type: 'group' }),
+      'forward',
+    );
   });
 });
