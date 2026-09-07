@@ -200,7 +200,13 @@ export const getRelatedItemIDs = (
   // console.log('getRelatedItemIDs', module, collection, spaceID, related);
   const collectionRelated = (related || {})[module] || {};
   const relatedItems = collectionRelated[collection];
-  const keys = Object.keys(relatedItems);
+  // A subPaths-only entry shares its storage key with the containing document
+  // without being a relationship to the document itself (see
+  // `documentRelationship`); exclude it here so this list stays consistent
+  // with `hasRelated`/`getRelatedItemByKey` for the same, no-subPath key.
+  const keys = Object.keys(relatedItems).filter((k) =>
+    documentRelationship(relatedItems[k]),
+  );
   return spaceID
     ? keys.filter((k) => !k.includes('@') || k.endsWith(`@${spaceID}`))
     : keys;
