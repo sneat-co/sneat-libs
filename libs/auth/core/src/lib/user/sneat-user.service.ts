@@ -101,6 +101,30 @@ export class SneatUserService {
     return this.sneatApiService.post('users/set_user_country', { countryID });
   }
 
+  /**
+   * Watches another user's readable profile record without changing the
+   * authenticated user's state. Firestore rules remain the authorization
+   * boundary (for example, shared-Space membership); callers only depend on
+   * this user-domain service rather than the persistence SDK.
+   */
+  public watchUserRecordByID(userID: string): Observable<IUserRecord | null> {
+    return new Observable<IUserRecord | null>((subscriber) => {
+      if (!userID || this.operationBlocker.isBlocked('server-requests')) {
+        subscriber.next(null);
+        subscriber.complete();
+        return undefined;
+      }
+      const userDocRef = this.userDocRef(userID);
+      return runInInjectionContext(this.injector, () =>
+        onSnapshot(userDocRef, {
+          next: (snapshot) =>
+            subscriber.next(snapshot.exists() ? snapshot.data() : null),
+          error: (error) => subscriber.error(error),
+        }),
+      );
+    });
+  }
+
   public onUserSignedIn(authState: ISneatAuthState): void {
     const authUser = authState.user;
     // afUser.getIdToken().then(idToken => {
