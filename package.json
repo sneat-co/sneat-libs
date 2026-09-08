@@ -49,6 +49,7 @@
     "@sneat/extension-assetus-contract": "^0.0.5",
     "@sneat/extension-contactus-contract": "^0.12.2",
     "@sneat/extension-contactus-ui": "^0.14.0",
+    "@sneat/extension-media-contract": "^0.1.1",
     "@sneat/random": "0.0.4",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.18",
