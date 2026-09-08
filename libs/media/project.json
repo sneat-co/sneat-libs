@@ -1,0 +1,13 @@
+{
+  "name": "media",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/media/src",
+  "prefix": "sneat",
+  "targets": {
+    "build": { "executor": "@nx/angular:ng-packagr-lite", "outputs": ["{workspaceRoot}/dist/libs/media"], "options": { "project": "libs/media/ng-package.json", "tsConfig": "libs/media/tsconfig.lib.json" } },
+    "test": { "executor": "@nx/vitest:test", "outputs": ["{workspaceRoot}/coverage/libs/media"], "options": { "tsConfig": "libs/media/tsconfig.spec.json" } },
+    "lint": { "executor": "@nx/eslint:lint" }
+  },
+  "tags": ["scope:foundation", "runtime:public"]
+}

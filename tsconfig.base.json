@@ -78,6 +78,9 @@
       "@sneat/components": [
         "libs/components/src/index.ts"
       ],
+      "@sneat/media": [
+        "libs/media/src/index.ts"
+      ],
       "@sneat/auth-ui": [
         "libs/auth/ui/src/index.ts"
       ],
