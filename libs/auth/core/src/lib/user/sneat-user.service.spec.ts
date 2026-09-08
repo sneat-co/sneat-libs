@@ -36,6 +36,7 @@ describe('SneatUserService', () => {
   let operationBlockerMock: { isBlocked: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    vi.clearAllMocks();
     authStateSubject = new Subject<ISneatAuthState>();
 
     sneatApiServiceMock = {
@@ -109,6 +110,35 @@ describe('SneatUserService', () => {
       'users/set_user_country',
       { countryID },
     );
+  });
+
+  it('watches a readable linked user record without changing currentUserID', async () => {
+    const { doc, onSnapshot } = await import('firebase/firestore');
+    vi.mocked(doc).mockReturnValue({ id: 'linked-user' } as never);
+    vi.mocked(onSnapshot).mockImplementation(((_reference, observer) => {
+      observer.next({
+        exists: () => true,
+        data: () => ({ title: 'Linked user', avatarMedia: { mediaID: 'm1' } }),
+      } as never);
+      return vi.fn();
+    }) as never);
+
+    const record = await firstValueFrom(
+      service.watchUserRecordByID('linked-user'),
+    );
+
+    expect(record?.avatarMedia?.mediaID).toBe('m1');
+    expect(service.currentUserID).toBeUndefined();
+  });
+
+  it('does not watch linked user records when server requests are blocked', async () => {
+    operationBlockerMock.isBlocked.mockReturnValue(true);
+    const { onSnapshot } = await import('firebase/firestore');
+
+    await expect(
+      firstValueFrom(service.watchUserRecordByID('linked-user')),
+    ).resolves.toBeNull();
+    expect(onSnapshot).not.toHaveBeenCalled();
   });
 
   it('should update currentUserID when user signs in', () => {
