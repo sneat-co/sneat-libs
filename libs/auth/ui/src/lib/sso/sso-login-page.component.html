@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-buttons slot="start"
+      ><ion-back-button defaultHref="/login"
+    /></ion-buttons>
+    <ion-title>Company SSO</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-content>
+      <h1>Sign in with company SSO</h1>
+      @if (fixedDomain()) {
+        <p>
+          Use your company email ending in
+          <strong>&#64;{{ fixedDomain() }}</strong
+          >.
+        </p>
+      } @else {
+        <p>
+          Enter your work email to find your organisation’s identity provider.
+        </p>
+      }
+      <ion-item>
+        <ion-label position="stacked">Work email</ion-label>
+        <ion-input
+          name="work-email"
+          type="email"
+          autocomplete="email"
+          placeholder="user@company.com"
+          [ngModel]="workEmail()"
+          (ngModelChange)="workEmail.set($event)"
+          [disabled]="busy()"
+          (keyup.enter)="continue()"
+        />
+      </ion-item>
+      @if (error()) {
+        <p>
+          <ion-text color="danger">{{ error() }}</ion-text>
+        </p>
+      }
+      <ion-button
+        expand="block"
+        class="ion-margin-top"
+        [disabled]="!validEmail() || busy()"
+        (click)="continue()"
+      >
+        @if (busy()) {
+          <ion-spinner name="lines-small" slot="start" />
+        }
+        Continue with SSO
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  @if (unknownDomain()) {
+    <ion-card color="light">
+      <ion-card-content>
+        <h2>SSO is not configured for {{ unknownDomain() }} yet.</h2>
+        <p>
+          Sign in or create your regular Sneat account, then we’ll continue with
+          company setup.
+        </p>
+        <ion-button expand="block" (click)="continueWithRegularLogin()">
+          Continue with regular sign up
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  }
+</ion-content>

@@ -1,7 +1,7 @@
 import { Component, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import {
   NavController,
@@ -58,6 +58,7 @@ type Action = 'join' | 'refuse'; // TODO: inject provider for action description
   templateUrl: './login-page.component.html',
   imports: [
     FormsModule,
+    RouterLink,
     LoginWithTelegramComponent,
     EmailLoginFormComponent,
     IonHeader,
