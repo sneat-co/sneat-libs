@@ -3,6 +3,10 @@ import { provideIonicAngular } from '@ionic/angular';
 import { SimpleChange } from '@angular/core';
 import { ErrorLogger } from '@sneat/core';
 import { vi } from 'vitest';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { Tabulator } from 'tabulator-tables';
+import type { CellComponent, RangeComponent } from 'tabulator-tables';
 
 import { DataGridComponent } from './data-grid.component';
 import { IGridColumn } from '@sneat/grid';
@@ -641,6 +645,261 @@ describe('DataGridComponent', () => {
 
       component.rowSelected.emit({ row: { id: 1 }, event: mockEvent });
       await promise;
+    });
+  });
+
+  describe('selectableRange (opt-in cell selection)', () => {
+    it('should default to off and disable keybindings, so existing consumers are unaffected', () => {
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+      component.data = [{ id: 1 }];
+
+      vi.spyOn<any, any>(component, 'createTabulatorGrid');
+
+      (component as any).drawTable();
+
+      expect((component as any).tabulatorOptions.selectableRange).toBeUndefined();
+      expect((component as any).tabulatorOptions.keybindings).toBe(false);
+    });
+
+    it('should pass selectableRange through and leave keybindings at their default when enabled', () => {
+      component.selectableRange = true;
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+      component.data = [{ id: 1 }];
+
+      vi.spyOn<any, any>(component, 'createTabulatorGrid');
+
+      (component as any).drawTable();
+
+      expect((component as any).tabulatorOptions.selectableRange).toBe(true);
+      expect((component as any).tabulatorOptions.keybindings).toBeUndefined();
+    });
+
+    it('should pass a numeric selectableRange through unchanged', () => {
+      component.selectableRange = 2;
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+      component.data = [{ id: 1 }];
+
+      vi.spyOn<any, any>(component, 'createTabulatorGrid');
+
+      (component as any).drawTable();
+
+      expect((component as any).tabulatorOptions.selectableRange).toBe(2);
+    });
+
+    it('should register cellClick and rangeChanged listeners when the grid is created', async () => {
+      const onSpy = vi.spyOn(Tabulator.prototype, 'on');
+
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+      component.data = [{ id: 1 }];
+
+      component.ngOnChanges({
+        data: new SimpleChange(null, component.data, false),
+      });
+
+      // Tabulator finishes wiring its registered modules on a macrotask.
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+      const registeredEvents = onSpy.mock.calls.map((call) => call[0]);
+      expect(registeredEvents).toContain('cellClick');
+      expect(registeredEvents).toContain('rangeChanged');
+
+      onSpy.mockRestore();
+    });
+  });
+
+  describe('cellSelected output', () => {
+    const buildMockCell = (
+      overrides: Partial<{
+        field: string;
+        value: unknown;
+        rowData: unknown;
+        row: unknown;
+        element: HTMLElement;
+      }> = {},
+    ): CellComponent => {
+      // Real Tabulator cells return a stable, memoized DOM element from
+      // getElement() — compute the default once so identity checks (used to
+      // tell a single-cell range from a multi-cell one) behave the same way.
+      const element = overrides.element ?? document.createElement('div');
+      return {
+        getField: () => overrides.field ?? 'customerId',
+        getValue: () => overrides.value ?? 42,
+        getData: () => overrides.rowData ?? { customerId: 42 },
+        getRow: () => overrides.row ?? { id: 'row-1' },
+        getElement: () => element,
+      } as unknown as CellComponent;
+    };
+
+    it('should emit {row, column: {field, index}, value, rowData} for a clicked cell', async () => {
+      component.columns = [
+        { field: 'id', title: 'ID', dbType: 'int' },
+        { field: 'customerId', title: 'Customer', dbType: 'int' },
+      ];
+      const mockCell = buildMockCell();
+      const mockRow = { id: 'row-1' };
+
+      const promise = new Promise<any>((resolve) => {
+        component.cellSelected.subscribe((event) => resolve(event));
+      });
+
+      (component as any).emitCellSelected(
+        buildMockCell({ row: mockRow, field: 'customerId', value: 42, rowData: { customerId: 42 } }),
+      );
+
+      const event = await promise;
+      expect(event).toEqual({
+        row: mockRow,
+        column: { field: 'customerId', index: 1 },
+        value: 42,
+        rowData: { customerId: 42 },
+      });
+    });
+
+    it('should report column.index as -1 when the field is not in the columns input', async () => {
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+
+      const promise = new Promise<any>((resolve) => {
+        component.cellSelected.subscribe((event) => resolve(event));
+      });
+
+      (component as any).emitCellSelected(buildMockCell({ field: 'unknownField' }));
+
+      const event = await promise;
+      expect(event.column).toEqual({ field: 'unknownField', index: -1 });
+    });
+
+    it('should emit for a single-cell rangeChanged (keyboard navigation)', () => {
+      const spy = vi.spyOn(component as any, 'emitCellSelected');
+      const mockCell = buildMockCell();
+      const mockRange = {
+        getBounds: () => ({ start: mockCell, end: mockCell }),
+      } as unknown as RangeComponent;
+
+      (component as any).handleRangeChanged(mockRange);
+
+      expect(spy).toHaveBeenCalledWith(mockCell);
+    });
+
+    it('should not emit for a multi-cell rangeChanged (drag-selection)', () => {
+      const spy = vi.spyOn(component as any, 'emitCellSelected');
+      const startCell = buildMockCell({ element: document.createElement('div') });
+      const endCell = buildMockCell({ element: document.createElement('div') });
+      const mockRange = {
+        getBounds: () => ({ start: startCell, end: endCell }),
+      } as unknown as RangeComponent;
+
+      (component as any).handleRangeChanged(mockRange);
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('columnMarkers', () => {
+    it('should not set titleFormatter on columns without a matching marker', () => {
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+      component.data = [{ id: 1 }];
+
+      vi.spyOn<any, any>(component, 'createTabulatorGrid');
+
+      (component as any).drawTable();
+
+      expect(
+        (component as any).tabulatorOptions.columns[0].titleFormatter,
+      ).toBeUndefined();
+    });
+
+    it('should set a titleFormatter only on the column with a matching marker', () => {
+      component.columnMarkers = {
+        customerId: { label: 'PK', kind: 'declared' },
+      };
+      component.columns = [
+        { field: 'id', title: 'ID', dbType: 'int' },
+        { field: 'customerId', title: 'Customer', dbType: 'int' },
+      ];
+      component.data = [{ id: 1, customerId: 2 }];
+
+      vi.spyOn<any, any>(component, 'createTabulatorGrid');
+
+      (component as any).drawTable();
+
+      const cols = (component as any).tabulatorOptions.columns;
+      expect(cols[0].titleFormatter).toBeUndefined();
+      expect(typeof cols[1].titleFormatter).toBe('function');
+    });
+
+    it('should render the column title plus the marker label and tooltip', () => {
+      component.columnMarkers = {
+        customerId: { label: 'PK', title: 'Primary key', kind: 'declared' },
+      };
+      component.columns = [
+        { field: 'customerId', title: 'Customer', dbType: 'int' },
+      ];
+      component.data = [{ customerId: 2 }];
+
+      vi.spyOn<any, any>(component, 'createTabulatorGrid');
+
+      (component as any).drawTable();
+
+      const formatter = (component as any).tabulatorOptions.columns[0]
+        .titleFormatter;
+      const mockCell = { getValue: () => 'Customer' } as unknown as CellComponent;
+      const el = formatter(mockCell, {}, () => undefined) as HTMLElement;
+
+      expect(el.textContent).toContain('Customer');
+      expect(el.textContent).toContain('PK');
+      const markerSpan = el.querySelector('span[title="Primary key"]');
+      expect(markerSpan?.textContent).toBe('PK');
+    });
+
+    it('should style an inferred marker differently from a declared one', () => {
+      component.columnMarkers = {
+        inferredField: { label: 'Guessed', kind: 'inferred' },
+      };
+      component.columns = [
+        { field: 'inferredField', title: 'Inferred', dbType: 'string' },
+      ];
+      component.data = [{ inferredField: 'x' }];
+
+      vi.spyOn<any, any>(component, 'createTabulatorGrid');
+
+      (component as any).drawTable();
+
+      const formatter = (component as any).tabulatorOptions.columns[0]
+        .titleFormatter;
+      const mockCell = { getValue: () => 'Inferred' } as unknown as CellComponent;
+      const el = formatter(mockCell, {}, () => undefined) as HTMLElement;
+      const markerSpan = el.querySelector('span:last-child') as HTMLElement;
+
+      expect(markerSpan.style.fontStyle).toBe('italic');
+      expect(markerSpan.style.border).toContain('dashed');
+    });
+
+    it('should refresh columns via tabulator.setColumns when columnMarkers changes after the initial draw', () => {
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+      component.data = [{ id: 1 }];
+
+      const setColumnsSpy = vi.fn();
+      (component as any).tabulator = { setColumns: setColumnsSpy };
+
+      component.columnMarkers = { id: { label: 'PK' } };
+      component.ngOnChanges({
+        columnMarkers: new SimpleChange(null, component.columnMarkers, false),
+      });
+
+      expect(setColumnsSpy).toHaveBeenCalledTimes(1);
+      const passedColumns = setColumnsSpy.mock.calls[0][0];
+      expect(typeof passedColumns[0].titleFormatter).toBe('function');
+    });
+
+    it('should not call tabulator.setColumns for columnMarkers changes before the grid exists', () => {
+      component.columns = [{ field: 'id', title: 'ID', dbType: 'int' }];
+      // tabulator not yet created
+
+      expect(() =>
+        component.ngOnChanges({
+          columnMarkers: new SimpleChange(null, { id: { label: 'PK' } }, false),
+        }),
+      ).not.toThrow();
     });
   });
 });
