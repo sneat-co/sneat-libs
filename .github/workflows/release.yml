@@ -13,7 +13,9 @@ on:
           - minor
 
 permissions:
+  actions: write
   contents: read
+  pull-requests: write
 
 concurrency:
   group: sneat-libs-release-prepare
@@ -61,9 +63,11 @@ jobs:
       - name: Open the protected release pull request
         shell: bash
         env:
-          # A normal GitHub token deliberately does not trigger required checks
-          # after its own push. The organisation CI token does.
+          # The organisation token pushes the branch so the commit is owned by
+          # an external actor. Its fine-grained permissions intentionally do
+          # not include pull requests, so the repository token owns that part.
           GH_TOKEN: ${{ secrets.SNEAT_CI_READWRITE_TOKEN }}
+          REPOSITORY_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.candidate.outputs.version }}
         run: |
           set -euo pipefail
@@ -83,8 +87,12 @@ jobs:
           }
           git commit --message "chore(release): prepare ${VERSION}"
           git push --set-upstream origin "${branch}"
-          gh pr create \
+          GH_TOKEN="${REPOSITORY_TOKEN}" gh pr create \
             --base main \
             --head "${branch}" \
             --title "chore(release): prepare ${VERSION}" \
             --body "Versions the fixed Sneat libraries release on a protected branch. Merging publishes and tags the exact CI-checked main revision; the publish job never mutates main."
+          # Pull requests created with GITHUB_TOKEN do not automatically run
+          # unattended CI. workflow_dispatch is the supported recursion-safe
+          # exception, and binds the required check to this exact branch head.
+          GH_TOKEN="${REPOSITORY_TOKEN}" gh workflow run ci.yml --ref "${branch}"
