@@ -67,6 +67,12 @@ We build with our own tooling:
 | [`@sneat/grid`](libs/grid) | [![npm](https://img.shields.io/npm/v/@sneat/grid)](https://www.npmjs.com/package/@sneat/grid) | Grid models and base Tabulator.js integration |
 | [`@sneat/datagrid`](libs/datagrid) | [![npm](https://img.shields.io/npm/v/@sneat/datagrid)](https://www.npmjs.com/package/@sneat/datagrid) | Angular components wrapping Tabulator.js for rich data-grid rendering |
 
+### Build tooling
+
+| Package | NPM | Description |
+|---------|-----|-------------|
+| [`@sneat/build-info`](libs/build-info) | [![npm](https://img.shields.io/npm/v/@sneat/build-info)](https://www.npmjs.com/package/@sneat/build-info) | `sneat-stamp-build-info` CLI: stamps a consuming app's own version/git-hash/build-timestamp into `build-info.ts` + `build-info.json` ahead of every build. Runtime contract (`IBuildInfo`, `BUILD_INFO`, `provideBuildInfo()`) lives in `@sneat/core-public`; see [libs/build-info/README.md](libs/build-info/README.md) for the full recipe. |
+
 ---
 
 ## Naming conventions
