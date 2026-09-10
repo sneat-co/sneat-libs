@@ -10,14 +10,22 @@
 //   sneat-stamp-build-info --ts <path/to/build-info.ts> --json <path/to/build-info.json>
 //   sneat-stamp-build-info --check --ts <path/to/build-info.ts>
 //
+// In a monorepo, each app versions independently: pass --package and
+// --tag-prefix so the version comes from that app's own package.json and its
+// own release-tag namespace, not the repo root's (see README's "Monorepo
+// with several apps" section):
+//   sneat-stamp-build-info --ts apps/<app>/src/build-info.ts \
+//     --json apps/<app>/src/build-info.json \
+//     --package apps/<app>/package.json --tag-prefix <app>/v
+//
 // Design constraints (see sneat-co/sneat-libs PR that introduced this):
 //   - ESM Node, zero runtime dependencies beyond Node's stdlib and `git` on
 //     PATH — this file is the published npm `bin`, so it must run with no
 //     `npm install` step of its own in the consuming app.
-//   - `--ts`/`--json` are resolved relative to `process.cwd()`, NOT this
-//     file's own location — this script lives inside the consuming app's
-//     node_modules/@sneat/build-info/bin/ once installed, so __dirname is
-//     never the consuming app's repo.
+//   - `--ts`/`--json`/`--package` are resolved relative to `process.cwd()`,
+//     NOT this file's own location — this script lives inside the consuming
+//     app's node_modules/@sneat/build-info/bin/ once installed, so __dirname
+//     is never the consuming app's repo.
 //   - `--check` never writes anything; it only verifies the committed file
 //     still carries the placeholders, for a pre-commit hook or CI guard
 //     that must fail if a stamped build-info.ts was accidentally committed.
@@ -34,11 +42,13 @@
 //      none of the above are set
 //
 // Version, in priority order:
-//   1. the nearest reachable release tag (`vX.Y.Z`), via `git describe`:
-//      exactly on the tag -> "X.Y.Z"; N commits past it -> "X.Y.Z+N" (the
-//      commit itself is reported separately as gitHash)
-//   2. the app repo root's package.json "version" field — a shallow clone
-//      without tags, or a repo that has not been tagged yet
+//   1. the nearest reachable release tag (`<tag-prefix>X.Y.Z`, prefix
+//      defaults to `v`), via `git describe`: exactly on the tag -> "X.Y.Z";
+//      N commits past it -> "X.Y.Z+N" (the commit itself is reported
+//      separately as gitHash)
+//   2. the `--package` package.json's "version" field (default: the repo
+//      root's package.json) — a shallow clone without tags, or a repo/app
+//      that has not been tagged yet
 //
 // The UTC build timestamp is `new Date().toISOString()` (no `date -u`
 // subprocess), so it is identical and portable across GitHub Actions'
@@ -74,14 +84,24 @@ export function resolveGitHash(cwd, env = process.env) {
   }).trim();
 }
 
+/** Escapes a string for safe use inside a `RegExp` literal. */
+function escapeForRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
- * Parses `git describe --tags --long --match 'v[0-9]*'` output into a
+ * Parses `git describe --tags --long --match '<prefix>[0-9]*'` output into a
  * version string: exactly on a tag -> "X.Y.Z"; N commits past it ->
  * "X.Y.Z+N". Falls back to `packageVersion` when `describe` isn't a
- * `vX.Y.Z-N-gHASH` triple (e.g. no matching tag is reachable).
+ * `<prefix>X.Y.Z-N-gHASH` triple (e.g. no matching tag is reachable).
+ * `prefix` defaults to `'v'` (e.g. `v1.2.3`); pass a longer prefix such as
+ * `'sneat-app/v'` for a per-app tag namespace (`sneat-app/v1.2.3`).
  */
-export function versionFromDescribe(describe, packageVersion) {
-  const match = /^v?(\d+\.\d+\.\d+)-(\d+)-g[0-9a-f]+$/.exec(describe.trim());
+export function versionFromDescribe(describe, packageVersion, prefix = 'v') {
+  const pattern = new RegExp(
+    `^${escapeForRegExp(prefix)}(\\d+\\.\\d+\\.\\d+)-(\\d+)-g[0-9a-f]+$`,
+  );
+  const match = pattern.exec(describe.trim());
   if (!match) return packageVersion;
   return match[2] === '0' ? match[1] : `${match[1]}+${match[2]}`;
 }
@@ -93,24 +113,33 @@ function readRepoRoot(cwd) {
   }).trim();
 }
 
-function readPackageVersion(cwd) {
-  const repoRoot = readRepoRoot(cwd);
-  const pkg = JSON.parse(
-    readFileSync(path.join(repoRoot, 'package.json'), 'utf8'),
-  );
+/**
+ * Reads the `version` field from `packagePath` (default: the repo root's
+ * `package.json`) — resolved relative to `cwd`, matching `--ts`/`--json`.
+ */
+function readPackageVersion(cwd, packagePath) {
+  const resolvedPath = packagePath
+    ? path.resolve(cwd, packagePath)
+    : path.join(readRepoRoot(cwd), 'package.json');
+  const pkg = JSON.parse(readFileSync(resolvedPath, 'utf8'));
   return typeof pkg.version === 'string' ? pkg.version : '0.0.0';
 }
 
-/** Resolves the version to stamp — see the module doc comment for precedence. */
-export function resolveVersion(cwd) {
-  const packageVersion = readPackageVersion(cwd);
+/**
+ * Resolves the version to stamp — see the module doc comment for precedence.
+ * `packagePath` (default: repo root `package.json`) is the fallback source
+ * and the `--package` flag's value; `tagPrefix` (default `'v'`) is the
+ * `--tag-prefix` flag's value, namespacing `git describe --match`.
+ */
+export function resolveVersion(cwd, packagePath, tagPrefix = 'v') {
+  const packageVersion = readPackageVersion(cwd, packagePath);
   try {
     const describe = execFileSync(
       'git',
-      ['describe', '--tags', '--long', '--match', 'v[0-9]*'],
+      ['describe', '--tags', '--long', '--match', `${tagPrefix}[0-9]*`],
       { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
     );
-    return versionFromDescribe(describe, packageVersion);
+    return versionFromDescribe(describe, packageVersion, tagPrefix);
   } catch {
     return packageVersion;
   }
@@ -152,7 +181,14 @@ export function findMissingPlaceholders(content) {
 }
 
 export function parseArgs(argv) {
-  const args = { ts: 'build-info.ts', json: 'build-info.json', check: false, help: false };
+  const args = {
+    ts: 'build-info.ts',
+    json: 'build-info.json',
+    package: undefined,
+    tagPrefix: 'v',
+    check: false,
+    help: false,
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--ts') {
@@ -163,6 +199,14 @@ export function parseArgs(argv) {
       i += 1;
       if (argv[i] === undefined) throw new Error('--json requires a path argument');
       args.json = argv[i];
+    } else if (arg === '--package') {
+      i += 1;
+      if (argv[i] === undefined) throw new Error('--package requires a path argument');
+      args.package = argv[i];
+    } else if (arg === '--tag-prefix') {
+      i += 1;
+      if (argv[i] === undefined) throw new Error('--tag-prefix requires a value argument');
+      args.tagPrefix = argv[i];
     } else if (arg === '--check') {
       args.check = true;
     } else if (arg === '--help' || arg === '-h') {
@@ -177,15 +221,21 @@ export function parseArgs(argv) {
 const HELP_TEXT = `sneat-stamp-build-info — stamp version/gitHash/buildTimestamp into a build-info.ts + build-info.json
 
 Usage:
-  sneat-stamp-build-info [--ts <path>] [--json <path>]
+  sneat-stamp-build-info [--ts <path>] [--json <path>] [--package <path>] [--tag-prefix <prefix>]
   sneat-stamp-build-info --check [--ts <path>]
 
 Options:
-  --ts <path>    Path to the app's build-info.ts (default: ./build-info.ts, relative to cwd)
-  --json <path>  Path to write build-info.json (default: ./build-info.json, relative to cwd)
-  --check        Verify --ts still carries the committed placeholders; writes nothing. Exits
-                 non-zero if a real stamped value is found (for a pre-commit hook or CI guard).
-  -h, --help     Show this help.
+  --ts <path>          Path to the app's build-info.ts (default: ./build-info.ts, relative to cwd)
+  --json <path>        Path to write build-info.json (default: ./build-info.json, relative to cwd)
+  --package <path>     Path to the package.json whose "version" is the fallback/source of truth
+                        (default: the repo root's package.json). Relative to cwd. Use this for a
+                        per-app version in a monorepo, e.g. --package apps/<app>/package.json.
+  --tag-prefix <pfx>   Prefix for the release-tag match passed to
+                        \`git describe --tags --long --match '<prefix>[0-9]*'\` (default: "v").
+                        Use a per-app namespace, e.g. --tag-prefix <app>/v to match <app>/vX.Y.Z.
+  --check              Verify --ts still carries the committed placeholders; writes nothing. Exits
+                        non-zero if a real stamped value is found (for a pre-commit hook or CI guard).
+  -h, --help           Show this help.
 `;
 
 function runCheck(tsPath) {
@@ -202,10 +252,10 @@ function runCheck(tsPath) {
   console.log(`[sneat-stamp-build-info] ${tsPath} still carries its committed placeholders — OK.`);
 }
 
-function runStamp(tsPath, jsonPath, cwd) {
+function runStamp(tsPath, jsonPath, cwd, packagePath, tagPrefix) {
   const gitHash = resolveGitHash(cwd);
   const buildTimestamp = new Date().toISOString();
-  const version = resolveVersion(cwd);
+  const version = resolveVersion(cwd, packagePath, tagPrefix);
   const buildInfo = { version, gitHash, buildTimestamp };
 
   const originalTs = readFileSync(tsPath, 'utf8');
@@ -230,7 +280,7 @@ function main() {
     return;
   }
   const jsonPath = path.resolve(cwd, args.json);
-  runStamp(tsPath, jsonPath, cwd);
+  runStamp(tsPath, jsonPath, cwd, args.package, args.tagPrefix);
 }
 
 function isBeingRunDirectly() {

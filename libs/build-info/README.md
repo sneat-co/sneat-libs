@@ -121,10 +121,54 @@ value at bootstrap instead.
    npx sneat-stamp-build-info --check --ts apps/<app>/src/build-info.ts
    ```
 
+## Monorepo with several apps
+
+**Each app versions independently.** A monorepo root `package.json` is not a
+version for any one app — don't let an app's build info fall back to it.
+Give each app its own `package.json` (just enough for `resolveVersion`'s
+fallback — no `dependencies` needed, since it's never installed from) and its
+own release-tag namespace, then point `--package`/`--tag-prefix` at them:
+
+1. **Add an app-level `package.json`** (e.g. `apps/<app>/package.json`):
+
+   ```json
+   {
+     "name": "<app>",
+     "version": "0.1.0",
+     "private": true
+   }
+   ```
+
+2. **Tag releases per app**, not at the repo root: `<app>/vX.Y.Z` (e.g.
+   `sneat-app/v0.1.0`), not a bare `vX.Y.Z` — a bare tag is ambiguous once
+   more than one app shares the repo.
+
+3. **Point the Nx target at both flags** (`apps/<app>/project.json`):
+
+   ```jsonc
+   {
+     "targets": {
+       "stamp-build-info": {
+         "executor": "nx:run-commands",
+         "options": {
+           "command": "sneat-stamp-build-info --ts apps/<app>/src/build-info.ts --json apps/<app>/src/build-info.json --package apps/<app>/package.json --tag-prefix <app>/v"
+         },
+         "outputs": ["{workspaceRoot}/apps/<app>/src/build-info.json"],
+         "cache": false
+       }
+     }
+   }
+   ```
+
+   `--tag-prefix sneat-app/v` matches `sneat-app/v0.1.0` → `0.1.0`, and
+   `sneat-app/v0.1.0-3-gabc1234` (3 commits past that tag) → `0.1.0+3`; with
+   no matching tag reachable, it falls back to `apps/<app>/package.json`'s
+   `"version"` field instead of the repo root's.
+
 ## CLI reference
 
 ```
-sneat-stamp-build-info [--ts <path>] [--json <path>]
+sneat-stamp-build-info [--ts <path>] [--json <path>] [--package <path>] [--tag-prefix <prefix>]
 sneat-stamp-build-info --check [--ts <path>]
 ```
 
@@ -132,16 +176,19 @@ sneat-stamp-build-info --check [--ts <path>]
 |------|---------|---------|
 | `--ts <path>` | `build-info.ts` | Path to the committed placeholder file to stamp (or, with `--check`, to verify). Resolved relative to the current working directory. |
 | `--json <path>` | `build-info.json` | Path to (over)write with `{ version, gitHash, buildTimestamp }`. Resolved relative to the current working directory. |
+| `--package <path>` | the repo root's `package.json` | Path to the `package.json` whose `"version"` is the fallback (and source of truth when no matching tag is reachable). Resolved relative to the current working directory. Use a per-app `package.json` in a monorepo — see "Monorepo with several apps" above. |
+| `--tag-prefix <prefix>` | `v` | Prefix for the release-tag match: `git describe --tags --long --match '<prefix>[0-9]*'`, with the prefix stripped when parsing. Use a per-app namespace such as `<app>/v` so each app's tags (`<app>/vX.Y.Z`) don't collide with another app's. |
 | `--check` | off | Verifies `--ts` still carries the committed placeholders; writes nothing and exits non-zero if a real stamped value is found. |
 
 Commit SHA precedence: `WORKERS_CI_COMMIT_SHA` (Cloudflare Workers Builds) →
 `CF_PAGES_COMMIT_SHA` (Cloudflare Pages) → `GITHUB_SHA` (GitHub Actions) →
 `git rev-parse HEAD` (local runs, and the final fallback anywhere else).
 
-Version precedence: the nearest reachable `vX.Y.Z` tag via
-`git describe --tags --long --match 'v[0-9]*'` (`X.Y.Z` exactly on the tag,
-`X.Y.Z+N` for N commits past it) → the app repo root's `package.json`
-`"version"` field.
+Version precedence: the nearest reachable `<tag-prefix>X.Y.Z` tag (prefix
+defaults to `v`) via
+`git describe --tags --long --match '<tag-prefix>[0-9]*'` (`X.Y.Z` exactly on
+the tag, `X.Y.Z+N` for N commits past it) → the `--package` package.json's
+`"version"` field (default: the repo root's `package.json`).
 
 Timestamp: `new Date().toISOString()` — UTC, no shell `date` subprocess.
 
