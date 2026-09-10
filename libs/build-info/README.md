@@ -14,9 +14,11 @@ that produces the values, so it stays a dependency-free `devDependency`,
 never a runtime one.
 
 [`@sneat/components`](../components)' `AppVersionComponent`
-(`<sneat-app-version />`) already injects `BUILD_INFO` — once an app wires
-the three steps below, that component shows the app's own build info with
-no further changes.
+(`<sneat-app-version />`, see
+[its own README](../components/src/lib/app-version/README.md) for inputs and
+the collapsed/expanded shape) already injects `BUILD_INFO` — once an app
+wires the three steps below, that component shows the app's own build info
+with no further changes.
 
 ## Why a runtime token instead of a compile-time import
 
