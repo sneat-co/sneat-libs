@@ -66,6 +66,11 @@ jobs:
           # The organisation token pushes the branch so the commit is owned by
           # an external actor. Its fine-grained permissions intentionally do
           # not include pull requests, so the repository token owns that part.
+          # That needs "Allow GitHub Actions to create and approve pull
+          # requests" enabled at enterprise, organisation AND repository level
+          # (Settings > Actions > General); if any one is off, `gh pr create`
+          # fails with "GitHub Actions is not permitted to create or approve
+          # pull requests" after the release branch was already pushed.
           GH_TOKEN: ${{ secrets.SNEAT_CI_READWRITE_TOKEN }}
           REPOSITORY_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.candidate.outputs.version }}
