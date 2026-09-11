@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ErrorLoggerService } from './error-logger.service';
+import { ERROR_LOGGER_DEFAULTS } from './error-logger-defaults';
 import { ToastController } from '@ionic/angular';
 import { captureException, showReportDialog } from '@sentry/angular';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -320,5 +321,99 @@ describe('ErrorLoggerService', () => {
       handler('error');
       expect(logSpy).toHaveBeenCalledWith('error', 'test msg', undefined);
     });
+  });
+});
+
+describe('ErrorLoggerService with ERROR_LOGGER_DEFAULTS', () => {
+  let toastController: { create: Mock; dismiss: Mock };
+
+  function createService(
+    defaults: { feedback?: boolean; show?: boolean } | null,
+  ): ErrorLoggerService {
+    toastController = {
+      create: vi.fn().mockReturnValue(
+        Promise.resolve({
+          present: vi.fn().mockReturnValue(Promise.resolve()),
+        }),
+      ),
+      dismiss: vi.fn().mockReturnValue(Promise.resolve()),
+    };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ErrorLoggerService,
+        { provide: ToastController, useValue: toastController },
+        ...(defaults
+          ? [{ provide: ERROR_LOGGER_DEFAULTS, useValue: defaults }]
+          : []),
+      ],
+    });
+    const service = TestBed.inject(ErrorLoggerService);
+    vi.clearAllMocks();
+    return service;
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('shows the report dialog when no defaults are provided (today’s behaviour)', () => {
+    const service = createService(null);
+    vi.stubGlobal('location', { hostname: 'example.com' });
+
+    service.logError(new Error('test'), 'msg', { report: true });
+
+    expect(captureException).toHaveBeenCalled();
+    expect(showReportDialog).toHaveBeenCalledWith({ eventId: 'event-id' });
+  });
+
+  it('never calls showReportDialog when defaults set feedback: false, but still captures the exception', () => {
+    const service = createService({ feedback: false });
+    vi.stubGlobal('location', { hostname: 'example.com' });
+
+    service.logError(new Error('test'), 'msg', { report: true });
+
+    expect(captureException).toHaveBeenCalled();
+    expect(showReportDialog).not.toHaveBeenCalled();
+  });
+
+  it('lets a per-call feedback: true override a feedback: false default', () => {
+    const service = createService({ feedback: false });
+    vi.stubGlobal('location', { hostname: 'example.com' });
+
+    service.logError(new Error('test'), 'msg', {
+      report: true,
+      feedback: true,
+    });
+
+    expect(showReportDialog).toHaveBeenCalledWith({ eventId: 'event-id' });
+  });
+
+  it('lets a per-call feedback: false override an implicit true default', () => {
+    const service = createService({});
+    vi.stubGlobal('location', { hostname: 'example.com' });
+
+    service.logError(new Error('test'), 'msg', {
+      report: true,
+      feedback: false,
+    });
+
+    expect(showReportDialog).not.toHaveBeenCalled();
+  });
+
+  it('applies the same precedence to the show option', () => {
+    const service = createService({ show: false });
+
+    service.logError(new Error('test'), 'msg', {});
+
+    expect(toastController.create).not.toHaveBeenCalled();
+  });
+
+  it('lets a per-call show: true override a show: false default', () => {
+    const service = createService({ show: false });
+
+    service.logError(new Error('test'), 'msg', { show: true });
+
+    expect(toastController.create).toHaveBeenCalled();
   });
 });

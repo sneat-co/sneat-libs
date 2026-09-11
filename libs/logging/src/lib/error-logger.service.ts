@@ -1,14 +1,20 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable, Optional } from '@angular/core';
+import { Inject, Injectable, Optional } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { captureException, showReportDialog } from '@sentry/angular';
 import { IErrorLogger, ILogErrorOptions } from '@sneat/core';
+import { ERROR_LOGGER_DEFAULTS } from './error-logger-defaults';
 
 const defaultErrorToastDuration = 7000;
 
 @Injectable()
 export class ErrorLoggerService implements IErrorLogger {
-  constructor(@Optional() private readonly toastController: ToastController) {}
+  constructor(
+    @Optional() private readonly toastController: ToastController,
+    @Optional()
+    @Inject(ERROR_LOGGER_DEFAULTS)
+    private readonly defaults: ILogErrorOptions | null,
+  ) {}
 
   public readonly logErrorHandler =
     (message?: string, options?: ILogErrorOptions) => (e: unknown) =>
@@ -64,7 +70,9 @@ export class ErrorLoggerService implements IErrorLogger {
             : captureException(e);
 
           // console.log('Captured error by Sentry with eventId:', eventId);
-          if (options?.feedback === undefined || options.feedback) {
+          const feedback =
+            options?.feedback ?? this.defaults?.feedback ?? true;
+          if (feedback) {
             showReportDialog({ eventId });
           }
         } catch (ex) {
@@ -75,7 +83,8 @@ export class ErrorLoggerService implements IErrorLogger {
         }
       }
     }
-    if (options?.show || options?.show === undefined) {
+    const show = options?.show ?? this.defaults?.show ?? true;
+    if (show) {
       this.showError(e, options?.showDuration);
     }
     return; // return message ? { error: e, message } : e;
