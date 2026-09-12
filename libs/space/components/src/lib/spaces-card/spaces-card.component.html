@@ -20,6 +20,14 @@
         [allowLeave]="true"
       />
     </ion-list>
+  } @else if (signedOut()) {
+    <ion-list>
+      <ion-item>
+        <ion-label color="medium">
+          Enter a name below. You will sign in when you create the space.
+        </ion-label>
+      </ion-item>
+    </ion-list>
   } @else {
     <ion-list>
       <ion-item>
@@ -62,6 +70,20 @@
   }
   @if (showAdd()) {
     <ion-card-content>
+      @if (pendingCreationNotice(); as notice) {
+        <p>{{ notice }}</p>
+        @if (pendingCreation()?.status === 'submitting') {
+          <ion-button
+            color="medium"
+            [disabled]="!canDiscardPendingCreation()"
+            fill="clear"
+            size="small"
+            (click)="discardPendingCreation()"
+          >
+            Start over
+          </ion-button>
+        }
+      }
       <p>{{ addSpaceHelp }}</p>
     </ion-card-content>
   }
