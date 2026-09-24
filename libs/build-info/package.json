@@ -1,6 +1,6 @@
 {
   "name": "@sneat/build-info",
-  "version": "0.27.26",
+  "version": "0.27.27",
   "description": "sneat-stamp-build-info: stamps an app's own version/git-hash/build-timestamp into build-info.ts + build-info.json, for use with @sneat/core-public's provideBuildInfo() and @sneat/components' AppVersionComponent.",
   "publishConfig": {
     "access": "public"
