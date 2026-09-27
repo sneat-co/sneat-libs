@@ -10,23 +10,4 @@ overrides:
   '@angular/compiler': 22.1.3
   '@angular/common': 22.1.3
   '@angular/animations': 22.1.3
-packages:
-  - 'libs/**'
-peerDependencyRules:
-  ignoreMissing:
-    - '@sneat/*'
-    - '@ionic/angular'
-    - firebase
-    - '@sentry/angular'
-    - posthog-js
-    - '@sneat/random'
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - '@swc/core'
-  - esbuild
-  - less
-  - lmdb
-  - msgpackr-extract
-  - nx
-  - oxc-resolver
-  - unrs-resolver
+  js-yaml: ">=4.3.2"

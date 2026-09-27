@@ -5,17 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@angular-devkit/core': 22.1.5
-  '@angular-devkit/schematics': 22.1.5
-  '@angular/router': 22.1.3
-  '@angular/platform-server': 22.1.3
-  '@angular/platform-browser-dynamic': 22.1.3
-  '@angular/platform-browser': 22.1.3
-  '@angular/forms': 22.1.3
-  '@angular/core': 22.1.3
-  '@angular/compiler': 22.1.3
-  '@angular/common': 22.1.3
-  '@angular/animations': 22.1.3
+  js-yaml: 4.3.2
 
 importers:
 
@@ -403,7 +393,7 @@ packages:
     peerDependencies:
       '@analogjs/vite-plugin-angular': '*'
       '@angular-devkit/architect': '>=0.1700.0 < 0.2300.0 || >=0.2200.0 < 0.2300.0'
-      '@angular-devkit/schematics': 22.1.5
+      '@angular-devkit/schematics': '>=17.0.0'
       vitest: ^1.3.1 || ^2.0.0 || ^3.0.0 || ^4.0.0
       zone.js: '>=0.14.0'
     peerDependenciesMeta:
@@ -421,10 +411,10 @@ packages:
     deprecated: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
     peerDependencies:
       '@angular/compiler-cli': ^22.0.0
-      '@angular/core': 22.1.3
+      '@angular/core': ^22.0.0
       '@angular/localize': ^22.0.0
-      '@angular/platform-browser': 22.1.3
-      '@angular/platform-server': 22.1.3
+      '@angular/platform-browser': ^22.0.0
+      '@angular/platform-server': ^22.0.0
       '@angular/service-worker': ^22.0.0
       '@angular/ssr': ^22.1.5
       browser-sync: ^3.0.2
@@ -513,12 +503,12 @@ packages:
     resolution: {integrity: sha512-YqsbHZK3/HFmLLhwxa5SpN+3ABoVo5GFLV0fiEXCQg2KC7gw2pL15x692jxrq8gEGzT7O27bnjWkvFZ0bBHCnw==}
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
     peerDependencies:
-      '@angular/compiler': 22.1.3
+      '@angular/compiler': ^22.0.0
       '@angular/compiler-cli': ^22.0.0
-      '@angular/core': 22.1.3
+      '@angular/core': ^22.0.0
       '@angular/localize': ^22.0.0
-      '@angular/platform-browser': 22.1.3
-      '@angular/platform-server': 22.1.3
+      '@angular/platform-browser': ^22.0.0
+      '@angular/platform-server': ^22.0.0
       '@angular/service-worker': ^22.0.0
       '@angular/ssr': ^22.1.5
       istanbul-lib-instrument: ^6.0.0
@@ -2561,9 +2551,9 @@ packages:
   '@ionic/angular@9.0.0':
     resolution: {integrity: sha512-WpFHpdwnZ0vbZys63tNro/BEGxsZwLom1T3odZptT0xV5ImREG37X0n8tahhoHiNM5FlGtuHPpp/5KTOgqnPxQ==}
     peerDependencies:
-      '@angular/core': 22.1.3
-      '@angular/forms': 22.1.3
-      '@angular/router': 22.1.3
+      '@angular/core': '>=18.0.0'
+      '@angular/forms': '>=18.0.0'
+      '@angular/router': '>=18.0.0'
       rxjs: '>=7.5.0'
       zone.js: '>=0.13.0'
     peerDependenciesMeta:
@@ -2963,8 +2953,8 @@ packages:
     resolution: {integrity: sha512-E1n6Rn2C9hnkYEmgSzqqO1NrZW+bI0Ti43O34j1eDbw2l66by1RxUAtRvGPMcJz19sJDWGH4I4UUIRz2CSJ7Cw==}
     peerDependencies:
       '@angular-devkit/build-angular': '>= 20.0.0 < 23.0.0'
-      '@angular-devkit/core': 22.1.5
-      '@angular-devkit/schematics': 22.1.5
+      '@angular-devkit/core': '>= 20.0.0 < 23.0.0'
+      '@angular-devkit/schematics': '>= 20.0.0 < 23.0.0'
       '@angular/build': '>= 20.0.0 < 23.0.0'
       '@nx/cypress': 23.1.1
       '@nx/playwright': 23.1.1
@@ -4410,9 +4400,9 @@ packages:
     resolution: {integrity: sha512-jYC6cgdcoLqgze+6IiWs2mCrL7c0VV7Chd4+IuQ0S+HnNTHkGfFRefEEG8+jt4Aus+9noF9TwXps6lUU7bKVQw==}
     engines: {node: '>=18'}
     peerDependencies:
-      '@angular/common': 22.1.3
-      '@angular/core': 22.1.3
-      '@angular/router': 22.1.3
+      '@angular/common': '>= 14.x <= 22.x'
+      '@angular/core': '>= 14.x <= 22.x'
+      '@angular/router': '>= 14.x <= 22.x'
       rxjs: ^6.5.5 || ^7.x
 
   '@sentry/browser-utils@10.70.0':
@@ -4453,7 +4443,7 @@ packages:
   '@sneat/extension-assetus-contract@0.0.5':
     resolution: {integrity: sha512-nU7Snuv+Uezw28/QpCiEgAIa42v/KUUeTY+yRE32gt29vxB13uauuvPuG+AAJkakX+XNmHjgIi7tI5fhbeTP1A==}
     peerDependencies:
-      '@angular/core': 22.1.3
+      '@angular/core': ^21.0.0
       '@sneat/core': ^0.9.0
       '@sneat/dto': ^0.9.0
       '@sneat/space-models': ^0.9.0
@@ -4463,7 +4453,7 @@ packages:
   '@sneat/extension-contactus-contract@0.12.2':
     resolution: {integrity: sha512-8q8t9x2PECQjdGk9eAxRle98BpMO506lq/a6fzQYqqdbRKrXk4dqA3IMpROYMznS4DPdJmnvSF7yP2MY/cTx9w==}
     peerDependencies:
-      '@angular/core': 22.1.3
+      '@angular/core': ^21.0.0
       '@sneat/auth-models': ^0.22.0
       '@sneat/core': ^0.22.0
       '@sneat/dto': ^0.22.0
@@ -4473,11 +4463,11 @@ packages:
   '@sneat/extension-contactus-ui@0.14.0':
     resolution: {integrity: sha512-mgpPzFc9gQTT12KbmAYPiBKYlbav0pEQESG4muZGmGv3Z2VLWSCoeTA4QGp6KLGXZXWwAPRFJA8JmGYCeS+bwQ==}
     peerDependencies:
-      '@angular/animations': 22.1.3
-      '@angular/common': 22.1.3
-      '@angular/core': 22.1.3
-      '@angular/forms': 22.1.3
-      '@angular/router': 22.1.3
+      '@angular/animations': '>=22.0.0 <23.0.0'
+      '@angular/common': '>=22.0.0 <23.0.0'
+      '@angular/core': '>=22.0.0 <23.0.0'
+      '@angular/forms': '>=22.0.0 <23.0.0'
+      '@angular/router': '>=22.0.0 <23.0.0'
       '@ionic/angular': '>=9.0.0 <10.0.0'
       '@sneat/api': ^0.27.0
       '@sneat/app': ^0.27.0
@@ -4503,8 +4493,8 @@ packages:
   '@sneat/random@0.0.4':
     resolution: {integrity: sha512-zRoBe1rtSgDOWvz8xfSbE9SB6Rn/rGJ7oVvmTmA5X7m89NzW359LROwCTHVnf7o9niD1T9lW7AvsZLdCaM7QOw==}
     peerDependencies:
-      '@angular/common': 22.1.3
-      '@angular/core': 22.1.3
+      '@angular/common': '>=12.0.0'
+      '@angular/core': '>=12.0.0'
 
   '@so-ric/colorspace@1.1.6':
     resolution: {integrity: sha512-/KiKkpHNOBgkFJwu9sh48LkHSMYGyuTcSFK/qMBdnOAlrRJzRSXAOFB5qwzaVQuDl8wAvHVMkaASQDReTahxuw==}
@@ -7014,8 +7004,8 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@4.3.0:
-    resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
+  js-yaml@4.3.2:
+    resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
 
   jsesc@3.1.0:
@@ -10189,7 +10179,7 @@ snapshots:
       '@jsdevtools/ono': 7.1.3
       '@types/json-schema': 7.0.15
       call-me-maybe: 1.0.2
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
 
   '@apphosting/common@0.0.8': {}
 
@@ -11764,7 +11754,7 @@ snapshots:
       globals: 14.0.0
       ignore: 5.3.2
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       minimatch: 3.1.5
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
@@ -15442,7 +15432,7 @@ snapshots:
   cosmiconfig@8.3.6(typescript@6.0.3):
     dependencies:
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       parse-json: 5.2.0
       path-type: 4.0.0
     optionalDependencies:
@@ -15452,7 +15442,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 6.0.3
@@ -16276,7 +16266,7 @@ snapshots:
       glob: 10.5.0
       google-auth-library: 9.15.1
       ignore: 7.0.6
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       jsonwebtoken: 9.0.3
       libsodium-wrappers: 0.7.16
       lodash: 4.18.1
@@ -17081,7 +17071,7 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@4.3.0:
+  js-yaml@4.3.2:
     dependencies:
       argparse: 2.0.1
 
