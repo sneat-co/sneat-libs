@@ -41,7 +41,7 @@ const firebaseConfig: IFirebaseConfig = {
   emulator: firebaseEmulatorConfig,
   apiKey: notNeededForEmulator,
   authDomain: 'sneat.app',
-  projectId: 'local-sneat-app', // The 'demo-' prefix is added if useEmulators is true
+  projectId: 'sneat-app', // The 'demo-' prefix is added if useEmulators is true
   appId: notNeededForEmulator,
   measurementId: 'G-PROVIDE_IF_NEEDED',
 };

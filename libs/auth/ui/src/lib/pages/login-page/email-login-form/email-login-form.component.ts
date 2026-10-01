@@ -31,7 +31,11 @@ import {
   IonText,
 } from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
-import { IInitUserRecordRequest, UserRecordService } from '@sneat/auth-core';
+import {
+  IInitUserRecordRequest,
+  SneatAuthStateService,
+  UserRecordService,
+} from '@sneat/auth-core';
 import { createSetFocusToInput } from '@sneat/ui';
 import {
   AnalyticsService,
@@ -81,6 +85,9 @@ export class EmailLoginFormComponent {
   private readonly randomIdService = inject(RandomIdService);
   private readonly sneatApiService = inject(SneatApiService);
   private readonly userRecordService = inject(UserRecordService);
+  private readonly authStateService = inject(SneatAuthStateService, {
+    optional: true,
+  });
 
   protected readonly sign = signal<'in' | 'up'>('up'); // TODO: document here what 'in' & 'up' means
   protected readonly email = signal('');
@@ -109,6 +116,13 @@ export class EmailLoginFormComponent {
     this.email.set(email);
     if (email) {
       this.sign.set('in');
+    }
+    if (this.authStateService) {
+      this.authStateService.authStatus.subscribe((status) => {
+        if (status === 'notAuthenticated') {
+          this.setSigningWith(undefined);
+        }
+      });
     }
   }
 
@@ -311,6 +325,7 @@ export class EmailLoginFormComponent {
   }
 
   private onLoggedIn(userCredential: UserCredential): void {
+    this.setSigningWith(undefined);
     this.loggedIn.emit(userCredential);
   }
 
@@ -351,6 +366,7 @@ export class EmailLoginFormComponent {
   }
 
   ionViewDidEnter(): void {
+    this.setSigningWith(undefined);
     this.setFocusToEmail();
   }
 

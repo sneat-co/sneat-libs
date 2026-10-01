@@ -11,9 +11,11 @@ import {
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import {
+  clearCurrentSpace,
   equalSpaceRefs,
   ILogger,
   ISpaceRef,
+  readCurrentSpace,
   SpaceType,
   writeCurrentSpace,
 } from '@sneat/core';
@@ -52,7 +54,7 @@ export abstract class SpaceBaseComponent
     undefined,
   );
   private readonly $spaceDbo = signal<ISpaceDbo | undefined | null>(undefined);
-  private readonly $spaceAccessDenied = signal(false);
+  protected readonly $spaceAccessDenied = signal(false);
 
   protected readonly $spaceNotFound = computed(
     () => this.$spaceDbo() === null || this.$spaceAccessDenied(),
@@ -108,6 +110,7 @@ export abstract class SpaceBaseComponent
   protected readonly spaceIDChanged$ = this.spaceIDChanged.asObservable().pipe(
     this.takeUntilDestroyed(),
     distinctUntilChanged(),
+    shareReplay(1),
     // tap((id) => console.log(this.className + '=> spaceIDChanged$: ' + id)),
   );
 
@@ -126,7 +129,7 @@ export abstract class SpaceBaseComponent
 
   public readonly spaceDboChanged$ = this.spaceDboChanged
     .asObservable()
-    .pipe(this.takeUntilDestroyed(), distinctUntilChanged());
+    .pipe(this.takeUntilDestroyed(), distinctUntilChanged(), shareReplay(1));
 
   protected get space(): ISpaceContext {
     // TODO: Document why we do not allow undefined
@@ -183,6 +186,7 @@ export abstract class SpaceBaseComponent
       this.unsubscribe('$spaceID() changed');
       this.$spaceBrief.set(undefined);
       this.$spaceDbo.set(undefined);
+      this.spaceDboChanged.next(undefined);
       if (spaceID && this.isBrowser) {
         setTimeout(() => this.subscribeForSpaceChanges(spaceID), 1);
       }
@@ -336,6 +340,10 @@ export abstract class SpaceBaseComponent
             // document exists. For navigation purposes this is a terminal
             // unavailable-space state, just like a missing snapshot.
             this.$spaceAccessDenied.set(true);
+            const current = readCurrentSpace();
+            if (current?.id === spaceID) {
+              clearCurrentSpace();
+            }
             return;
           }
           this.errorLogger.logError('failed to get team record');

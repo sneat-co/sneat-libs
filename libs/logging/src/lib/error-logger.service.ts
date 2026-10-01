@@ -7,6 +7,25 @@ import { ERROR_LOGGER_DEFAULTS } from './error-logger-defaults';
 
 const defaultErrorToastDuration = 7000;
 
+export function isPermissionDenied(e: unknown): boolean {
+  if (!e || typeof e !== 'object') {
+    return false;
+  }
+  const code = (e as { code?: unknown }).code;
+  if (code === 'permission-denied' || code === 'firestore/permission-denied') {
+    return true;
+  }
+  const msg = (e as { message?: unknown }).message;
+  if (typeof msg === 'string') {
+    return (
+      msg.includes('permission-denied') ||
+      msg.includes("false for '") ||
+      msg.includes('PERMISSION_DENIED')
+    );
+  }
+  return false;
+}
+
 @Injectable()
 export class ErrorLoggerService implements IErrorLogger {
   constructor(
@@ -62,7 +81,12 @@ export class ErrorLoggerService implements IErrorLogger {
         return;
       }
     }
-    if (options?.report === undefined || options.report) {
+    const isDenied = isPermissionDenied(e);
+    if (
+      options?.report === undefined
+        ? !isDenied && (this.defaults?.report ?? true)
+        : options.report
+    ) {
       if (window.location.hostname !== 'localhost') {
         try {
           const eventId = message
@@ -83,7 +107,8 @@ export class ErrorLoggerService implements IErrorLogger {
         }
       }
     }
-    const show = options?.show ?? this.defaults?.show ?? true;
+    const show =
+      options?.show ?? (isDenied ? false : (this.defaults?.show ?? true));
     if (show) {
       this.showError(e, options?.showDuration);
     }
