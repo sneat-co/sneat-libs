@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, signal, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -37,9 +37,12 @@ import { SneatUserService } from '@sneat/auth-core';
 import {
   AnalyticsService,
   APP_INFO,
+  clearCurrentSpace,
   currentSpacePath,
   IAnalyticsService,
   IAppInfo,
+  readCurrentSpace,
+  SpaceTypeFamily,
 } from '@sneat/core';
 import { RandomIdService } from '@sneat/random';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
@@ -136,6 +139,7 @@ export class LoginPageComponent extends SneatBaseComponent {
   );
   private readonly authStatus = toSignal(this.authStateService.authStatus);
   private readonly authUser = toSignal(this.authStateService.authUser);
+  private readonly userState = toSignal(this.userService.userState);
   protected readonly signedInAs = computed(() => {
     const u = this.authUser();
     return u?.displayName || u?.email || u?.uid || '';
@@ -143,6 +147,12 @@ export class LoginPageComponent extends SneatBaseComponent {
 
   constructor() {
     super();
+    effect(() => {
+      if (this.authStatus() === 'notAuthenticated') {
+        this.signingWith.set(undefined);
+      }
+    });
+
     const appInfo = this.appInfo;
     this.appTitle = appInfo.appTitle || 'Sneat.app';
     if (location.hash.startsWith('#/')) {
@@ -164,18 +174,40 @@ export class LoginPageComponent extends SneatBaseComponent {
           } else {
             return;
           }
-          // Fall back to the persisted current space so it is restored after login.
-          const redirectTo = this.redirectTo || currentSpacePath() || '/';
+          // Fall back to the persisted current space so it is restored after login,
+          // but only if the user actually has access to it.
+          const space = readCurrentSpace();
+          const hasAccess = !!space && (
+            userState.record.spaceIDs?.includes(space.id) ||
+            (!!userState.record.spaces && space.id in userState.record.spaces)
+          );
+          if (space && !hasAccess) {
+            clearCurrentSpace();
+          }
+          const activePath = hasAccess ? currentSpacePath() : undefined;
+          const family = Object.entries(userState.record.spaces || {}).find(
+            ([, brief]) => brief.type === SpaceTypeFamily,
+          );
+          const familyPath = family
+            ? `/space/${SpaceTypeFamily}/${family[0]}`
+            : undefined;
+          const redirectTo = this.redirectTo || activePath || familyPath || '/';
           this.navController
             .navigateRoot(redirectTo)
-            .catch(
-              this.errorLogger.logErrorHandler(
+            .catch((err) => {
+              this.signingWith.set(undefined);
+              this.errorLogger.logError(
+                err,
                 'Failed to navigate back to ' + redirectTo,
-              ),
-            );
+              );
+            });
         },
         error: this.errorHandler('Failed to get user state after login'),
       });
+  }
+
+  ionViewDidEnter(): void {
+    this.signingWith.set(undefined);
   }
 
   protected onEmailFormStatusChanged(signingWith?: EmailFormSigningWith): void {
@@ -184,14 +216,37 @@ export class LoginPageComponent extends SneatBaseComponent {
 
   // Proceed into the app from the "already signed in" panel.
   protected continueToApp(): void {
-    const redirectTo = this.redirectTo || currentSpacePath() || '/';
+    const space = readCurrentSpace();
+    const userState = this.userState();
+    const hasAccess = !!space && !!userState?.record && (
+      userState.record.spaceIDs?.includes(space.id) ||
+      (!!userState.record.spaces && space.id in userState.record.spaces)
+    );
+    if (space && !hasAccess) {
+      clearCurrentSpace();
+    }
+    const activePath = hasAccess ? currentSpacePath() : undefined;
+    const family = Object.entries(userState?.record?.spaces || {}).find(
+      ([, brief]) => brief.type === SpaceTypeFamily,
+    );
+    const familyPath = family
+      ? `/space/${SpaceTypeFamily}/${family[0]}`
+      : undefined;
+    const redirectTo = this.redirectTo || activePath || familyPath || '/';
     this.navController
       .navigateRoot(redirectTo)
-      .catch(this.errorLogger.logErrorHandler('Failed to navigate to ' + redirectTo));
+      .catch((err) => {
+        this.signingWith.set(undefined);
+        this.errorLogger.logError(
+          err,
+          'Failed to navigate to ' + redirectTo,
+        );
+      });
   }
 
   // Sign out so the sign-in form is shown again (e.g. to log in as someone else).
   protected reLogin(): void {
+    clearCurrentSpace();
     this.authStateService
       .signOut()
       .catch(this.errorLogger.logErrorHandler('Failed to sign out for re-login'));

@@ -84,6 +84,26 @@ describe('ErrorLoggerService', () => {
       expect(toastController.create).toHaveBeenCalled();
     });
 
+    it('should NOT show error toast by default for permission-denied errors', () => {
+      service.logError({
+        code: 'permission-denied',
+        message: "false for 'list' @ L96, false for 'list' @ L124",
+      });
+      expect(toastController.create).not.toHaveBeenCalled();
+    });
+
+    it('should show error toast for permission-denied when show: true is explicitly passed', () => {
+      service.logError(
+        {
+          code: 'permission-denied',
+          message: "false for 'list' @ L96",
+        },
+        undefined,
+        { show: true },
+      );
+      expect(toastController.create).toHaveBeenCalled();
+    });
+
     it('should handle boolean true value as error', () => {
       const consoleSpy = vi
         .spyOn(console, 'error')

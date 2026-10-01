@@ -61,7 +61,7 @@
     </ion-card>
   } @else {
     <sneat-email-login-form
-      (signingWithChange)="onEmailFormStatusChanged()"
+      (signingWithChange)="onEmailFormStatusChanged($event)"
       (loggedIn)="onLoggedIn($event)"
     />
 

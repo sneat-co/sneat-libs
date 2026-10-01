@@ -6,6 +6,7 @@ import {
 } from '@capacitor-firebase/authentication';
 import {
   AnalyticsService,
+  clearCurrentSpace,
   EnumAsUnionOfKeys,
   EnvConfigToken,
   IAnalyticsService,
@@ -254,6 +255,7 @@ export class SneatAuthStateService {
   }
 
   private publishSignedOutState(): void {
+    clearCurrentSpace();
     this.tokenUserID = undefined;
     this.authUser$.next(null);
     this.authState$.next({
@@ -267,6 +269,7 @@ export class SneatAuthStateService {
   }
 
   public signOut(): Promise<void> {
+    clearCurrentSpace();
     return this.fbAuth.signOut();
   }
 

@@ -25,7 +25,7 @@ import {
   SneatAuthStateService,
   SneatUserService,
 } from '@sneat/auth-core';
-import { ErrorLogger, IErrorLogger } from '@sneat/core';
+import { clearCurrentSpace, ErrorLogger, IErrorLogger } from '@sneat/core';
 import { Subject, takeUntil } from 'rxjs';
 import { PersonNamesPipe, personNames } from '../../pipes/person-names.pipe';
 @Component({
@@ -96,6 +96,7 @@ export class AuthMenuItemComponent implements OnDestroy {
     event.stopPropagation();
     event.preventDefault();
     try {
+      clearCurrentSpace();
       this.authStateService
         .signOut()
         .then(() => {
