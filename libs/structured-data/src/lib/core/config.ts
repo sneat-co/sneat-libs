@@ -228,6 +228,9 @@ function matchGlob(glob: string, path: string): boolean {
 }
 
 export function resolveViewRule(options: ResolveViewOptions): ResolutionResult {
+  let bounded: Required<StructuredLimits>;
+  try { bounded = effectiveLimits(options.limits); }
+  catch (error) { return { status: 'error', diagnostics: [diagnostic('limit_exceeded', String(error))] }; }
   const pathSegments = options.repositoryPath.split('/');
   if (options.repositoryPath.length > 4_096 || options.repositoryPath.startsWith('/')
     || options.repositoryPath.includes('\\')
@@ -246,6 +249,9 @@ export function resolveViewRule(options: ResolveViewOptions): ResolutionResult {
     const checked = validateViewConfig({ version: 1, rules: options.builtInRules }, limits);
     if (!checked.ok) return { status: 'error', diagnostics: checked.diagnostics };
     checked.config.rules.forEach(append);
+    if (merged.length > bounded.maxRules) {
+      return { status: 'error', diagnostics: [diagnostic('limit_exceeded', 'Too many combined view rules')] };
+    }
   }
   const levels = new Set<string>();
   for (const document of options.orderedDocuments) {
@@ -255,9 +261,17 @@ export function resolveViewRule(options: ResolveViewOptions): ResolutionResult {
     const checked = validateViewConfig(document.config, limits);
     if (!checked.ok) return { status: 'error', diagnostics: checked.diagnostics.map(item => ({ ...item, source: document.sourcePath })) };
     checked.config.rules.forEach(append);
+    if (merged.length > bounded.maxRules) {
+      return { status: 'error', diagnostics: [diagnostic('limit_exceeded', 'Too many combined view rules')] };
+    }
   }
   const path = options.repositoryPath.replace(/^\/+/, '');
+  let matchingWork = 0;
   for (let index = merged.length - 1; index >= 0; index--) {
+    matchingWork += (merged[index].match.length + 1) * (path.length + 1);
+    if (matchingWork > 8_000_000) {
+      return { status: 'error', diagnostics: [diagnostic('limit_exceeded', 'View rule matching work limit exceeded')] };
+    }
     if (matchGlob(merged[index].match, path)) return { status: 'matched', parser: merged[index].parser, view: merged[index] };
   }
   const suffix = path.toLowerCase().split('.').pop();

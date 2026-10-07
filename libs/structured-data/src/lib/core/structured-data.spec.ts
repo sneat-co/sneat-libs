@@ -88,6 +88,22 @@ describe('view configuration and resolution', () => {
     expect(result.status).toBe('generic');
     expect(performance.now() - started).toBeLessThan(250);
   });
+
+  it('bounds combined rules and total glob work across ancestor documents', () => {
+    const rules = (prefix: string, count: number): ViewRule[] => Array.from({ length: count }, (_, index) => ({
+      id: `${prefix}${index}`, match: 'unmatched/*.json', parser: 'json',
+    }));
+    const overCombined = resolveViewRule({ repositoryPath: 'a/file.json', orderedDocuments: [
+      { sourcePath: '.codegrapher/views.yaml', config: { version: 1, rules: rules('root', 60) } },
+      { sourcePath: 'a/.codegrapher/views.yaml', config: { version: 1, rules: rules('nearest', 60) } },
+    ] });
+    expect(overCombined).toMatchObject({ status: 'error', diagnostics: [{ code: 'limit_exceeded' }] });
+
+    const expensiveRules: ViewRule[] = rules('cost', 20).map(rule => ({ ...rule, match: '*a'.repeat(100) + 'b' }));
+    const overWork = resolveViewRule({ repositoryPath: `${'a'.repeat(4_000)}.json`,
+      builtInRules: expensiveRules, orderedDocuments: [] });
+    expect(overWork).toMatchObject({ status: 'error', diagnostics: [{ code: 'limit_exceeded' }] });
+  });
 });
 
 describe('HCL ordered selectors', () => {
