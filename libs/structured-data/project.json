@@ -1,0 +1,49 @@
+{
+  "name": "structured-data",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/structured-data/src",
+  "prefix": "sneat",
+  "projectType": "library",
+  "tags": [
+    "scope:foundation"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:package",
+      "dependsOn": ["prepare-assets"],
+      "outputs": [
+        "{workspaceRoot}/dist/{projectRoot}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "project": "libs/structured-data/ng-package.json",
+        "tsConfig": "libs/structured-data/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/structured-data/tsconfig.lib.prod.json"
+        },
+        "development": {}
+      }
+    },
+    "prepare-assets": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node libs/structured-data/tools/copy-assets.mjs"
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": [
+        "{options.reportsDirectory}"
+      ],
+      "options": {
+        "reportsDirectory": "coverage/libs/structured-data"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

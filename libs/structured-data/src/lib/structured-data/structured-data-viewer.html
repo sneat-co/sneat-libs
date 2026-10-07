@@ -1,0 +1,198 @@
+<article class="sd-viewer" aria-label="Structured data viewer">
+  @if (diagnostics.length) {
+    <div class="sd-diagnostics" role="alert">
+      @for (item of diagnostics; track $index) { <p>{{item.message}}</p> }
+    </div>
+  }
+
+  @if (document; as parsed) {
+    @if (titleText(); as title) { <h2>{{title}}</h2> }
+    @if (rootContext; as root) {
+      @if (sections.length) {
+        <ng-container *ngTemplateOutlet="sectionList; context: { $implicit: root, sectionItems: sections }" />
+        @let remaining = otherFields(root.node, sections);
+        @if (remaining.length) {
+          <section class="sd-section" aria-label="Other fields">
+            <h3>Other fields</h3>
+            @for (field of limitedFields(remaining); track $index) {
+              <div class="sd-field"><strong>{{field.label}}</strong>
+                <sneat-structured-node [node]="field.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                  (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+              </div>
+            }
+            @if (omittedFields(remaining); as omitted) { <p class="sd-limit">{{omitted}} more fields; inspect Raw source</p> }
+          </section>
+        }
+      } @else {
+        <sneat-structured-node [node]="parsed.root" [maxRows]="maxRows" [maxDepth]="maxDepth"
+          (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+      }
+    }
+  } @else if (showRawFallback && rawFallbackText) {
+    <pre class="sd-raw">{{rawFallbackText}}</pre>
+  }
+</article>
+
+<ng-template #sectionList let-context let-sectionItems="sectionItems">
+  @for (section of sectionItems; track section.id) {
+    <section class="sd-section" [id]="sectionId(section, context)" tabindex="-1">
+      <h3><button type="button" class="sd-section-link" (click)="selectSection(sectionId(section, context))">{{section.title}}</button></h3>
+      @switch (section.kind) {
+        @case ('value') {
+          @if (selected(context, section.path); as node) {
+            <sneat-structured-node [node]="node" [scalarListLayout]="section.scalarListLayout || 'inline'"
+              [maxRows]="maxRows" [maxDepth]="maxDepth" (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+          } @else { <span class="sd-missing">Missing</span> }
+        }
+        @case ('fields') {
+          @if (selected(context, section.path); as node) {
+            <dl class="sd-fields">
+              @for (field of section.fields; track field.label) {
+                <dt>{{field.label}}</dt>
+                <dd>
+                  @if (selected({node: node}, field.path); as fieldNode) {
+                    <sneat-structured-node [node]="fieldNode" [scalarListLayout]="field.scalarListLayout || 'inline'"
+                      [maxRows]="maxRows" [maxDepth]="maxDepth" (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+                  } @else { <span class="sd-missing">Missing</span> }
+                </dd>
+              }
+            </dl>
+            @let other = fieldOther(node, section);
+            @if (other.length) {
+              <details><summary>Other fields ({{other.length}})</summary>
+                @for (field of limitedFields(other); track $index) {
+                  <div class="sd-field"><strong>{{field.label}}</strong>
+                    <sneat-structured-node [node]="field.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                      (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+                  </div>
+                }
+                @if (omittedFields(other); as omitted) { <p class="sd-limit">{{omitted}} more fields; inspect Raw source</p> }
+              </details>
+            }
+          } @else { <span class="sd-missing">Missing</span> }
+        }
+        @case ('table') {
+          @let rows = rowsFor(section, context);
+          @if (rows.length) {
+            <p-table [value]="rows" [scrollable]="true" styleClass="sd-table">
+              <ng-template #header><tr>
+                @for (column of section.columns; track column.label) { <th scope="col">{{column.label}}</th> }
+                <th scope="col">Other fields</th>
+              </tr></ng-template>
+              <ng-template #body let-row><tr [id]="row.pathId" tabindex="-1">
+                @for (column of section.columns; track column.label) {
+                  <td>
+                    @if (selected(row, column.path); as cell) {
+                      <sneat-structured-node [node]="cell" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                        (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+                    } @else { <span class="sd-missing">Missing</span> }
+                  </td>
+                }
+                <td>
+                  @let other = tableOtherFields(row.node, section);
+                  @if (other.length) {
+                    <details><summary>Other fields ({{other.length}})</summary>
+                      @for (field of limitedFields(other); track $index) {
+                        <div class="sd-field"><strong>{{field.label}}</strong>
+                          <sneat-structured-node [node]="field.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                            (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+                        </div>
+                      }
+                      @if (omittedFields(other); as omitted) { <p class="sd-limit">{{omitted}} more fields; inspect Raw source</p> }
+                    </details>
+                  } @else { <span class="sd-empty">None</span> }
+                </td>
+              </tr></ng-template>
+            </p-table>
+            @if (rowLimitNotice(section, context); as notice) { <p class="sd-limit">{{notice}}</p> }
+          } @else { <span class="sd-empty">No rows</span> }
+        }
+        @case ('entries') {
+          <ng-container *ngTemplateOutlet="collection; context: { $implicit: section, parent: context }" />
+        }
+        @case ('blocks') {
+          <ng-container *ngTemplateOutlet="collection; context: { $implicit: section, parent: context }" />
+        }
+      }
+    </section>
+  }
+</ng-template>
+
+<ng-template #collection let-section let-parent="parent">
+  @let rows = rowsFor(section, parent);
+  @if (rows.length) {
+    <div class="sd-controls" [attr.aria-label]="section.title + ' controls'">
+      @if (section.allowLayoutSwitch) {
+        <button pButton type="button" [attr.aria-pressed]="layoutFor(section, parent) === 'accordion'"
+          (click)="setLayout(section, parent, 'accordion')">Accordion</button>
+        <button pButton type="button" [attr.aria-pressed]="layoutFor(section, parent) === 'list'"
+          (click)="setLayout(section, parent, 'list')">List</button>
+      }
+      @if (layoutFor(section, parent) === 'accordion') {
+        <p-button label="Expand all" [text]="true" (onClick)="expandAll(section, parent, rows)" />
+        <p-button label="Collapse all" [text]="true" (onClick)="collapseAll(section, parent)" />
+      }
+    </div>
+    @if (layoutFor(section, parent) === 'accordion') {
+      <p-accordion [multiple]="true" [value]="expandedValues(section, parent, rows)"
+        (valueChange)="setExpandedValues(section, parent, $event)">
+        @for (row of rows; track row.id) {
+          <p-accordion-panel [value]="row.id" [id]="row.pathId" tabindex="-1">
+            <p-accordion-header>
+              <span>{{row.title}}</span>
+            </p-accordion-header>
+            <p-accordion-content>
+              <button type="button" class="sd-section-link" (click)="rowActivated(row)"
+                [attr.aria-label]="'Link to ' + row.title">Link to section</button>
+              @if (entrySections(section).length) {
+                <ng-container *ngTemplateOutlet="sectionList; context: { $implicit: row, sectionItems: entrySections(section) }" />
+                @let other = otherFields(row.node, entrySections(section));
+                @if (other.length) {
+                  <details><summary>Other fields ({{other.length}})</summary>
+                    @for (field of limitedFields(other); track $index) {
+                      <div class="sd-field"><strong>{{field.label}}</strong>
+                        <sneat-structured-node [node]="field.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                          (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+                      </div>
+                    }
+                    @if (omittedFields(other); as omitted) { <p class="sd-limit">{{omitted}} more fields; inspect Raw source</p> }
+                  </details>
+                }
+              } @else {
+                <sneat-structured-node [node]="row.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                  (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+              }
+            </p-accordion-content>
+          </p-accordion-panel>
+        }
+      </p-accordion>
+    } @else {
+      <div class="sd-full-list">
+        @for (row of rows; track row.id) {
+          <article class="sd-entry" [id]="row.pathId" tabindex="-1">
+            <h4><button type="button" class="sd-section-link" (click)="rowActivated(row)">{{row.title}}</button></h4>
+            @if (entrySections(section).length) {
+              <ng-container *ngTemplateOutlet="sectionList; context: { $implicit: row, sectionItems: entrySections(section) }" />
+              @let other = otherFields(row.node, entrySections(section));
+              @if (other.length) {
+                <details><summary>Other fields ({{other.length}})</summary>
+                  @for (field of limitedFields(other); track $index) {
+                    <div class="sd-field"><strong>{{field.label}}</strong>
+                      <sneat-structured-node [node]="field.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                        (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+                    </div>
+                  }
+                  @if (omittedFields(other); as omitted) { <p class="sd-limit">{{omitted}} more fields; inspect Raw source</p> }
+                </details>
+              }
+            } @else {
+              <sneat-structured-node [node]="row.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
+            }
+          </article>
+        }
+      </div>
+    }
+    @if (rowLimitNotice(section, parent); as notice) { <p class="sd-limit">{{notice}}</p> }
+  } @else { <span class="sd-empty">No entries</span> }
+</ng-template>

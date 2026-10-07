@@ -1,0 +1,16 @@
+:host { display: block; min-width: 0; }
+.sd-viewer { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
+.sd-section { margin-block: 1rem; }
+.sd-section h3, .sd-entry h4 { margin: .5rem 0; }
+.sd-section-link { border: 0; padding: 0; color: inherit; background: transparent; font: inherit; text-align: start; text-decoration: underline; cursor: pointer; }
+.sd-controls { display: flex; flex-wrap: wrap; gap: .25rem; margin-block: .4rem; }
+.sd-fields { display: grid; grid-template-columns: minmax(6rem, auto) minmax(0, 1fr); gap: .4rem .8rem; }
+.sd-fields dt { font-weight: 600; }
+.sd-fields dd { margin: 0; min-width: 0; }
+.sd-field { display: flex; flex-wrap: wrap; gap: .4rem; margin-block: .3rem; }
+.sd-entry { border-block-end: 1px solid currentColor; padding-block: .5rem; }
+.sd-entry:last-child { border: 0; }
+.sd-empty, .sd-missing, .sd-limit { opacity: .75; }
+.sd-diagnostics { border-inline-start: .25rem solid currentColor; padding-inline-start: .7rem; }
+.sd-raw { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 32rem; overflow: auto; }
+@media (max-width: 40rem) { .sd-fields { display: block; } .sd-fields dd { margin-block-end: .6rem; } }

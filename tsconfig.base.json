@@ -113,6 +113,12 @@
       ],
       "@sneat/space-nav-router": [
         "libs/space/nav-router/src/index.ts"
+      ],
+      "@sneat/structured-data": [
+        "./libs/structured-data/src/index.ts"
+      ],
+      "@sneat/structured-data/core": [
+        "./libs/structured-data/src/lib/core/index.ts"
       ]
     },
     "noUncheckedSideEffectImports": false,
