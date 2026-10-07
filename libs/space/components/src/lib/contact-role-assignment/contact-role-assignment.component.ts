@@ -239,6 +239,8 @@ export class ContactRoleAssignmentComponent {
       (key) => {
         const before = previous.get(key);
         const after = current.get(key);
+        const row = after || before;
+        if (!row) return [];
         const add = (after?.roleIDs || []).filter(
           (role) => !before?.roleIDs.includes(role),
         );
@@ -248,7 +250,7 @@ export class ContactRoleAssignmentComponent {
         return add.length || remove.length
           ? [
               {
-                itemRef: { ...(after || before)!.contact },
+                itemRef: { ...row.contact },
                 ...(add.length ? { add: { [direction]: add } } : {}),
                 ...(remove.length ? { remove: { [direction]: remove } } : {}),
               },
