@@ -110,6 +110,21 @@ describe('StructuredDataViewerComponent', () => {
     expect(root.textContent).toContain('90 more fields; inspect Raw source');
   });
 
+  it('shows unconfigured root fields once when a root fields section is present', () => {
+    const document = json('{"id":"geo","name":"GeoNames","models":{"country":true}}');
+    const view: ViewRule = { id: 'model', match: '*.json', parser: 'json', sections: [{
+      id: 'identity', title: 'Identity', kind: 'fields', path: '', fields: [
+        { label: 'ID', path: '/id' }, { label: 'Name', path: '/name' },
+      ],
+    }] };
+    const component = fixture(document, view);
+    const root = component.nativeElement as HTMLElement;
+    expect(root.querySelectorAll('summary')).toHaveLength(0);
+    expect(root.querySelectorAll('.sd-field')).toHaveLength(1);
+    expect(root.querySelector('.sd-field')?.textContent).toContain('models');
+    expect(root.querySelector('.sd-field')?.textContent).not.toContain('name');
+  });
+
   it('keeps unconfigured table-row data discoverable with a bounded disclosure', () => {
     const document = json('{"rows":[{"id":"AD","name":"Andorra","extra":false,"more":null}]}');
     const view: ViewRule = { id: 'countries', match: '*.json', parser: 'json', sections: [{

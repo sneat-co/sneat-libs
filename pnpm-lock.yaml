@@ -390,6 +390,8 @@ importers:
         specifier: 2.9.1
         version: 2.9.1
 
+  libs/structured-data/core: {}
+
   libs/ui:
     dependencies:
       tslib:

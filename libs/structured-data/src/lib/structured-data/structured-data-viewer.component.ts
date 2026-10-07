@@ -199,7 +199,8 @@ export class StructuredDataViewerComponent implements OnChanges, AfterViewChecke
 
   otherFields(node: StructuredNode, sections: readonly ViewSection[]): readonly { label: string; node: StructuredNode }[] {
     const current = node.kind === 'hcl-block' ? node.body : node;
-    const paths = sections.map(section => section.path);
+    const paths = sections.flatMap(section => section.kind === 'fields' && section.path === ''
+      ? section.fields.map(field => field.path) : [section.path]);
     if (current.kind === 'object') {
       const consumed = new Set(paths.filter(path => path.startsWith('/')).map(path => path.slice(1).split('/')[0].replace(/~1/g, '/').replace(/~0/g, '~')));
       return current.entries.filter(entry => !consumed.has(entry.key)).map(entry => ({ label: entry.key, node: entry.value }));
@@ -220,6 +221,9 @@ export class StructuredDataViewerComponent implements OnChanges, AfterViewChecke
 
   fieldOther(node: StructuredNode, section: ViewSection): readonly { label: string; node: StructuredNode }[] {
     if (section.kind !== 'fields') return [];
+    // A root fields section shares its value with the top-level disclosure.
+    // Show root leftovers once there; nested row sections retain their own details.
+    if (node === this.document?.root) return [];
     return this.otherFields(node, section.fields.map((field, index) => ({ kind: 'value',
       id: `${section.id}-${index}`, title: field.label, path: field.path })));
   }
