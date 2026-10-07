@@ -1,3 +1,7 @@
+## 0.27.29 (2026-10-07)
+
+This was a version bump only, there were no code changes.
+
 ## 0.27.28 (2026-10-07)
 
 Includes a reusable contact-role assignment editor and assignment model, with null-safe handling of assignment changes. Also suppresses alerts for expected permission-denied errors and fixes a race in Space data-object subscriptions.
