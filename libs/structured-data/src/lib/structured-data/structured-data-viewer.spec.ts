@@ -125,6 +125,20 @@ describe('StructuredDataViewerComponent', () => {
     expect(root.querySelector('.sd-field')?.textContent).not.toContain('name');
   });
 
+  it('retains a nested parent when a configured path selects only one child', () => {
+    const document = json('{"address":{"city":"Dublin","postcode":"D02"}}');
+    const view: ViewRule = { id: 'address', match: '*.json', parser: 'json', sections: [{
+      id: 'identity', title: 'Identity', kind: 'fields', path: '', fields: [
+        { label: 'City', path: '/address/city' },
+      ],
+    }] };
+    const component = fixture(document, view);
+    const root = component.nativeElement as HTMLElement;
+    expect(root.querySelector('.sd-field')?.textContent).toContain('address');
+    expect(root.querySelector('.sd-field')?.textContent).toContain('postcode');
+    expect(root.querySelector('.sd-field')?.textContent).toContain('D02');
+  });
+
   it('keeps unconfigured table-row data discoverable with a bounded disclosure', () => {
     const document = json('{"rows":[{"id":"AD","name":"Andorra","extra":false,"more":null}]}');
     const view: ViewRule = { id: 'countries', match: '*.json', parser: 'json', sections: [{
@@ -152,5 +166,18 @@ describe('StructuredDataViewerComponent', () => {
     expect(component.componentInstance.tableOtherFields(row, section[0])).toMatchObject([
       { label: 'extra', node: { kind: 'hcl-attribute', name: 'extra' } },
     ]);
+  });
+
+  it('shows nested sibling values and primitive rows in heterogeneous tables', () => {
+    const document = json('{"rows":[{"address":{"city":"Dublin","postcode":"D02"}},42]}');
+    const view: ViewRule = { id: 'rows', match: '*.json', parser: 'json', sections: [{
+      id: 'rows', title: 'Rows', kind: 'table', path: '/rows', rows: 'list',
+      columns: [{ label: 'City', path: '/address/city' }],
+    }] };
+    const component = fixture(document, view);
+    const root = component.nativeElement as HTMLElement;
+    expect(root.textContent).toContain('Other fields (1)');
+    expect(root.textContent).toContain('postcode');
+    expect(root.querySelector('[id="rows/1"]')?.textContent).toContain('42');
   });
 });

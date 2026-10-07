@@ -7,7 +7,7 @@ import type {
   CollectionPresentation, SourceRange, StructuredDiagnostic, StructuredDocument, StructuredLimits,
   StructuredNode, StructuredSectionSelection, ViewEntryLayout, ViewRowContext, ViewRule, ViewSection,
 } from '../core/structured-data.types';
-import { selectRelative, selectViewPath } from '../core/selectors';
+import { parseRelativePointer, selectRelative, selectViewPath } from '../core/selectors';
 import { StructuredNodeComponent } from './structured-node';
 
 export interface StructuredDisplayRow extends ViewRowContext {
@@ -202,11 +202,17 @@ export class StructuredDataViewerComponent implements OnChanges, AfterViewChecke
     const paths = sections.flatMap(section => section.kind === 'fields' && section.path === ''
       ? section.fields.map(field => field.path) : [section.path]);
     if (current.kind === 'object') {
-      const consumed = new Set(paths.filter(path => path.startsWith('/')).map(path => path.slice(1).split('/')[0].replace(/~1/g, '/').replace(/~0/g, '~')));
+      const consumed = new Set(paths.flatMap(path => {
+        const segments = parseRelativePointer(path);
+        return segments?.length === 1 ? [segments[0]] : [];
+      }));
       return current.entries.filter(entry => !consumed.has(entry.key)).map(entry => ({ label: entry.key, node: entry.value }));
     }
     if (current.kind === 'hcl-body') {
-      const attributes = new Set(paths.filter(path => path.startsWith('/attributes/')).map(path => path.split('/')[2]));
+      const attributes = new Set(paths.flatMap(path => {
+        const segments = parseRelativePointer(path);
+        return segments?.length === 2 && segments[0] === 'attributes' ? [segments[1]] : [];
+      }));
       const blocks = new Set(sections.flatMap(section => {
         if (section.kind === 'blocks' || (section.kind === 'table' && section.rows === 'blocks')) {
           return section.blockType ? [section.blockType] : [];
@@ -232,5 +238,9 @@ export class StructuredDataViewerComponent implements OnChanges, AfterViewChecke
     if (section.kind !== 'table') return [];
     return this.otherFields(node, section.columns.map((column, index) => ({ kind: 'value',
       id: `${section.id}-${index}`, title: column.label, path: column.path })));
+  }
+
+  tableFallbackNode(node: StructuredNode): boolean {
+    return node.kind !== 'object' && node.kind !== 'hcl-body' && node.kind !== 'hcl-block';
   }
 }

@@ -100,6 +100,9 @@
                       }
                       @if (omittedFields(other); as omitted) { <p class="sd-limit">{{omitted}} more fields; inspect Raw source</p> }
                     </details>
+                  } @else if (tableFallbackNode(row.node)) {
+                    <sneat-structured-node [node]="row.node" [maxRows]="maxRows" [maxDepth]="maxDepth"
+                      (sourcePositionSelected)="sourcePositionSelected.emit($event)" />
                   } @else { <span class="sd-empty">None</span> }
                 </td>
               </tr></ng-template>
