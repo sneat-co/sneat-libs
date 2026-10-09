@@ -23,6 +23,7 @@ import {
 } from '@sneat/core';
 import {
   initialSneatAuthState,
+  AuthStatuses,
   ISneatAuthState,
   ISneatAuthUser,
   SneatAuthStateService,
@@ -55,7 +56,10 @@ export class SneatUserService {
     runInInjectionContext(this.injector, () => doc(this.userCollection, uid));
 
   private uid?: string;
+  private pendingUID?: string;
   private currentAuthState?: ISneatAuthState;
+  private pendingAuthState?: ISneatAuthState;
+  private deferredMissingUserDocSnapshot?: DocumentSnapshot<IUserRecord>;
   private $userTitle?: string;
   private watchTimer?: ReturnType<typeof setTimeout>;
   private watchGeneration = 0;
@@ -142,8 +146,10 @@ export class SneatUserService {
     if (authUser?.email && authUser.emailVerified) {
       this.$userTitle = authUser.email;
     }
+    this.pendingUID = undefined;
     if (this.uid === authUser?.uid) {
       this.currentAuthState = authState;
+      this.pendingAuthState = undefined;
       const current = this.userState$.value;
       if (current.user?.isAnonymous !== authUser?.isAnonymous) {
         this.userState$.next({
@@ -152,8 +158,15 @@ export class SneatUserService {
           userRecordStatus: current.userRecordStatus,
         });
       }
+      const deferredSnapshot = this.deferredMissingUserDocSnapshot;
+      this.deferredMissingUserDocSnapshot = undefined;
+      if (deferredSnapshot) {
+        this.userDocChanged(deferredSnapshot, authState, this.watchGeneration);
+      }
       return;
     }
+    this.pendingAuthState = undefined;
+    this.deferredMissingUserDocSnapshot = undefined;
     this.unsubscribeFromUserDoc();
     if (!authUser) {
       if (this.userState$.value?.record !== null) {
@@ -210,7 +223,6 @@ export class SneatUserService {
                 //   `SneatUserService.watchUserRecord(uid=${uid}) => userDocSnapshot:`,
                 //   userDocSnapshot,
                 // );
-                this.onAuthStateChanged(currentAuthState);
                 this.userDocChanged(
                   userDocSnapshot,
                   currentAuthState,
@@ -224,6 +236,7 @@ export class SneatUserService {
                   !this.isCurrentIdentity(uid, currentAuthState, generation)
                 )
                   return;
+                this.deferredMissingUserDocSnapshot = undefined;
                 this.setUserRecordStatus(uid, currentAuthState, 'failed');
                 this.unsubscribeFromUserDoc();
                 this.errorLogger.logError(err, 'Failed to read user record');
@@ -241,6 +254,7 @@ export class SneatUserService {
           currentAuthState &&
           this.isCurrentIdentity(uid, currentAuthState, generation)
         ) {
+          this.deferredMissingUserDocSnapshot = undefined;
           this.setUserRecordStatus(uid, currentAuthState, 'failed');
           this.errorLogger.logError(err, 'Failed to watch user record');
         }
@@ -252,13 +266,59 @@ export class SneatUserService {
   private onAuthStateChanged = (authState: ISneatAuthState): void => {
     // console.log('SneatUserService => authState changed:', authState);
     if (authState.user) {
-      this.onUserSignedIn(authState);
+      if (this.isReadyForUserRecord(authState)) {
+        this.onUserSignedIn(authState);
+      } else {
+        this.onAuthStatePending(authState);
+      }
     } else {
       this.userState$.next(authState);
       this.userChanged$.next(undefined);
       this.onUserSignedOut();
     }
   };
+
+  private isReadyForUserRecord(authState: ISneatAuthState): boolean {
+    if (authState.status !== AuthStatuses.authenticated) return false;
+    // Older callers that provide the original minimal auth-state shape remain
+    // supported. SneatAuthStateService always includes loadingPhase and token.
+    return authState.loadingPhase === undefined ||
+      (authState.loadingPhase === 'ready' && !!authState.token);
+  }
+
+  private onAuthStatePending(authState: ISneatAuthState): void {
+    const uid = authState.user?.uid;
+    if (!uid) return;
+
+    // A token refresh for the account already owning this watcher must not
+    // replace its stable authenticated identity with a transient auth state.
+    if (this.uid === uid && this.currentAuthState?.status === AuthStatuses.authenticated) {
+      this.pendingAuthState = authState;
+      return;
+    }
+
+    // A different identity is visible before its token is ready. Retire the
+    // previous account immediately, but do not assign this UID or start a
+    // watcher until the auth service publishes the matching ready token.
+    if (this.pendingUID !== uid || this.uid) {
+      this.accountGeneration++;
+      this.initAcknowledged = undefined;
+      this.activeInit = undefined;
+      this.pendingAuthState = undefined;
+      this.deferredMissingUserDocSnapshot = undefined;
+      const hadCurrentUID = !!this.uid;
+      this.uid = undefined;
+      this.currentAuthState = undefined;
+      this.pendingUID = uid;
+      this.unsubscribeFromUserDoc();
+      if (hadCurrentUID) this.userChanged$.next(undefined);
+    }
+    this.userState$.next({
+      ...authState,
+      record: undefined,
+      userRecordStatus: 'loading',
+    });
+  }
 
   private userDocChanged(
     userDocSnapshot: DocumentSnapshot<IUserRecord>,
@@ -302,6 +362,13 @@ export class SneatUserService {
       : authUser
         ? { title: authUser.displayName || authUser.email || authUser.uid }
         : null;
+    if (recordExists) {
+      this.deferredMissingUserDocSnapshot = undefined;
+    } else if (this.pendingAuthState?.user?.uid === authUser?.uid) {
+      this.deferredMissingUserDocSnapshot = userDocSnapshot;
+    } else {
+      this.deferredMissingUserDocSnapshot = undefined;
+    }
     const current = this.userState$.value;
     this.userState$.next({
       ...authState,
@@ -316,6 +383,7 @@ export class SneatUserService {
       authUser &&
       !recordExists &&
       current.userRecordStatus !== 'failed' &&
+      !this.pendingAuthState &&
       !(
         this.initAcknowledged?.uid === authUser.uid &&
         this.initAcknowledged.accountGeneration === this.accountGeneration
@@ -438,7 +506,10 @@ export class SneatUserService {
     this.accountGeneration++;
     this.initAcknowledged = undefined;
     this.uid = undefined;
+    this.pendingUID = undefined;
     this.currentAuthState = undefined;
+    this.pendingAuthState = undefined;
+    this.deferredMissingUserDocSnapshot = undefined;
     this.unsubscribeFromUserDoc();
   }
 

@@ -84,6 +84,7 @@ export class AuthPanelComponent implements OnInit {
   protected readonly signingWith = signal<
     AuthProviderID | EmailFormSigningWith | undefined
   >(undefined);
+  protected readonly authRecoveryNeeded = signal(false);
   protected readonly recordState = signal<
     'signed-out' | 'loading' | 'ready' | 'failed'
   >('loading');
@@ -131,12 +132,17 @@ export class AuthPanelComponent implements OnInit {
         const signedOut =
           authState.status === 'notAuthenticated' ||
           authState.user?.isAnonymous === true;
+        const authRecoveryNeeded =
+          authState.status === AuthStatuses.authenticating &&
+          authState.loadingPhase === 'failed' &&
+          !!authState.user;
+        this.authRecoveryNeeded.set(authRecoveryNeeded);
         this.recordState.set(
           ready
             ? 'ready'
             : failed
               ? 'failed'
-              : signedOut
+              : signedOut || authRecoveryNeeded
                 ? 'signed-out'
                 : 'loading',
         );

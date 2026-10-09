@@ -447,6 +447,233 @@ describe('SneatUserService', () => {
     }
   });
 
+  it('retains the current UID watcher result during a same-UID token refresh', async () => {
+    vi.useFakeTimers();
+    try {
+      const { doc, onSnapshot } = await import('firebase/firestore');
+      vi.mocked(doc).mockReturnValue({ id: 'buyer' } as never);
+      let watcher: { next: (snapshot: unknown) => void } | undefined;
+      vi.mocked(onSnapshot).mockImplementation(((_reference, observer) => {
+        watcher = observer as typeof watcher;
+        return vi.fn();
+      }) as never);
+      let current: import('./sneat-user.service').ISneatUserState | undefined;
+      service.userState.subscribe((state) => (current = state));
+      const authenticated: ISneatAuthState = {
+        status: 'authenticated',
+        loadingPhase: 'ready',
+        token: 'buyer-token',
+        user: { uid: 'buyer', isAnonymous: false } as never,
+      };
+
+      authStateSubject.next(authenticated);
+      await vi.advanceTimersByTimeAsync(100);
+      watcher?.next({
+        ref: { id: 'buyer' },
+        exists: () => false,
+        data: () => undefined,
+      });
+      expect(current?.userRecordStatus).toBe('loading');
+
+      authStateSubject.next({
+        ...authenticated,
+        status: 'authenticating',
+        loadingPhase: 'getting-token',
+      });
+      watcher?.next({
+        ref: { id: 'buyer' },
+        exists: () => true,
+        data: () => ({ title: 'Persisted buyer' }),
+      });
+      expect(current).toMatchObject({
+        user: { uid: 'buyer' },
+        record: { title: 'Persisted buyer' },
+        userRecordStatus: 'ready',
+      });
+
+      authStateSubject.next({
+        ...authenticated,
+        token: 'refreshed-buyer-token',
+      });
+      expect(current?.userRecordStatus).toBe('ready');
+      expect(current?.record).toMatchObject({ title: 'Persisted buyer' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('retains terminal Firestore errors during a same-UID token refresh for retry', async () => {
+    vi.useFakeTimers();
+    try {
+      const { doc, onSnapshot } = await import('firebase/firestore');
+      vi.mocked(doc).mockReturnValue({ id: 'buyer' } as never);
+      let watcher: {
+        error: (error: unknown) => void;
+      } | undefined;
+      vi.mocked(onSnapshot).mockImplementation(((_reference, observer) => {
+        watcher = observer as typeof watcher;
+        return vi.fn();
+      }) as never);
+      let current: import('./sneat-user.service').ISneatUserState | undefined;
+      service.userState.subscribe((state) => (current = state));
+      const authenticated: ISneatAuthState = {
+        status: 'authenticated',
+        loadingPhase: 'ready',
+        token: 'buyer-token',
+        user: { uid: 'buyer', isAnonymous: false } as never,
+      };
+
+      authStateSubject.next(authenticated);
+      await vi.advanceTimersByTimeAsync(100);
+      authStateSubject.next({
+        ...authenticated,
+        status: 'authenticating',
+        loadingPhase: 'getting-token',
+      });
+      watcher?.error(new Error('terminal Firestore read error'));
+      expect(current?.userRecordStatus).toBe('failed');
+
+      authStateSubject.next({
+        ...authenticated,
+        token: 'refreshed-buyer-token',
+      });
+      expect(current?.userRecordStatus).toBe('failed');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('defers missing-record initialization until a same-UID token refresh settles', async () => {
+    vi.useFakeTimers();
+    try {
+      const { doc, onSnapshot } = await import('firebase/firestore');
+      vi.mocked(doc).mockReturnValue({ id: 'buyer' } as never);
+      let watcher: { next: (snapshot: unknown) => void } | undefined;
+      vi.mocked(onSnapshot).mockImplementation(((_reference, observer) => {
+        watcher = observer as typeof watcher;
+        return vi.fn();
+      }) as never);
+      let current: import('./sneat-user.service').ISneatUserState | undefined;
+      service.userState.subscribe((state) => (current = state));
+      const authenticated: ISneatAuthState = {
+        status: 'authenticated',
+        loadingPhase: 'ready',
+        token: 'buyer-token',
+        user: {
+          uid: 'buyer',
+          email: 'buyer@example.test',
+          isAnonymous: false,
+        } as never,
+      };
+
+      authStateSubject.next(authenticated);
+      await vi.advanceTimersByTimeAsync(100);
+      authStateSubject.next({
+        ...authenticated,
+        status: 'authenticating',
+        loadingPhase: 'getting-token',
+      });
+      watcher?.next({
+        ref: { id: 'buyer' },
+        exists: () => false,
+        data: () => undefined,
+      });
+      expect(userRecordServiceMock.initUserRecord).not.toHaveBeenCalled();
+      expect(current?.userRecordStatus).toBe('loading');
+
+      authStateSubject.next({
+        ...authenticated,
+        token: 'refreshed-buyer-token',
+      });
+      expect(userRecordServiceMock.initUserRecord).toHaveBeenCalledOnce();
+      expect(userRecordServiceMock.initUserRecord).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'buyer@example.test' }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it.each(['persisted', 'missing'])(
+    'waits for a new UID token before watching a %s record',
+    async (recordState) => {
+      vi.useFakeTimers();
+      try {
+        const { doc, onSnapshot } = await import('firebase/firestore');
+        vi.mocked(doc).mockImplementation(((_collection, uid) => ({ id: uid })) as never);
+        const watchers: Array<{
+          next: (snapshot: unknown) => void;
+        }> = [];
+        vi.mocked(onSnapshot).mockImplementation(((_reference, observer) => {
+          watchers.push(observer as (typeof watchers)[number]);
+          return vi.fn();
+        }) as never);
+        let current: import('./sneat-user.service').ISneatUserState | undefined;
+        service.userState.subscribe((state) => (current = state));
+        const accountState = (
+          uid: string,
+          status: ISneatAuthState['status'],
+          token?: string,
+        ): ISneatAuthState => ({
+          status,
+          loadingPhase: status === 'authenticated' && token ? 'ready' : 'getting-token',
+          token,
+          user: { uid, email: `${uid}@example.test`, isAnonymous: false } as never,
+        });
+
+        authStateSubject.next(accountState('buyer-a', 'authenticated', 'token-a'));
+        await vi.advanceTimersByTimeAsync(100);
+        expect(watchers).toHaveLength(1);
+
+        authStateSubject.next(accountState('buyer-b', 'authenticating'));
+        expect(service.currentUserID).toBeUndefined();
+        expect(current).toMatchObject({
+          user: { uid: 'buyer-b' },
+          record: undefined,
+          userRecordStatus: 'loading',
+        });
+        watchers[0].next({
+          ref: { id: 'buyer-a' },
+          exists: () => false,
+          data: () => undefined,
+        });
+        await vi.advanceTimersByTimeAsync(100);
+        expect(watchers).toHaveLength(1);
+        expect(userRecordServiceMock.initUserRecord).not.toHaveBeenCalled();
+
+        authStateSubject.next(accountState('buyer-b', 'authenticated', 'token-b'));
+        await vi.advanceTimersByTimeAsync(100);
+        expect(watchers).toHaveLength(2);
+        expect(service.currentUserID).toBe('buyer-b');
+        if (recordState === 'persisted') {
+          watchers[1].next({
+            ref: { id: 'buyer-b' },
+            exists: () => true,
+            data: () => ({ title: 'Persisted buyer B' }),
+          });
+          expect(current).toMatchObject({
+            user: { uid: 'buyer-b' },
+            record: { title: 'Persisted buyer B' },
+            userRecordStatus: 'ready',
+          });
+          expect(userRecordServiceMock.initUserRecord).not.toHaveBeenCalled();
+        } else {
+          watchers[1].next({
+            ref: { id: 'buyer-b' },
+            exists: () => false,
+            data: () => undefined,
+          });
+          expect(userRecordServiceMock.initUserRecord).toHaveBeenCalledOnce();
+          expect(userRecordServiceMock.initUserRecord).toHaveBeenCalledWith(
+            expect.objectContaining({ email: 'buyer-b@example.test' }),
+          );
+        }
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+
   it('ignores a delayed init error from account A after A to B to A', async () => {
     vi.useFakeTimers();
     try {

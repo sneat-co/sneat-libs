@@ -8,6 +8,7 @@ import {
 import {
   SneatAuthStateService,
   AuthStatuses,
+  ISneatAuthState,
 } from './sneat-auth-state-service';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { firstValueFrom, Observer } from 'rxjs';
@@ -279,6 +280,58 @@ describe('SneatAuthStateService', () => {
     expect((await firstValueFrom(service.authUser)).isAnonymous).toBe(false);
   });
 
+  it('publishes a new identity before its token resolves without retaining the old token', async () => {
+    const accountA = {
+      uid: 'account-a',
+      isAnonymous: false,
+      email: 'a@example.test',
+      emailVerified: true,
+      providerId: 'password',
+      providerData: [],
+      getIdToken: vi.fn().mockResolvedValue('token-a'),
+    };
+    authMock.currentUser = accountA as unknown as User;
+    onAuthStateChangedCallback.next(accountA as unknown as User);
+    onIdTokenChangedCallback.next(accountA as unknown as User);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect((await firstValueFrom(service.authState)).token).toBe('token-a');
+
+    let resolveToken!: (token: string) => void;
+    const accountB = {
+      uid: 'account-b',
+      isAnonymous: false,
+      email: 'b@example.test',
+      emailVerified: true,
+      providerId: 'password',
+      providerData: [],
+      getIdToken: vi.fn(
+        () =>
+          new Promise<string>((resolve) => {
+            resolveToken = resolve;
+          }),
+      ),
+    };
+    authMock.currentUser = accountB as unknown as User;
+    // This models Firebase's ID-token observer firing before token acquisition
+    // finishes for a new identity.
+    onIdTokenChangedCallback.next(accountB as unknown as User);
+    expect(await firstValueFrom(service.authState)).toMatchObject({
+      status: AuthStatuses.authenticating,
+      loadingPhase: 'getting-token',
+      token: null,
+      user: { uid: 'account-b' },
+    });
+
+    resolveToken('token-b');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(await firstValueFrom(service.authState)).toMatchObject({
+      status: AuthStatuses.authenticated,
+      loadingPhase: 'ready',
+      token: 'token-b',
+      user: { uid: 'account-b' },
+    });
+  });
+
   it('clears the token on sign-out and ignores a late token lookup', async () => {
     let resolveToken!: (token: string) => void;
     const fbUser = {
@@ -355,6 +408,8 @@ describe('SneatAuthStateService', () => {
 
   it('should handle error in getIdToken', async () => {
     const errorLogger = TestBed.inject(ErrorLogger);
+    let currentState: ISneatAuthState | undefined;
+    service.authState.subscribe((state) => (currentState = state));
     const fbUser = {
       uid: 'u5',
       isAnonymous: false,
@@ -372,6 +427,12 @@ describe('SneatAuthStateService', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(errorLogger.logError).toHaveBeenCalled();
+    expect(currentState).toMatchObject({
+      status: AuthStatuses.authenticating,
+      loadingPhase: 'failed',
+      token: null,
+      user: { uid: 'u5' },
+    });
   });
 
   it('should handle error in onAuthStateChanged', () => {

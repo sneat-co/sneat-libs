@@ -142,16 +142,18 @@ export class SneatAuthStateService {
           this.publishSignedOutState();
           return;
         }
-        this.authState$.next({
-          ...this.authState$.value,
-          status: AuthStatuses.authenticating,
-          loadingPhase: 'getting-token',
-        });
-        if (
-          this.authState$.value?.user?.uid !== firebaseUser?.uid
-        ) {
+        const authUser = createSneatAuthUserFromFbUser(firebaseUser);
+        const current = this.authState$.value || {};
+        if (current.user?.uid !== authUser?.uid) {
           this.analyticsService.identify(firebaseUser.uid);
         }
+        this.authState$.next({
+          ...current,
+          status: AuthStatuses.authenticating,
+          loadingPhase: 'getting-token',
+          token: current.user?.uid === authUser?.uid ? current.token : null,
+          user: authUser,
+        });
         firebaseUser
           .getIdToken(false)
           .then((token) => {

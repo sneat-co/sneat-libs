@@ -1,3 +1,9 @@
+@if (authRecoveryNeeded()) {
+  <div class="ion-padding ion-text-center" role="alert">
+    <p>We couldn't complete sign-in. Try again with email or another sign-in method.</p>
+  </div>
+}
+
 @if (recordState() === 'failed') {
   <div class="ion-padding ion-text-center" role="alert">
     <p>Your account is still being prepared. Retry before continuing.</p>

@@ -161,4 +161,36 @@ describe('AuthPanelComponent', () => {
     retry?.click();
     expect(retryUserRecordInitialization).toHaveBeenCalledOnce();
   });
+
+  it('keeps checkout unready and restores existing sign-in controls after token failure', () => {
+    const component = create('/subscribe?plan=pro&period=monthly');
+    const ready: Array<{ uid?: string; ready: boolean }> = [];
+    component.accountReadyChange.subscribe((value) => ready.push(value));
+    fixture.detectChanges();
+    const user = { uid: 'buyer', isAnonymous: false };
+    authStates.next({
+      status: 'authenticating',
+      loadingPhase: 'failed',
+      user,
+    });
+    states.next({
+      status: 'authenticating',
+      user: user as ISneatUserState['user'],
+      userRecordStatus: 'loading',
+    });
+    fixture.detectChanges();
+
+    expect(ready.at(-1)).toEqual({ uid: 'buyer', ready: false });
+    expect(fixture.nativeElement.textContent).toContain(
+      "We couldn't complete sign-in.",
+    );
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Sign in with company SSO');
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Retry account setup',
+    );
+    expect(retryUserRecordInitialization).not.toHaveBeenCalled();
+  });
 });

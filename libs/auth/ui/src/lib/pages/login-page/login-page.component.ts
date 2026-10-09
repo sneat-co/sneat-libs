@@ -16,6 +16,7 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import {
+  ISneatAuthState,
   ISneatUserState,
   ILoginEventsHandler,
   LoginEventsHandler,
@@ -34,7 +35,7 @@ import {
 } from '@sneat/core';
 import { RandomIdService } from '@sneat/random';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { AuthPanelComponent } from './auth-panel.component';
 import { safeAuthReturnPath } from './safe-auth-return-path';
 
@@ -98,25 +99,27 @@ export class LoginPageComponent extends SneatBaseComponent {
   // is broken.
   protected readonly isAuthenticated = computed(
     () =>
-      this.authStatus() === 'authenticated' &&
-      !!this.authUser()?.uid &&
-      !this.authUser()?.isAnonymous,
+      this.authState()?.status === 'authenticated' &&
+      !!this.authState()?.user?.uid &&
+      !this.authState()?.user?.isAnonymous,
   );
   // While Firebase is still resolving the session — the initial state, and the
   // brief window right after a signInWithRedirect return — show a "signing you
   // in" spinner instead of flashing the sign-in form before we navigate onward.
   protected readonly isAuthenticating = computed(
-    () => this.authStatus() === 'authenticating',
+    () =>
+      this.authState()?.status === 'authenticating' &&
+      this.authState()?.loadingPhase !== 'failed',
   );
-  private readonly authStatus = toSignal(this.authStateService.authStatus);
-  private readonly authUser = toSignal(this.authStateService.authUser);
+  private readonly authState = toSignal(this.authStateService.authState);
   private readonly userState = toSignal(this.userService.userState);
   protected readonly isAccountReady = computed(() => {
     const userState = this.userState();
-    return !!userState && this.isReadyUserState(userState);
+    const authState = this.authState();
+    return !!userState && !!authState && this.isReadyUserState(userState, authState);
   });
   protected readonly signedInAs = computed(() => {
-    const u = this.authUser();
+    const u = this.authState()?.user;
     return u?.displayName || u?.email || u?.uid || '';
   });
 
@@ -134,12 +137,12 @@ export class LoginPageComponent extends SneatBaseComponent {
     this.action = action?.[1] as Action;
 
     const userRecordLoaded = new Subject<void>();
-    this.userService.userState
+    combineLatest([this.authStateService.authState, this.userService.userState])
       .pipe(takeUntil(userRecordLoaded), this.takeUntilDestroyed())
       .subscribe({
-        next: (userState) => {
+        next: ([authState, userState]) => {
           const userRecord = userState.record;
-          if (!userRecord || !this.isReadyUserState(userState)) return;
+          if (!userRecord || !this.isReadyUserState(userState, authState)) return;
           userRecordLoaded.next();
           // Fall back to the persisted current space so it is restored after login,
           // but only if the user actually has access to it.
@@ -202,10 +205,15 @@ export class LoginPageComponent extends SneatBaseComponent {
       });
   }
 
-  private isReadyUserState(userState: ISneatUserState): boolean {
-    const authUser = this.authUser();
+  private isReadyUserState(
+    userState: ISneatUserState,
+    authState: ISneatAuthState,
+  ): boolean {
+    const authUser = authState.user;
     return (
-      this.authStatus() === 'authenticated' &&
+      authState.status === 'authenticated' &&
+      authState.loadingPhase === 'ready' &&
+      !!authState.token &&
       !!authUser?.uid &&
       !authUser.isAnonymous &&
       userState.status === 'authenticated' &&
