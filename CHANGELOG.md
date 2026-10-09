@@ -1,3 +1,7 @@
+## 0.27.30 (2026-10-09)
+
+This was a version bump only, there were no code changes.
+
 ## 0.27.29 (2026-10-07)
 
 Adds `@sneat/structured-data`, a reusable read-only Angular and PrimeNG viewer for JSON, YAML, and HCL. It supports configurable tables, objects and lists, accordion sections, wrapping inline scalar lists, source locations, and bounded repository configuration resolution. HCL expressions are preserved without evaluation; parser and configuration errors retain access to the original source.
