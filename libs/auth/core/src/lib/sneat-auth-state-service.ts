@@ -163,7 +163,11 @@ export class SneatAuthStateService {
             }
             this.tokenUserID = firebaseUser.uid;
             const authUser = createSneatAuthUserFromFbUser(firebaseUser);
-            if (this.authUser$.value?.uid !== authUser?.uid) {
+            const previousAuthUser = this.authUser$.value;
+            if (
+              previousAuthUser?.uid !== authUser?.uid ||
+              previousAuthUser?.isAnonymous !== authUser?.isAnonymous
+            ) {
               this.authUser$.next(authUser);
             }
             const current = this.authState$.value || {};

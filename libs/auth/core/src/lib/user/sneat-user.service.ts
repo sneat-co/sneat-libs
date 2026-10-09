@@ -55,6 +55,7 @@ export class SneatUserService {
     runInInjectionContext(this.injector, () => doc(this.userCollection, uid));
 
   private uid?: string;
+  private currentAuthState?: ISneatAuthState;
   private $userTitle?: string;
   private watchTimer?: ReturnType<typeof setTimeout>;
   private watchGeneration = 0;
@@ -142,6 +143,7 @@ export class SneatUserService {
       this.$userTitle = authUser.email;
     }
     if (this.uid === authUser?.uid) {
+      this.currentAuthState = authState;
       const current = this.userState$.value;
       if (current.user?.isAnonymous !== authUser?.isAnonymous) {
         this.userState$.next({
@@ -160,6 +162,7 @@ export class SneatUserService {
       return;
     }
     const { uid } = authUser;
+    this.currentAuthState = authState;
     this.accountGeneration++;
     this.initAcknowledged = undefined;
     this.uid = uid;
@@ -197,17 +200,31 @@ export class SneatUserService {
           () =>
             onSnapshot(userDocRef, {
               next: (userDocSnapshot) => {
-                if (!this.isCurrentIdentity(uid, authState, generation)) return;
+                const currentAuthState = this.currentAuthState;
+                if (
+                  !currentAuthState ||
+                  !this.isCurrentIdentity(uid, currentAuthState, generation)
+                )
+                  return;
                 // console.log(
                 //   `SneatUserService.watchUserRecord(uid=${uid}) => userDocSnapshot:`,
                 //   userDocSnapshot,
                 // );
-                this.onAuthStateChanged(authState);
-                this.userDocChanged(userDocSnapshot, authState, generation);
+                this.onAuthStateChanged(currentAuthState);
+                this.userDocChanged(
+                  userDocSnapshot,
+                  currentAuthState,
+                  generation,
+                );
               },
               error: (err) => {
-                if (!this.isCurrentIdentity(uid, authState, generation)) return;
-                this.setUserRecordStatus(uid, authState, 'failed');
+                const currentAuthState = this.currentAuthState;
+                if (
+                  !currentAuthState ||
+                  !this.isCurrentIdentity(uid, currentAuthState, generation)
+                )
+                  return;
+                this.setUserRecordStatus(uid, currentAuthState, 'failed');
                 this.unsubscribeFromUserDoc();
                 this.errorLogger.logError(err, 'Failed to read user record');
               },
@@ -219,8 +236,12 @@ export class SneatUserService {
           unsubscribe();
         }
       } catch (err) {
-        if (this.isCurrentIdentity(uid, authState, generation)) {
-          this.setUserRecordStatus(uid, authState, 'failed');
+        const currentAuthState = this.currentAuthState;
+        if (
+          currentAuthState &&
+          this.isCurrentIdentity(uid, currentAuthState, generation)
+        ) {
+          this.setUserRecordStatus(uid, currentAuthState, 'failed');
           this.errorLogger.logError(err, 'Failed to watch user record');
         }
         return;
@@ -417,6 +438,7 @@ export class SneatUserService {
     this.accountGeneration++;
     this.initAcknowledged = undefined;
     this.uid = undefined;
+    this.currentAuthState = undefined;
     this.unsubscribeFromUserDoc();
   }
 

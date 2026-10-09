@@ -240,6 +240,45 @@ describe('SneatAuthStateService', () => {
     expect(state.token).toBe('mock-token-123');
   });
 
+  it('publishes a same-UID anonymous upgrade to both current identity streams', async () => {
+    const anonymousUser = {
+      uid: 'same-uid',
+      isAnonymous: true,
+      email: null,
+      emailVerified: false,
+      providerId: 'firebase',
+      providerData: [],
+      getIdToken: vi.fn().mockResolvedValue('anonymous-token'),
+    };
+    authMock.currentUser = anonymousUser as unknown as User;
+    onAuthStateChangedCallback.next(anonymousUser as unknown as User);
+    onIdTokenChangedCallback.next(anonymousUser as unknown as User);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect((await firstValueFrom(service.authState)).user?.isAnonymous).toBe(
+      true,
+    );
+    expect((await firstValueFrom(service.authUser))?.isAnonymous).toBe(true);
+
+    const permanentUser = {
+      ...anonymousUser,
+      isAnonymous: false,
+      email: 'buyer@example.test',
+      getIdToken: vi.fn().mockResolvedValue('permanent-token'),
+    };
+    authMock.currentUser = permanentUser as unknown as User;
+    // Firebase notifies the ID-token observer for a same-UID upgrade while
+    // suppressing a duplicate auth-state observer notification.
+    onIdTokenChangedCallback.next(permanentUser as unknown as User);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect((await firstValueFrom(service.authState)).user).toMatchObject({
+      uid: 'same-uid',
+      isAnonymous: false,
+      email: 'buyer@example.test',
+    });
+    expect((await firstValueFrom(service.authUser)).isAnonymous).toBe(false);
+  });
+
   it('clears the token on sign-out and ignores a late token lookup', async () => {
     let resolveToken!: (token: string) => void;
     const fbUser = {

@@ -396,6 +396,57 @@ describe('SneatUserService', () => {
     }
   });
 
+  it('keeps the current same-UID anonymous status across the existing watcher', async () => {
+    vi.useFakeTimers();
+    try {
+      const { doc, onSnapshot } = await import('firebase/firestore');
+      vi.mocked(doc).mockReturnValue({ id: 'buyer' } as never);
+      let watcher: { next: (snapshot: unknown) => void } | undefined;
+      vi.mocked(onSnapshot).mockImplementation(((_reference, observer) => {
+        watcher = observer as typeof watcher;
+        return vi.fn();
+      }) as never);
+      let current: import('./sneat-user.service').ISneatUserState | undefined;
+      service.userState.subscribe((state) => (current = state));
+
+      const authState = (isAnonymous: boolean): ISneatAuthState => ({
+        status: 'authenticated',
+        user: { uid: 'buyer', isAnonymous } as never,
+      });
+      const persistedSnapshot = () => ({
+        ref: { id: 'buyer' },
+        exists: () => true,
+        data: () => ({ title: 'Buyer' }),
+      });
+
+      authStateSubject.next(authState(true));
+      await vi.advanceTimersByTimeAsync(100);
+      watcher?.next(persistedSnapshot());
+      expect(current).toMatchObject({
+        user: { uid: 'buyer', isAnonymous: true },
+        userRecordStatus: 'ready',
+      });
+
+      authStateSubject.next(authState(false));
+      expect(current?.user?.isAnonymous).toBe(false);
+      watcher?.next(persistedSnapshot());
+      expect(current).toMatchObject({
+        user: { uid: 'buyer', isAnonymous: false },
+        userRecordStatus: 'ready',
+      });
+
+      authStateSubject.next(authState(true));
+      expect(current?.user?.isAnonymous).toBe(true);
+      watcher?.next(persistedSnapshot());
+      expect(current).toMatchObject({
+        user: { uid: 'buyer', isAnonymous: true },
+        userRecordStatus: 'ready',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('ignores a delayed init error from account A after A to B to A', async () => {
     vi.useFakeTimers();
     try {
