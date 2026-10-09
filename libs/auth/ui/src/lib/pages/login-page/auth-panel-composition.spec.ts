@@ -21,7 +21,12 @@ import { AuthPanelComponent } from './auth-panel.component';
 describe('AuthPanelComponent composition', () => {
   it('renders real auth children with the panel-owned random ID provider', async () => {
     const user = { uid: 'buyer', isAnonymous: false };
-    const authState = new BehaviorSubject({ status: 'authenticated', user });
+    const authState = new BehaviorSubject({
+      status: 'authenticated',
+      loadingPhase: 'ready',
+      token: 'buyer-token',
+      user,
+    });
     const userState = new BehaviorSubject({
       status: 'authenticated',
       user,
