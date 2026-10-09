@@ -16,12 +16,11 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import {
-  ISneatAuthState,
-  ISneatUserState,
   ILoginEventsHandler,
   LoginEventsHandler,
   SneatAuthStateService,
   SneatUserService,
+  isSneatAccountReady,
 } from '@sneat/auth-core';
 import {
   AnalyticsService,
@@ -116,7 +115,7 @@ export class LoginPageComponent extends SneatBaseComponent {
   protected readonly isAccountReady = computed(() => {
     const userState = this.userState();
     const authState = this.authState();
-    return !!userState && !!authState && this.isReadyUserState(userState, authState);
+    return isSneatAccountReady(authState, userState);
   });
   protected readonly signedInAs = computed(() => {
     const u = this.authState()?.user;
@@ -142,7 +141,7 @@ export class LoginPageComponent extends SneatBaseComponent {
       .subscribe({
         next: ([authState, userState]) => {
           const userRecord = userState.record;
-          if (!userRecord || !this.isReadyUserState(userState, authState)) return;
+          if (!userRecord || !isSneatAccountReady(authState, userState)) return;
           userRecordLoaded.next();
           // Fall back to the persisted current space so it is restored after login,
           // but only if the user actually has access to it.
@@ -203,25 +202,6 @@ export class LoginPageComponent extends SneatBaseComponent {
           'Failed to navigate to ' + redirectTo,
         );
       });
-  }
-
-  private isReadyUserState(
-    userState: ISneatUserState,
-    authState: ISneatAuthState,
-  ): boolean {
-    const authUser = authState.user;
-    return (
-      authState.status === 'authenticated' &&
-      authState.loadingPhase === 'ready' &&
-      !!authState.token &&
-      !!authUser?.uid &&
-      !authUser.isAnonymous &&
-      userState.status === 'authenticated' &&
-      userState.user?.uid === authUser.uid &&
-      !userState.user.isAnonymous &&
-      userState.userRecordStatus === 'ready' &&
-      !!userState.record
-    );
   }
 
   // Sign out so the sign-in form is shown again (e.g. to log in as someone else).

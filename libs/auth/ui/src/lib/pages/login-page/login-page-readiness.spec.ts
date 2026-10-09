@@ -169,6 +169,30 @@ describe('LoginPageComponent persisted record readiness', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Continue');
   });
 
+  it('does not auto-continue or allow manual continuation without a current token', () => {
+    create();
+    const user = { uid: 'buyer', isAnonymous: false } as ISneatAuthState['user'];
+    authState.next({
+      status: 'authenticated',
+      loadingPhase: 'ready',
+      token: null,
+      user,
+    });
+    userState.next({
+      status: 'authenticated',
+      user: user as ISneatUserState['user'],
+      record: { title: 'Buyer' },
+      userRecordStatus: 'ready',
+    });
+    fixture.detectChanges();
+
+    expect(navigateRoot).not.toHaveBeenCalled();
+    (
+      fixture.componentInstance as unknown as { continueToApp(): void }
+    ).continueToApp();
+    expect(navigateRoot).not.toHaveBeenCalled();
+  });
+
   it('waits for the matching token after the record snapshot arrives during refresh', () => {
     create();
     const user = { uid: 'buyer', isAnonymous: false } as ISneatAuthState['user'];

@@ -20,7 +20,7 @@
     <p>Preparing your account…</p>
   </div>
 } @else {
-  @if (showCredentials()) {
+  @if (showCredentials() || authRecoveryNeeded()) {
     @if (showIntro()) {
       <p style="text-align: center; font-size: smaller">
         <ion-text color="medium">Sign in with your Sneat account.</ion-text>

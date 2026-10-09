@@ -19,6 +19,7 @@ import {
   ISneatAuthState,
   SneatAuthStateService,
   SneatUserService,
+  isSneatAccountReady,
 } from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { UserCredential } from 'firebase/auth';
@@ -113,18 +114,15 @@ export class AuthPanelComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([authState, userState]) => {
         const uid = authState.user?.uid;
+        const authRecoveryNeeded = authState.loadingPhase === 'failed';
         const sameIdentity =
           !!uid &&
           userState.status === 'authenticated' &&
           userState.user?.uid === uid &&
           !userState.user.isAnonymous;
-        const ready =
-          authState.status === 'authenticated' &&
-          !authState.user?.isAnonymous &&
-          sameIdentity &&
-          userState.userRecordStatus === 'ready' &&
-          !!userState.record;
+        const ready = isSneatAccountReady(authState, userState);
         const failed =
+          !authRecoveryNeeded &&
           authState.status === 'authenticated' &&
           !authState.user?.isAnonymous &&
           sameIdentity &&
@@ -132,10 +130,6 @@ export class AuthPanelComponent implements OnInit {
         const signedOut =
           authState.status === 'notAuthenticated' ||
           authState.user?.isAnonymous === true;
-        const authRecoveryNeeded =
-          authState.status === AuthStatuses.authenticating &&
-          authState.loadingPhase === 'failed' &&
-          !!authState.user;
         this.authRecoveryNeeded.set(authRecoveryNeeded);
         this.recordState.set(
           ready
@@ -146,7 +140,11 @@ export class AuthPanelComponent implements OnInit {
                 ? 'signed-out'
                 : 'loading',
         );
-        if (ready || authState.status === 'notAuthenticated') {
+        if (
+          ready ||
+          authRecoveryNeeded ||
+          authState.status === 'notAuthenticated'
+        ) {
           this.signingWith.set(undefined);
         }
         this.accountReadyChange.emit({
