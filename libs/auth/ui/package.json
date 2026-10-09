@@ -1,6 +1,6 @@
 {
   "name": "@sneat/auth-ui",
-  "version": "0.27.29",
+  "version": "0.27.30",
   "publishConfig": {
     "access": "public"
   },
@@ -12,7 +12,7 @@
     "@ionic/angular": ">=9.0.0 <10.0.0",
     "firebase": "*",
     "@sneat/api": "^0.27.0",
-    "@sneat/auth-core": "^0.27.0",
+    "@sneat/auth-core": "^0.27.30",
     "@sneat/auth-models": "^0.27.0",
     "@sneat/core": "^0.27.0",
     "@sneat/random": "*",
