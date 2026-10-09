@@ -51,12 +51,16 @@ export class SsoCallbackPageComponent implements OnInit {
   private readonly auth = inject(SneatAuthStateService);
 
   protected readonly error = signal<string | undefined>(undefined);
+  protected readonly returnTo = signal<string | undefined>(undefined);
 
   ngOnInit(): void {
     void this.finishSignIn();
   }
 
   private async finishSignIn(): Promise<void> {
+    this.returnTo.set(
+      safeAuthReturnPath(sessionStorage.getItem(ssoLoginReturnToStorageKey)),
+    );
     const code = this.route.snapshot.queryParamMap.get('code');
     if (!code) {
       this.error.set('The SSO callback is missing its one-time sign-in code.');
@@ -69,9 +73,7 @@ export class SsoCallbackPageComponent implements OnInit {
       );
       return;
     }
-    const returnTo = safeAuthReturnPath(
-      sessionStorage.getItem(ssoLoginReturnToStorageKey),
-    );
+    const returnTo = this.returnTo();
     sessionStorage.removeItem(ssoBrowserBindingStorageKey);
     sessionStorage.removeItem(ssoLoginReturnToStorageKey);
     try {

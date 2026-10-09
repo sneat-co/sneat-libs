@@ -16,11 +16,12 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import {
+  ISneatUserState,
   ILoginEventsHandler,
   LoginEventsHandler,
   SneatAuthStateService,
+  SneatUserService,
 } from '@sneat/auth-core';
-import { SneatUserService } from '@sneat/auth-core';
 import {
   AnalyticsService,
   APP_INFO,
@@ -96,7 +97,10 @@ export class LoginPageComponent extends SneatBaseComponent {
   // authenticated-but-stuck state is obvious rather than looking like sign-in
   // is broken.
   protected readonly isAuthenticated = computed(
-    () => this.authStatus() === 'authenticated',
+    () =>
+      this.authStatus() === 'authenticated' &&
+      !!this.authUser()?.uid &&
+      !this.authUser()?.isAnonymous,
   );
   // While Firebase is still resolving the session — the initial state, and the
   // brief window right after a signInWithRedirect return — show a "signing you
@@ -107,6 +111,10 @@ export class LoginPageComponent extends SneatBaseComponent {
   private readonly authStatus = toSignal(this.authStateService.authStatus);
   private readonly authUser = toSignal(this.authStateService.authUser);
   private readonly userState = toSignal(this.userService.userState);
+  protected readonly isAccountReady = computed(() => {
+    const userState = this.userState();
+    return !!userState && this.isReadyUserState(userState);
+  });
   protected readonly signedInAs = computed(() => {
     const u = this.authUser();
     return u?.displayName || u?.email || u?.uid || '';
@@ -130,23 +138,21 @@ export class LoginPageComponent extends SneatBaseComponent {
       .pipe(takeUntil(userRecordLoaded), this.takeUntilDestroyed())
       .subscribe({
         next: (userState) => {
-          if (userState.record) {
-            userRecordLoaded.next();
-          } else {
-            return;
-          }
+          const userRecord = userState.record;
+          if (!userRecord || !this.isReadyUserState(userState)) return;
+          userRecordLoaded.next();
           // Fall back to the persisted current space so it is restored after login,
           // but only if the user actually has access to it.
           const space = readCurrentSpace();
           const hasAccess = !!space && (
-            userState.record.spaceIDs?.includes(space.id) ||
-            (!!userState.record.spaces && space.id in userState.record.spaces)
+            userRecord.spaceIDs?.includes(space.id) ||
+            (!!userRecord.spaces && space.id in userRecord.spaces)
           );
           if (space && !hasAccess) {
             clearCurrentSpace();
           }
           const activePath = hasAccess ? currentSpacePath() : undefined;
-          const family = Object.entries(userState.record.spaces || {}).find(
+          const family = Object.entries(userRecord.spaces || {}).find(
             ([, brief]) => brief.type === SpaceTypeFamily,
           );
           const familyPath = family
@@ -168,6 +174,7 @@ export class LoginPageComponent extends SneatBaseComponent {
 
   // Proceed into the app from the "already signed in" panel.
   protected continueToApp(): void {
+    if (!this.isAccountReady()) return;
     const space = readCurrentSpace();
     const userState = this.userState();
     const hasAccess = !!space && !!userState?.record && (
@@ -193,6 +200,20 @@ export class LoginPageComponent extends SneatBaseComponent {
           'Failed to navigate to ' + redirectTo,
         );
       });
+  }
+
+  private isReadyUserState(userState: ISneatUserState): boolean {
+    const authUser = this.authUser();
+    return (
+      this.authStatus() === 'authenticated' &&
+      !!authUser?.uid &&
+      !authUser.isAnonymous &&
+      userState.status === 'authenticated' &&
+      userState.user?.uid === authUser.uid &&
+      !userState.user.isAnonymous &&
+      userState.userRecordStatus === 'ready' &&
+      !!userState.record
+    );
   }
 
   // Sign out so the sign-in form is shown again (e.g. to log in as someone else).

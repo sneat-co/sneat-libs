@@ -2,7 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SneatAuthStateService } from '@sneat/auth-core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import {
   ssoBrowserBindingStorageKey,
   ssoLoginReturnToStorageKey,
@@ -79,6 +79,26 @@ describe('SsoCallbackPageComponent', () => {
       '/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1',
       { replaceUrl: true },
     );
+    expect(sessionStorage.getItem(ssoBrowserBindingStorageKey)).toBeNull();
+    expect(sessionStorage.getItem(ssoLoginReturnToStorageKey)).toBeNull();
+  });
+
+  it('retains only the validated continuation for a retry after exchange failure', async () => {
+    const returnTo =
+      '/subscribe?plan=pro&period=yearly&checkout=test';
+    sessionStorage.setItem(ssoBrowserBindingStorageKey, 'one-use-binding');
+    sessionStorage.setItem(ssoLoginReturnToStorageKey, returnTo);
+    vi.spyOn(TestBed.inject(SsoApiService), 'exchange').mockReturnValue(
+      throwError(() => new Error('exchange failed')),
+    );
+    fixture = TestBed.createComponent(SsoCallbackPageComponent);
+    const component = fixture.componentInstance as unknown as {
+      finishSignIn: () => Promise<void>;
+      returnTo: () => string | undefined;
+    };
+    await component.finishSignIn();
+
+    expect(component.returnTo()).toBe(returnTo);
     expect(sessionStorage.getItem(ssoBrowserBindingStorageKey)).toBeNull();
     expect(sessionStorage.getItem(ssoLoginReturnToStorageKey)).toBeNull();
   });

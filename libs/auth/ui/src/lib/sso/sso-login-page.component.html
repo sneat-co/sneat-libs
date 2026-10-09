@@ -58,10 +58,14 @@
     <ion-card color="light">
       <ion-card-content>
         <h2>SSO is not configured for {{ unknownDomain() }} yet.</h2>
-        <p>
-          Sign in or create your regular Sneat account, then we’ll continue with
-          company setup.
-        </p>
+        @if (returnTo) {
+          <p>Sign in or create your regular Sneat account, then we’ll return you to where you started.</p>
+        } @else {
+          <p>
+            Sign in or create your regular Sneat account, then we’ll continue
+            with company setup.
+          </p>
+        }
         <ion-button expand="block" (click)="continueWithRegularLogin()">
           Continue with regular sign up
         </ion-button>

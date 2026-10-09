@@ -66,7 +66,7 @@ export class SsoLoginPageComponent implements OnInit {
   protected readonly unknownDomain = signal<string | undefined>(undefined);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | undefined>(undefined);
-  private readonly returnTo = safeAuthReturnPath(
+  protected readonly returnTo = safeAuthReturnPath(
     this.route.snapshot.queryParamMap.get('returnTo'),
   );
   protected readonly validEmail = computed(() => {

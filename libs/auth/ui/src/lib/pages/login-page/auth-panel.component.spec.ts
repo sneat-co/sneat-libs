@@ -14,8 +14,10 @@ describe('AuthPanelComponent', () => {
   let fixture: ComponentFixture<AuthPanelComponent>;
   let states: BehaviorSubject<ISneatUserState>;
   let authStates: BehaviorSubject<ISneatAuthState>;
+  const retryUserRecordInitialization = vi.fn();
 
   beforeEach(async () => {
+    retryUserRecordInitialization.mockClear();
     states = new BehaviorSubject<ISneatUserState>({ status: 'authenticating' });
     authStates = new BehaviorSubject<ISneatAuthState>({ status: 'authenticating' });
     await TestBed.configureTestingModule({
@@ -27,7 +29,11 @@ describe('AuthPanelComponent', () => {
         },
         {
           provide: SneatUserService,
-          useValue: { userState: states.asObservable(), onUserSignedIn: vi.fn() },
+          useValue: {
+            userState: states.asObservable(),
+            onUserSignedIn: vi.fn(),
+            retryUserRecordInitialization,
+          },
         },
         {
           provide: ErrorLogger,
@@ -77,6 +83,15 @@ describe('AuthPanelComponent', () => {
       status: 'authenticated',
       user: { uid: 'buyer' } as ISneatUserState['user'],
       record: {} as NonNullable<ISneatUserState['record']>,
+      userRecordStatus: 'loading',
+    });
+    expect(ready.at(-1)).toEqual({ uid: 'buyer', ready: false });
+
+    states.next({
+      status: 'authenticated',
+      user: { uid: 'buyer' } as ISneatUserState['user'],
+      record: {} as NonNullable<ISneatUserState['record']>,
+      userRecordStatus: 'ready',
     });
     expect(ready.at(-1)).toEqual({ uid: 'buyer', ready: true });
 
@@ -89,6 +104,7 @@ describe('AuthPanelComponent', () => {
       status: 'authenticated',
       user: { uid: 'buyer' } as ISneatUserState['user'],
       record: {} as NonNullable<ISneatUserState['record']>,
+      userRecordStatus: 'ready',
     });
     const component = create('/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1');
     authStates.next({
@@ -102,5 +118,47 @@ describe('AuthPanelComponent', () => {
 
     expect(ready).toEqual([{ uid: 'buyer', ready: true }]);
     expect(fixture.nativeElement.textContent).toContain('Sign in with company SSO');
+  });
+
+  it('never reports an anonymous identity as checkout-ready', () => {
+    const component = create('/subscribe?plan=pro&period=monthly');
+    const ready: Array<{ uid?: string; ready: boolean }> = [];
+    component.accountReadyChange.subscribe((value) => ready.push(value));
+    fixture.detectChanges();
+    const anonymous = { uid: 'anon', isAnonymous: true } as ISneatAuthState['user'];
+    authStates.next({ status: 'authenticated', user: anonymous });
+    states.next({
+      status: 'authenticated',
+      user: anonymous as ISneatUserState['user'],
+      record: {} as NonNullable<ISneatUserState['record']>,
+      userRecordStatus: 'ready',
+    });
+
+    expect(ready.at(-1)).toEqual({ uid: 'anon', ready: false });
+  });
+
+  it('keeps account initialization failures out of the credential form and offers retry', () => {
+    const component = create('/subscribe?plan=pro&period=monthly');
+    const ready: Array<{ uid?: string; ready: boolean }> = [];
+    component.accountReadyChange.subscribe((value) => ready.push(value));
+    fixture.detectChanges();
+    const user = { uid: 'buyer', isAnonymous: false };
+    authStates.next({ status: 'authenticated', user });
+    states.next({
+      status: 'authenticated',
+      user: user as ISneatUserState['user'],
+      record: { title: 'Buyer' } as NonNullable<ISneatUserState['record']>,
+      userRecordStatus: 'failed',
+    });
+    fixture.detectChanges();
+
+    expect(ready.at(-1)).toEqual({ uid: 'buyer', ready: false });
+    expect(fixture.nativeElement.textContent).toContain(
+      'Your account is still being prepared.',
+    );
+    const retry = fixture.nativeElement.querySelector('ion-button');
+    expect(retry?.textContent).toContain('Retry account setup');
+    retry?.click();
+    expect(retryUserRecordInitialization).toHaveBeenCalledOnce();
   });
 });

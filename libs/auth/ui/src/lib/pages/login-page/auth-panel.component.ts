@@ -43,6 +43,7 @@ import {
 import { LoginWithTelegramComponent } from './login-with-telegram.component';
 import { safeAuthReturnPath } from './safe-auth-return-path';
 import { combineLatest } from 'rxjs';
+import { RandomIdService } from '@sneat/random';
 
 export interface AuthPanelAccountReadyChange {
   readonly uid?: string;
@@ -71,16 +72,21 @@ export interface AuthPanelAccountReadyChange {
     IonSpinner,
     IonText,
   ],
+  providers: [RandomIdService],
 })
 export class AuthPanelComponent implements OnInit {
   readonly returnTo = input<string | undefined>();
   readonly showIntro = input(true);
+  readonly showCredentials = input(true);
   @Output() readonly accountReadyChange =
     new EventEmitter<AuthPanelAccountReadyChange>();
 
   protected readonly signingWith = signal<
     AuthProviderID | EmailFormSigningWith | undefined
   >(undefined);
+  protected readonly recordState = signal<
+    'signed-out' | 'loading' | 'ready' | 'failed'
+  >('loading');
   protected readonly isNativePlatform = Capacitor.isNativePlatform();
   protected readonly safeReturnTo = computed(() =>
     safeAuthReturnPath(this.returnTo()),
@@ -109,11 +115,31 @@ export class AuthPanelComponent implements OnInit {
         const sameIdentity =
           !!uid &&
           userState.status === 'authenticated' &&
-          userState.user?.uid === uid;
+          userState.user?.uid === uid &&
+          !userState.user.isAnonymous;
         const ready =
           authState.status === 'authenticated' &&
+          !authState.user?.isAnonymous &&
           sameIdentity &&
+          userState.userRecordStatus === 'ready' &&
           !!userState.record;
+        const failed =
+          authState.status === 'authenticated' &&
+          !authState.user?.isAnonymous &&
+          sameIdentity &&
+          userState.userRecordStatus === 'failed';
+        const signedOut =
+          authState.status === 'notAuthenticated' ||
+          authState.user?.isAnonymous === true;
+        this.recordState.set(
+          ready
+            ? 'ready'
+            : failed
+              ? 'failed'
+              : signedOut
+                ? 'signed-out'
+                : 'loading',
+        );
         if (ready || authState.status === 'notAuthenticated') {
           this.signingWith.set(undefined);
         }
@@ -122,6 +148,10 @@ export class AuthPanelComponent implements OnInit {
           ready,
         });
       });
+  }
+
+  protected retryUserRecordInitialization(): void {
+    this.userService.retryUserRecordInitialization();
   }
 
   protected onEmailFormStatusChanged(signingWith?: EmailFormSigningWith): void {

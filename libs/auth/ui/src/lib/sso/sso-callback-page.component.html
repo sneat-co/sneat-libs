@@ -11,7 +11,11 @@
         <p>
           <ion-text color="danger">{{ error() }}</ion-text>
         </p>
-        <ion-button routerLink="/sso">Try again</ion-button>
+        <ion-button
+          [routerLink]="['/sso']"
+          [queryParams]="returnTo() ? { returnTo: returnTo() } : undefined"
+          >Try again</ion-button
+        >
       } @else {
         <ion-spinner />
         <h1>Finishing company sign-in…</h1>

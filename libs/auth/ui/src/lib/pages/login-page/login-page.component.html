@@ -46,7 +46,15 @@
             You are already signed in.
           }
         </p>
-        <ion-button expand="block" (click)="continueToApp()">Continue</ion-button>
+        @if (isAccountReady()) {
+          <ion-button expand="block" (click)="continueToApp()">Continue</ion-button>
+        } @else {
+          <sneat-auth-panel
+            [returnTo]="redirectTo"
+            [showIntro]="false"
+            [showCredentials]="false"
+          />
+        }
         <ion-button
           expand="block"
           fill="outline"
