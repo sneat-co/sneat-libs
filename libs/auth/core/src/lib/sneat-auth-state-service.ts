@@ -142,16 +142,18 @@ export class SneatAuthStateService {
           this.publishSignedOutState();
           return;
         }
-        this.authState$.next({
-          ...this.authState$.value,
-          status: AuthStatuses.authenticating,
-          loadingPhase: 'getting-token',
-        });
-        if (
-          this.authState$.value?.user?.uid !== firebaseUser?.uid
-        ) {
+        const authUser = createSneatAuthUserFromFbUser(firebaseUser);
+        const current = this.authState$.value || {};
+        if (current.user?.uid !== authUser?.uid) {
           this.analyticsService.identify(firebaseUser.uid);
         }
+        this.authState$.next({
+          ...current,
+          status: AuthStatuses.authenticating,
+          loadingPhase: 'getting-token',
+          token: current.user?.uid === authUser?.uid ? current.token : null,
+          user: authUser,
+        });
         firebaseUser
           .getIdToken(false)
           .then((token) => {
@@ -163,7 +165,11 @@ export class SneatAuthStateService {
             }
             this.tokenUserID = firebaseUser.uid;
             const authUser = createSneatAuthUserFromFbUser(firebaseUser);
-            if (this.authUser$.value?.uid !== authUser?.uid) {
+            const previousAuthUser = this.authUser$.value;
+            if (
+              previousAuthUser?.uid !== authUser?.uid ||
+              previousAuthUser?.isAnonymous !== authUser?.isAnonymous
+            ) {
               this.authUser$.next(authUser);
             }
             const current = this.authState$.value || {};
@@ -361,7 +367,7 @@ export class SneatAuthStateService {
     const userCredential = await signInWithCredential(auth, credential);
 
     // Get a valid Firebase ID token that has a 'kid' header
-    const _firebaseIdToken = await userCredential.user.getIdToken();
+    await userCredential.user.getIdToken();
 
     return Promise.resolve(userCredential);
   }

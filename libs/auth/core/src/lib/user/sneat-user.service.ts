@@ -23,6 +23,7 @@ import {
 } from '@sneat/core';
 import {
   initialSneatAuthState,
+  AuthStatuses,
   ISneatAuthState,
   ISneatAuthUser,
   SneatAuthStateService,
@@ -35,6 +36,8 @@ import {
 
 export interface ISneatUserState extends ISneatAuthState {
   record?: IUserRecord | null; // undefined => not loaded yet, null = does not exists
+  /** Ready only after a matching persisted Firestore user record is observed. */
+  userRecordStatus?: 'loading' | 'ready' | 'failed';
 }
 
 const UsersCollection = 'users';
@@ -53,7 +56,17 @@ export class SneatUserService {
     runInInjectionContext(this.injector, () => doc(this.userCollection, uid));
 
   private uid?: string;
+  private pendingUID?: string;
+  private currentAuthState?: ISneatAuthState;
+  private pendingAuthState?: ISneatAuthState;
+  private deferredMissingUserDocSnapshot?: DocumentSnapshot<IUserRecord>;
   private $userTitle?: string;
+  private watchTimer?: ReturnType<typeof setTimeout>;
+  private watchGeneration = 0;
+  private accountGeneration = 0;
+  private initOperationID = 0;
+  private activeInit?: { uid: string; accountGeneration: number; id: number };
+  private initAcknowledged?: { uid: string; accountGeneration: number };
 
   private readonly userChanged$ = new ReplaySubject<string | undefined>(1);
   public readonly userChanged = this.userChanged$.asObservable();
@@ -66,11 +79,11 @@ export class SneatUserService {
 
   private _unsubscribeFromUserDoc?: Unsubscribe;
 
-  private unsubscribeFromUserDoc(_from: string) {
+  private unsubscribeFromUserDoc() {
+    clearTimeout(this.watchTimer);
+    this.watchTimer = undefined;
+    this.watchGeneration++;
     if (this._unsubscribeFromUserDoc) {
-      // console.log(
-      //   'SneatUserService.unsubscribeFromUserDoc() called from ' + _from,
-      // );
       this._unsubscribeFromUserDoc();
       this._unsubscribeFromUserDoc = undefined;
     }
@@ -133,10 +146,28 @@ export class SneatUserService {
     if (authUser?.email && authUser.emailVerified) {
       this.$userTitle = authUser.email;
     }
+    this.pendingUID = undefined;
     if (this.uid === authUser?.uid) {
+      this.currentAuthState = authState;
+      this.pendingAuthState = undefined;
+      const current = this.userState$.value;
+      if (current.user?.isAnonymous !== authUser?.isAnonymous) {
+        this.userState$.next({
+          ...authState,
+          record: current.record,
+          userRecordStatus: current.userRecordStatus,
+        });
+      }
+      const deferredSnapshot = this.deferredMissingUserDocSnapshot;
+      this.deferredMissingUserDocSnapshot = undefined;
+      if (deferredSnapshot) {
+        this.userDocChanged(deferredSnapshot, authState, this.watchGeneration);
+      }
       return;
     }
-    this.unsubscribeFromUserDoc('onUserSignedIn()');
+    this.pendingAuthState = undefined;
+    this.deferredMissingUserDocSnapshot = undefined;
+    this.unsubscribeFromUserDoc();
     if (!authUser) {
       if (this.userState$.value?.record !== null) {
         this.userState$.next({ ...this.userState$.value });
@@ -144,9 +175,13 @@ export class SneatUserService {
       return;
     }
     const { uid } = authUser;
+    this.currentAuthState = authState;
+    this.accountGeneration++;
+    this.initAcknowledged = undefined;
     this.uid = uid;
     this.userState$.next({
       ...authState,
+      userRecordStatus: 'loading',
     });
     this.userChanged$.next(uid);
     this.watchUserRecord(uid, authState);
@@ -156,43 +191,73 @@ export class SneatUserService {
     // console.log(
     //   `SneatUserService.watchUserRecord(uid=${uid}): Loading user record...`,
     // );
-    this.unsubscribeFromUserDoc('whatUserRecord()');
+    this.unsubscribeFromUserDoc();
+    const generation = this.watchGeneration;
     if (this.operationBlocker.isBlocked('server-requests')) {
+      this.setUserRecordStatus(uid, authState, 'failed');
       return;
     }
 
     // TODO: Remove - setTimeout() not needed but trying to troubleshoot user record issue
-    setTimeout(() => {
+    this.watchTimer = setTimeout(() => {
+      this.watchTimer = undefined;
+      if (!this.isCurrentIdentity(uid, authState, generation)) return;
       if (this.operationBlocker.isBlocked('server-requests')) {
+        this.setUserRecordStatus(uid, authState, 'failed');
         return;
       }
       try {
         const userDocRef = this.userDocRef(uid);
-        this._unsubscribeFromUserDoc = runInInjectionContext(
+        const unsubscribe = runInInjectionContext(
           this.injector,
           () =>
             onSnapshot(userDocRef, {
               next: (userDocSnapshot) => {
+                const currentAuthState = this.currentAuthState;
+                if (
+                  !currentAuthState ||
+                  !this.isCurrentIdentity(uid, currentAuthState, generation)
+                )
+                  return;
                 // console.log(
                 //   `SneatUserService.watchUserRecord(uid=${uid}) => userDocSnapshot:`,
                 //   userDocSnapshot,
                 // );
-                this.onAuthStateChanged(authState);
-                this.userDocChanged(userDocSnapshot, authState);
+                this.userDocChanged(
+                  userDocSnapshot,
+                  currentAuthState,
+                  generation,
+                );
               },
               error: (err) => {
-                console.error(
-                  `SneatUserService.watchUserRecord(uid=${uid}) => failed:`,
-                  err,
-                );
+                const currentAuthState = this.currentAuthState;
+                if (
+                  !currentAuthState ||
+                  !this.isCurrentIdentity(uid, currentAuthState, generation)
+                )
+                  return;
+                this.deferredMissingUserDocSnapshot = undefined;
+                this.setUserRecordStatus(uid, currentAuthState, 'failed');
+                this.unsubscribeFromUserDoc();
+                this.errorLogger.logError(err, 'Failed to read user record');
               },
             }),
         );
+        if (this.watchGeneration === generation) {
+          this._unsubscribeFromUserDoc = unsubscribe;
+        } else {
+          unsubscribe();
+        }
       } catch (err) {
-        console.error(
-          `SneatUserService.watchUserRecord(uid=${uid}) => Failed to setup watcher for user record::`,
-          err,
-        );
+        const currentAuthState = this.currentAuthState;
+        if (
+          currentAuthState &&
+          this.isCurrentIdentity(uid, currentAuthState, generation)
+        ) {
+          this.deferredMissingUserDocSnapshot = undefined;
+          this.setUserRecordStatus(uid, currentAuthState, 'failed');
+          this.errorLogger.logError(err, 'Failed to watch user record');
+        }
         return;
       }
     }, 100);
@@ -201,7 +266,11 @@ export class SneatUserService {
   private onAuthStateChanged = (authState: ISneatAuthState): void => {
     // console.log('SneatUserService => authState changed:', authState);
     if (authState.user) {
-      this.onUserSignedIn(authState);
+      if (this.isReadyForUserRecord(authState)) {
+        this.onUserSignedIn(authState);
+      } else {
+        this.onAuthStatePending(authState);
+      }
     } else {
       this.userState$.next(authState);
       this.userChanged$.next(undefined);
@@ -209,9 +278,52 @@ export class SneatUserService {
     }
   };
 
+  private isReadyForUserRecord(authState: ISneatAuthState): boolean {
+    if (authState.status !== AuthStatuses.authenticated) return false;
+    // Older callers that provide the original minimal auth-state shape remain
+    // supported. SneatAuthStateService always includes loadingPhase and token.
+    return authState.loadingPhase === undefined ||
+      (authState.loadingPhase === 'ready' && !!authState.token);
+  }
+
+  private onAuthStatePending(authState: ISneatAuthState): void {
+    const uid = authState.user?.uid;
+    if (!uid) return;
+
+    // A token refresh for the account already owning this watcher must not
+    // replace its stable authenticated identity with a transient auth state.
+    if (this.uid === uid && this.currentAuthState?.status === AuthStatuses.authenticated) {
+      this.pendingAuthState = authState;
+      return;
+    }
+
+    // A different identity is visible before its token is ready. Retire the
+    // previous account immediately, but do not assign this UID or start a
+    // watcher until the auth service publishes the matching ready token.
+    if (this.pendingUID !== uid || this.uid) {
+      this.accountGeneration++;
+      this.initAcknowledged = undefined;
+      this.activeInit = undefined;
+      this.pendingAuthState = undefined;
+      this.deferredMissingUserDocSnapshot = undefined;
+      const hadCurrentUID = !!this.uid;
+      this.uid = undefined;
+      this.currentAuthState = undefined;
+      this.pendingUID = uid;
+      this.unsubscribeFromUserDoc();
+      if (hadCurrentUID) this.userChanged$.next(undefined);
+    }
+    this.userState$.next({
+      ...authState,
+      record: undefined,
+      userRecordStatus: 'loading',
+    });
+  }
+
   private userDocChanged(
     userDocSnapshot: DocumentSnapshot<IUserRecord>,
     authState: ISneatAuthState,
+    generation: number,
   ): void {
     // console.log(
     //   'SneatUserService.userDocChanged() => userDocSnapshot.exists:',
@@ -221,7 +333,14 @@ export class SneatUserService {
     //   'userDocSnapshot:',
     //   userDocSnapshot,
     // );
-    if (userDocSnapshot.ref.id !== this.uid) {
+    if (
+      !this.isCurrentIdentity(
+        authState.user?.uid ?? '',
+        authState,
+        generation,
+      ) ||
+      userDocSnapshot.ref.id !== this.uid
+    ) {
       console.error(
         'userDocSnapshot.ref.id !== this.uid - Should always be equal as we unsubscribe if uid changes',
       );
@@ -229,22 +348,64 @@ export class SneatUserService {
     }
     // console.log('SneatUserService => userDocSnapshot.exists:', userDocSnapshot.exists)
     const authUser = authState.user;
-    if (authUser && !userDocSnapshot.exists()) {
-      this.initUserRecordFromAuthUser(authUser);
+    const recordExists = userDocSnapshot.exists();
+    const initAcknowledged = this.initAcknowledged;
+    if (
+      recordExists &&
+      authUser?.uid === initAcknowledged?.uid &&
+      this.accountGeneration === initAcknowledged?.accountGeneration
+    ) {
+      this.initAcknowledged = undefined;
     }
-    const userRecord: IUserRecord | null = userDocSnapshot.exists()
+    const userRecord: IUserRecord | null = recordExists
       ? (userDocSnapshot.data() as IUserRecord)
       : authUser
         ? { title: authUser.displayName || authUser.email || authUser.uid }
         : null;
-
+    if (recordExists) {
+      this.deferredMissingUserDocSnapshot = undefined;
+    } else if (this.pendingAuthState?.user?.uid === authUser?.uid) {
+      this.deferredMissingUserDocSnapshot = userDocSnapshot;
+    } else {
+      this.deferredMissingUserDocSnapshot = undefined;
+    }
+    const current = this.userState$.value;
     this.userState$.next({
       ...authState,
       record: userRecord,
+      userRecordStatus: recordExists
+        ? 'ready'
+        : current.userRecordStatus === 'failed'
+          ? 'failed'
+          : 'loading',
     });
+    if (
+      authUser &&
+      !recordExists &&
+      current.userRecordStatus !== 'failed' &&
+      !this.pendingAuthState &&
+      !(
+        this.initAcknowledged?.uid === authUser.uid &&
+        this.initAcknowledged.accountGeneration === this.accountGeneration
+      )
+    ) {
+      this.initUserRecordFromAuthUser(authUser);
+    }
   }
 
   private initUserRecordFromAuthUser(authUser: ISneatAuthUser): void {
+    const uid = authUser.uid;
+    const accountGeneration = this.accountGeneration;
+    if (!uid || !this.isCurrentAuthIdentity(uid, authUser, accountGeneration))
+      return;
+    if (
+      this.activeInit?.uid === uid &&
+      this.activeInit.accountGeneration === accountGeneration
+    ) {
+      return;
+    }
+    const operation = { uid, accountGeneration, id: ++this.initOperationID };
+    this.activeInit = operation;
     let request: IInitUserRecordRequest = {
       email: authUser.email || undefined,
       emailIsVerified: authUser.emailVerified,
@@ -254,16 +415,102 @@ export class SneatUserService {
       request = { ...request, names: { fullName: authUser.displayName } };
     }
     this.userRecordService.initUserRecord(request).subscribe({
-      next: (_userDto) => {
-        // User record created successfully - no additional action needed
+      next: () => {
+        if (this.activeInit === operation) this.activeInit = undefined;
+        if (
+          !this.isCurrentAuthIdentity(uid, authUser, accountGeneration) ||
+          this.userState$.value.userRecordStatus === 'ready'
+        )
+          return;
+        this.initAcknowledged = { uid, accountGeneration };
+        // API acknowledgement is not readiness. Wait for the persisted snapshot.
       },
-      error: this.errorLogger.logErrorHandler('failed to create user record'),
+      error: (error) => {
+        if (this.activeInit === operation) this.activeInit = undefined;
+        if (
+          !this.isCurrentAuthIdentity(uid, authUser, accountGeneration) ||
+          this.userState$.value.userRecordStatus === 'ready'
+        )
+          return;
+        this.setUserRecordStatus(
+          uid,
+          { status: 'authenticated', user: authUser },
+          'failed',
+        );
+        this.errorLogger.logError(error, 'Failed to initialize user record');
+      },
     });
   }
 
+  /** Retry record watch and initialization after a failed first-load attempt. */
+  public retryUserRecordInitialization(): void {
+    const current = this.userState$.value;
+    const uid = this.uid;
+    if (
+      !uid ||
+      current.status !== 'authenticated' ||
+      current.user?.uid !== uid ||
+      current.userRecordStatus !== 'failed'
+    ) {
+      return;
+    }
+    this.userState$.next({ ...current, userRecordStatus: 'loading' });
+    this.watchUserRecord(uid, current);
+  }
+
+  private isCurrentIdentity(
+    uid: string,
+    authState: ISneatAuthState,
+    generation: number,
+  ): boolean {
+    return (
+      !!uid &&
+      this.uid === uid &&
+      this.watchGeneration === generation &&
+      authState.status === 'authenticated' &&
+      authState.user?.uid === uid &&
+      this.userState$.value.user?.uid === uid
+    );
+  }
+
+  private isCurrentAuthIdentity(
+    uid: string,
+    authUser: ISneatAuthUser,
+    accountGeneration: number,
+  ): boolean {
+    return (
+      uid === this.uid &&
+      accountGeneration === this.accountGeneration &&
+      this.userState$.value.status === 'authenticated' &&
+      this.userState$.value.user?.uid === uid &&
+      authUser.uid === uid
+    );
+  }
+
+  private setUserRecordStatus(
+    uid: string,
+    authState: ISneatAuthState,
+    userRecordStatus: ISneatUserState['userRecordStatus'],
+  ): void {
+    if (
+      uid !== this.uid ||
+      authState.user?.uid !== uid ||
+      this.userState$.value.user?.uid !== uid
+    ) {
+      return;
+    }
+    this.userState$.next({ ...this.userState$.value, userRecordStatus });
+  }
+
   private onUserSignedOut(): void {
+    this.accountGeneration++;
+    this.initAcknowledged = undefined;
     this.uid = undefined;
-    this.unsubscribeFromUserDoc('onUserSignedOut()');
+    this.pendingUID = undefined;
+    this.currentAuthState = undefined;
+    this.pendingAuthState = undefined;
+    this.deferredMissingUserDocSnapshot = undefined;
+    this.unsubscribeFromUserDoc();
   }
 
   // private createUserRecord(userDocRef: DocumentReference, authUser: ISneatAuthUser): void {

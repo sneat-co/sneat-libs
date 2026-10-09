@@ -1,8 +1,4 @@
 import {
-  ActivatedRouteSnapshot,
-  Route,
-  RouterStateSnapshot,
-  UrlSegment,
   UrlTree,
 } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -24,10 +20,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class SneatAuthGuard {
-  public canLoad(
-    _route: Route,
-    _segments: UrlSegment[],
-  ):
+  public canLoad():
     | Observable<boolean | UrlTree>
     | Promise<boolean | UrlTree>
     | boolean
@@ -35,17 +28,11 @@ export class SneatAuthGuard {
     return true;
   }
 
-  public canActivate(
-    _route: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot,
-  ) {
+  public canActivate() {
     return true;
   }
 
-  canActivateChild(
-    _childRoute: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot,
-  ) {
+  canActivateChild() {
     return true;
   }
 }
