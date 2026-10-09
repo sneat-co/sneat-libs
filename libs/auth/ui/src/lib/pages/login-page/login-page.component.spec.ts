@@ -1,4 +1,5 @@
 import template from './login-page.component.html?raw';
+import authPanelTemplate from './auth-panel.component.html?raw';
 
 describe('LoginPage', () => {
   it('uses product-neutral account copy', () => {
@@ -7,9 +8,11 @@ describe('LoginPage', () => {
     expect(template).not.toContain('open source');
   });
 
-  it('registers company SSO as a normal login entry', async () => {
-    const template = await import('./login-page.component.html?raw');
-    expect(template.default).toContain('Sign in with company SSO');
-    expect(template.default).toContain('routerLink="/sso"');
+  it('reuses the inline auth panel and preserves the login continuation', () => {
+    expect(template).toContain(
+      '<sneat-auth-panel [returnTo]="redirectTo" [showIntro]="false" />',
+    );
+    expect(authPanelTemplate).toContain('Sign in with company SSO');
+    expect(authPanelTemplate).toContain('routerLink="/sso"');
   });
 });

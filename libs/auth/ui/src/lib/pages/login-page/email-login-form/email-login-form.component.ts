@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Output,
   inject,
+  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -47,6 +48,7 @@ import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { RandomIdService } from '@sneat/random';
 import { UserCredential, sendEmailVerification } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
+import { safeAuthReturnPath } from '../safe-auth-return-path';
 
 export type EmailFormSigningWith = 'email' | 'emailLink' | 'resetPassword';
 import {
@@ -76,6 +78,7 @@ import {
   ],
 })
 export class EmailLoginFormComponent {
+  readonly returnTo = input<string | undefined>();
   readonly appInfo = inject<IAppInfo>(APP_INFO);
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
@@ -258,9 +261,11 @@ export class EmailLoginFormComponent {
     this.setSigningWith('emailLink');
     this.email.set(this.email().trim());
     this.saveEmailForReuse();
+    const actionURL = new URL('sign-in-from-email-link', document.baseURI);
+    const returnTo = safeAuthReturnPath(this.returnTo());
+    if (returnTo) actionURL.searchParams.set('returnTo', returnTo);
     sendSignInLinkToEmail(this.afAuth, this.email(), {
-      // url: 'https://dailyscrum.app/pwa/sign-in',
-      url: document.baseURI + 'sign-in-from-email-link',
+      url: actionURL.toString(),
       handleCodeInApp: true,
     })
       .then(() => {

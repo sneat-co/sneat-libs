@@ -73,6 +73,7 @@ export interface SsoExchange {
 }
 
 export const ssoBrowserBindingStorageKey = 'sneat.sso.browser-binding.v1';
+export const ssoLoginReturnToStorageKey = 'sneat.sso.login-return-to.v1';
 
 export function applicationBaseURL(): string {
   return document.baseURI.replace(/\/+$/, '');

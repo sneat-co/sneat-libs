@@ -1,8 +1,6 @@
-import { Component, computed, signal, inject, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Capacitor } from '@capacitor/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   NavController,
   IonBackButton,
@@ -10,26 +8,15 @@ import {
   IonButtons,
   IonCard,
   IonCardContent,
-  IonCol,
   IonContent,
-  IonGrid,
   IonHeader,
-  IonIcon,
-  IonItem,
-  IonItemDivider,
-  IonLabel,
-  IonList,
-  IonRow,
   IonSpinner,
   IonText,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
 import {
-  AuthProviderID,
-  AuthStatuses,
   ILoginEventsHandler,
-  ISneatAuthState,
   LoginEventsHandler,
   SneatAuthStateService,
 } from '@sneat/auth-core';
@@ -47,12 +34,8 @@ import {
 import { RandomIdService } from '@sneat/random';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 import { Subject, takeUntil } from 'rxjs';
-import {
-  EmailFormSigningWith,
-  EmailLoginFormComponent,
-} from './email-login-form/email-login-form.component';
-import { UserCredential } from 'firebase/auth';
-import { LoginWithTelegramComponent } from './login-with-telegram.component';
+import { AuthPanelComponent } from './auth-panel.component';
+import { safeAuthReturnPath } from './safe-auth-return-path';
 
 type Action = 'join' | 'refuse'; // TODO: inject provider for action descriptions/messages.
 
@@ -60,10 +43,7 @@ type Action = 'join' | 'refuse'; // TODO: inject provider for action description
   selector: 'sneat-login',
   templateUrl: './login-page.component.html',
   imports: [
-    FormsModule,
-    RouterLink,
-    LoginWithTelegramComponent,
-    EmailLoginFormComponent,
+    AuthPanelComponent,
     IonHeader,
     IonToolbar,
     IonButton,
@@ -74,15 +54,7 @@ type Action = 'join' | 'refuse'; // TODO: inject provider for action description
     IonCardContent,
     IonText,
     IonCard,
-    IonItemDivider,
-    IonLabel,
-    IonRow,
-    IonCol,
-    IonItem,
     IonSpinner,
-    IonIcon,
-    IonList,
-    IonGrid,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -106,10 +78,7 @@ export class LoginPageComponent extends SneatBaseComponent {
     { optional: true },
   );
 
-  protected readonly signingWith = signal<AuthProviderID | undefined>(
-    undefined,
-  );
-  private readonly redirectTo?: string;
+  protected readonly redirectTo?: string;
   protected readonly to?: string;
   // Free-text explanation of WHY sign-in is needed, passed by the calling page
   // as query params (rendered as escaped text — never as HTML):
@@ -118,8 +87,6 @@ export class LoginPageComponent extends SneatBaseComponent {
   protected readonly reason?: string;
   protected readonly reasonDetail?: string;
   protected readonly action?: Action; // TODO: document possible values?
-
-  protected readonly isNativePlatform = Capacitor.isNativePlatform();
 
   protected readonly appTitle: string;
 
@@ -147,16 +114,10 @@ export class LoginPageComponent extends SneatBaseComponent {
 
   constructor() {
     super();
-    effect(() => {
-      if (this.authStatus() === 'notAuthenticated') {
-        this.signingWith.set(undefined);
-      }
-    });
-
     const appInfo = this.appInfo;
     this.appTitle = appInfo.appTitle || 'Sneat.app';
     if (location.hash.startsWith('#/')) {
-      this.redirectTo = location.hash.substring(1);
+      this.redirectTo = safeAuthReturnPath(location.hash.substring(1));
     }
     this.to = this.route.snapshot.queryParams['to']; // should we subscribe? I believe no.
     this.reason = this.route.snapshot.queryParams['reason'];
@@ -195,7 +156,6 @@ export class LoginPageComponent extends SneatBaseComponent {
           this.navController
             .navigateRoot(redirectTo)
             .catch((err) => {
-              this.signingWith.set(undefined);
               this.errorLogger.logError(
                 err,
                 'Failed to navigate back to ' + redirectTo,
@@ -204,14 +164,6 @@ export class LoginPageComponent extends SneatBaseComponent {
         },
         error: this.errorHandler('Failed to get user state after login'),
       });
-  }
-
-  ionViewDidEnter(): void {
-    this.signingWith.set(undefined);
-  }
-
-  protected onEmailFormStatusChanged(signingWith?: EmailFormSigningWith): void {
-    this.signingWith.set(signingWith as AuthProviderID);
   }
 
   // Proceed into the app from the "already signed in" panel.
@@ -236,7 +188,6 @@ export class LoginPageComponent extends SneatBaseComponent {
     this.navController
       .navigateRoot(redirectTo)
       .catch((err) => {
-        this.signingWith.set(undefined);
         this.errorLogger.logError(
           err,
           'Failed to navigate to ' + redirectTo,
@@ -250,44 +201,6 @@ export class LoginPageComponent extends SneatBaseComponent {
     this.authStateService
       .signOut()
       .catch(this.errorLogger.logErrorHandler('Failed to sign out for re-login'));
-  }
-
-  protected async loginWith(provider: AuthProviderID) {
-    this.signingWith.set(provider);
-    try {
-      await this.authStateService.signInWith(provider);
-      // We do not reset this.signingWith in case of succesful sign in as we should redirect from login page
-      // and not to allow user to do a double sign-in.
-    } catch (e) {
-      const errMsg = (e as { errorMessage?: string }).errorMessage;
-      if (
-        errMsg !== 'The user canceled the sign-in flow.' &&
-        !errMsg?.includes(
-          'com.apple.AuthenticationServices.AuthorizationError error 1001.',
-        )
-      ) {
-        this.errorLogger.logError(e, `Failed to sign-in with ${provider}`);
-      }
-      this.signingWith.set(undefined);
-    }
-  }
-
-  protected onLoggedIn(userCredential: UserCredential): void {
-    this.signingWith.set(undefined);
-    if (!userCredential.user) {
-      return;
-    }
-    if (userCredential.user.email) {
-      const prevEmail = localStorage.getItem('emailForSignIn') || '';
-      if (!prevEmail) {
-        localStorage.setItem('emailForSignIn', userCredential.user.email);
-      }
-    }
-    const authState: ISneatAuthState = {
-      status: AuthStatuses.authenticated,
-      user: userCredential.user,
-    };
-    this.userService.onUserSignedIn(authState);
   }
 
   private errorHandler(
@@ -310,6 +223,5 @@ export class LoginPageComponent extends SneatBaseComponent {
     this.errorLogger.logError(err, m, {
       report: !(err as { code: unknown }).code,
     });
-    this.signingWith.set(undefined);
   }
 }

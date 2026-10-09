@@ -21,7 +21,11 @@ import { SneatAuthStateService } from '@sneat/auth-core';
 import { firstValueFrom } from 'rxjs';
 import { SsoApiService } from './sso-api.service';
 import { ssoErrorMessage } from './sso-errors';
-import { ssoBrowserBindingStorageKey } from './sso.models';
+import {
+  ssoBrowserBindingStorageKey,
+  ssoLoginReturnToStorageKey,
+} from './sso.models';
+import { safeAuthReturnPath } from '../pages/login-page/safe-auth-return-path';
 
 @Component({
   selector: 'sneat-sso-callback-page',
@@ -65,7 +69,11 @@ export class SsoCallbackPageComponent implements OnInit {
       );
       return;
     }
+    const returnTo = safeAuthReturnPath(
+      sessionStorage.getItem(ssoLoginReturnToStorageKey),
+    );
     sessionStorage.removeItem(ssoBrowserBindingStorageKey);
+    sessionStorage.removeItem(ssoLoginReturnToStorageKey);
     try {
       const exchange = await firstValueFrom(
         this.sso.exchange(code, browserBinding),
@@ -79,7 +87,7 @@ export class SsoCallbackPageComponent implements OnInit {
           'The signed-in Firebase user did not match the linked Sneat user.',
         );
       }
-      await this.router.navigateByUrl('/', { replaceUrl: true });
+      await this.router.navigateByUrl(returnTo ?? '/', { replaceUrl: true });
     } catch (error) {
       this.error.set(ssoErrorMessage(error));
     }

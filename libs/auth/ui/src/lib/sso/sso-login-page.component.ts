@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import {
   IonBackButton,
   IonButton,
@@ -30,7 +31,9 @@ import {
   applicationBaseURL,
   emailDomain,
   ssoBrowserBindingStorageKey,
+  ssoLoginReturnToStorageKey,
 } from './sso.models';
+import { safeAuthReturnPath } from '../pages/login-page/safe-auth-return-path';
 
 @Component({
   selector: 'sneat-sso-login-page',
@@ -55,6 +58,7 @@ import {
   ],
 })
 export class SsoLoginPageComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly sso = inject(SsoApiService);
 
   protected readonly workEmail = signal('');
@@ -62,13 +66,24 @@ export class SsoLoginPageComponent implements OnInit {
   protected readonly unknownDomain = signal<string | undefined>(undefined);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | undefined>(undefined);
+  private readonly returnTo = safeAuthReturnPath(
+    this.route.snapshot.queryParamMap.get('returnTo'),
+  );
   protected readonly validEmail = computed(() => {
     const domain = emailDomain(this.workEmail());
     return !!domain && (!this.fixedDomain() || domain === this.fixedDomain());
   });
   protected readonly regularLoginURL = computed(() => {
+    if (this.returnTo) {
+      // The inline caller already has an explicit continuation; send regular
+      // sign-in back there rather than diverting checkout into SSO setup.
+      return `/login#${this.returnTo}`;
+    }
     const domain = this.unknownDomain();
-    const next = `/sso/setup${domain ? `?domain=${encodeURIComponent(domain)}` : ''}`;
+    const query = new URLSearchParams();
+    if (domain) query.set('domain', domain);
+    if (this.returnTo) query.set('returnTo', this.returnTo);
+    const next = `/sso/setup${query.size ? `?${query.toString()}` : ''}`;
     return `/login#${next}`;
   });
 
@@ -113,6 +128,10 @@ export class SsoLoginPageComponent implements OnInit {
         throw new Error('The SSO service did not bind this sign-in attempt.');
       }
       sessionStorage.setItem(ssoBrowserBindingStorageKey, start.browserBinding);
+      sessionStorage.removeItem(ssoLoginReturnToStorageKey);
+      if (this.returnTo) {
+        sessionStorage.setItem(ssoLoginReturnToStorageKey, this.returnTo);
+      }
       location.assign(start.authorizationURL);
     } catch (error) {
       this.error.set(ssoErrorMessage(error));
