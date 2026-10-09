@@ -66,11 +66,8 @@ export class SneatUserService {
 
   private _unsubscribeFromUserDoc?: Unsubscribe;
 
-  private unsubscribeFromUserDoc(_from: string) {
+  private unsubscribeFromUserDoc() {
     if (this._unsubscribeFromUserDoc) {
-      // console.log(
-      //   'SneatUserService.unsubscribeFromUserDoc() called from ' + _from,
-      // );
       this._unsubscribeFromUserDoc();
       this._unsubscribeFromUserDoc = undefined;
     }
@@ -136,7 +133,7 @@ export class SneatUserService {
     if (this.uid === authUser?.uid) {
       return;
     }
-    this.unsubscribeFromUserDoc('onUserSignedIn()');
+    this.unsubscribeFromUserDoc();
     if (!authUser) {
       if (this.userState$.value?.record !== null) {
         this.userState$.next({ ...this.userState$.value });
@@ -156,7 +153,7 @@ export class SneatUserService {
     // console.log(
     //   `SneatUserService.watchUserRecord(uid=${uid}): Loading user record...`,
     // );
-    this.unsubscribeFromUserDoc('whatUserRecord()');
+    this.unsubscribeFromUserDoc();
     if (this.operationBlocker.isBlocked('server-requests')) {
       return;
     }
@@ -254,7 +251,7 @@ export class SneatUserService {
       request = { ...request, names: { fullName: authUser.displayName } };
     }
     this.userRecordService.initUserRecord(request).subscribe({
-      next: (_userDto) => {
+      next: () => {
         // User record created successfully - no additional action needed
       },
       error: this.errorLogger.logErrorHandler('failed to create user record'),
@@ -263,7 +260,7 @@ export class SneatUserService {
 
   private onUserSignedOut(): void {
     this.uid = undefined;
-    this.unsubscribeFromUserDoc('onUserSignedOut()');
+    this.unsubscribeFromUserDoc();
   }
 
   // private createUserRecord(userDocRef: DocumentReference, authUser: ISneatAuthUser): void {

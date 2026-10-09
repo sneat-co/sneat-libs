@@ -361,7 +361,7 @@ export class SneatAuthStateService {
     const userCredential = await signInWithCredential(auth, credential);
 
     // Get a valid Firebase ID token that has a 'kid' header
-    const _firebaseIdToken = await userCredential.user.getIdToken();
+    await userCredential.user.getIdToken();
 
     return Promise.resolve(userCredential);
   }
