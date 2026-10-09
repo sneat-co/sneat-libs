@@ -1,6 +1,6 @@
 ## 0.27.30 (2026-10-09)
 
-This was a version bump only, there were no code changes.
+Adds a reusable inline sign-in and signup panel, shared persisted-account readiness checks, and recovery from account setup or sign-in failures. Preserves validated checkout continuations through email-link and SSO sign-in. The auth-ui package requires auth-core 0.27.30 or a compatible newer patch.
 
 ## 0.27.29 (2026-10-07)
 
