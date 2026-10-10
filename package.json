@@ -70,7 +70,7 @@
     "firebase-tools": "^15.23.0",
     "happy-dom": "^20.10.6",
     "ng-packagr": "22.1.1",
-    "nx": "23.1.1",
+    "nx": "23.2.1",
     "posthog-js": "1.357.0",
     "primeng": "22.1.2",
     "web-tree-sitter": "0.27.0",
