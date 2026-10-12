@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout ${{ inputs.repository }}@${{ inputs.ref }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.ref }}
@@ -77,12 +77,12 @@ jobs:
           # Public repos need nothing: the expression falls back to the default
           # token when the secret is unset.
           token: ${{ secrets.SNEAT_CI_READWRITE_TOKEN || github.token }}
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: ${{ inputs.pnpm-version }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
       # --- Nx mode (default) ---
       - name: Install deps (Nx)
