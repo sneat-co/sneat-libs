@@ -13,6 +13,7 @@ overrides:
   browserslist: ^4.28.7
   'js-yaml@4': ^4.3.2
   'svgo@4': ^4.1.0
+  'undici@6': ^6.28.1
   'undici@8': ^8.10.2
 packages:
   - 'libs/**'
