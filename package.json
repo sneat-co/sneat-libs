@@ -47,7 +47,7 @@
     "@playwright/test": "^1.61.1",
     "@sentry/angular": "10.70.0",
     "@sentry/browser": "10.70.0",
-    "@sneat/extension-assetus-contract": "^0.0.5",
+    "@sneat/extension-assetus-contract": "^0.2.0",
     "@sneat/extension-contactus-contract": "^0.12.2",
     "@sneat/extension-contactus-ui": "^0.14.0",
     "@sneat/extension-media-contract": "^0.1.1",
