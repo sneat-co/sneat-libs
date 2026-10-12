@@ -12,3 +12,4 @@ export * from './lib/save-event';
 export * from './lib/date-input/date-input.component';
 export * from './lib/user-country/user-country.component';
 export * from './lib/card-list/sneat-card-list.component';
+export * from './lib/subscription-recovery/subscription-recovery.component';

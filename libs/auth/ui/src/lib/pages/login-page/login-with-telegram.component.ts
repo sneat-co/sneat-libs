@@ -9,6 +9,7 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import {
   ITelegramAuthData,
@@ -24,8 +25,6 @@ import {
   loadTelegramLoginScript,
   telegramLoginApi,
 } from './telegram-login-js';
-
-let authWithTelegramService: SneatAuthWithTelegramService;
 
 /** Server nonces live 10 minutes; refresh well inside that. */
 const OIDC_NONCE_REFRESH_MS = 8 * 60 * 1000;
@@ -84,16 +83,26 @@ export class LoginWithTelegramComponent implements OnInit {
     optional: true,
   });
 
-  // TODO: Article about Telegram login
-  constructor() {
-    const authWithTelegram = this.authWithTelegram;
+  private nonceTimer?: ReturnType<typeof setInterval>;
+  private legacyCallback?: (data: ITelegramAuthData) => void;
 
-    authWithTelegramService = authWithTelegram;
+  constructor() {
+    // Register while the view is alive, never from a late loader continuation.
+    this.destroyRef.onDestroy(() => {
+      clearInterval(this.nonceTimer);
+      const host = this.document.defaultView as
+        | (Window & { onTelegramAuth?: (data: ITelegramAuthData) => void })
+        | null;
+      if (host && host.onTelegramAuth === this.legacyCallback)
+        delete host.onTelegramAuth;
+    });
   }
 
   public readonly isUserAuthenticated = input(false);
 
-  public readonly botID = input<string>(resolveTelegramBotID(this.telegramLoginConfig, location.hostname));
+  public readonly botID = input<string>(
+    resolveTelegramBotID(this.telegramLoginConfig, location.hostname),
+  );
 
   public readonly size = input<'small' | 'medium' | 'large'>('large');
   public readonly requestAccess = input<'write' | 'read'>('write');
@@ -107,14 +116,18 @@ export class LoginWithTelegramComponent implements OnInit {
     if (!botID) {
       return;
     }
-    this.authWithTelegram.getTelegramOIDCNonce(botID).subscribe({
-      next: (cfg) => this.startOIDC(botID, cfg),
-      // The server answers 400 for a bot without OpenID login configured.
-      error: () => this.startLegacyWidget(botID),
-    });
+    this.authWithTelegram
+      .getTelegramOIDCNonce(botID)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (cfg) => this.startOIDC(botID, cfg),
+        // The server answers 400 for a bot without OpenID login configured.
+        error: () => this.startLegacyWidget(botID),
+      });
   }
 
   protected loginWithOIDC(cfg: ITelegramOIDCNonce): void {
+    if (this.destroyRef.destroyed) return;
     const api = telegramLoginApi(this.document.defaultView ?? window);
     if (!api) {
       this.errorLogger.logErrorHandler('Telegram login library not loaded')(
@@ -132,7 +145,7 @@ export class LoginWithTelegramComponent implements OnInit {
         request_access: this.requestAccess() === 'write' ? ['write'] : [],
       },
       (result: ITelegramLoginResult) => {
-        if (result.id_token) {
+        if (result.id_token && !this.destroyRef.destroyed) {
           this.authWithTelegram.loginWithTelegramOIDC(
             botID,
             result.id_token,
@@ -148,39 +161,48 @@ export class LoginWithTelegramComponent implements OnInit {
 
   private startOIDC(botID: string, cfg: ITelegramOIDCNonce): void {
     loadTelegramLoginScript(this.document).then(() => {
+      if (this.destroyRef.destroyed) return;
       this.oidc.set(cfg);
-      const timer = setInterval(
+      clearInterval(this.nonceTimer);
+      this.nonceTimer = setInterval(
         () => this.refreshNonce(botID),
         OIDC_NONCE_REFRESH_MS,
       );
-      this.destroyRef.onDestroy(() => clearInterval(timer));
     }, this.errorLogger.logErrorHandler('Failed to load Telegram login library'));
   }
 
   private refreshNonce(botID: string): void {
-    this.authWithTelegram.getTelegramOIDCNonce(botID).subscribe({
-      next: (cfg) => this.oidc.set(cfg),
-      error: this.errorLogger.logErrorHandler(
-        'Failed to refresh Telegram login nonce',
-      ),
-    });
+    this.authWithTelegram
+      .getTelegramOIDCNonce(botID)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (cfg) => this.oidc.set(cfg),
+        error: this.errorLogger.logErrorHandler(
+          'Failed to refresh Telegram login nonce',
+        ),
+      });
   }
 
   private startLegacyWidget(botID: string): void {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    window.onTelegramAuth = (tgAuthData: ITelegramAuthData) => {
+    if (this.destroyRef.destroyed) return;
+    this.legacyCallback = (tgAuthData: ITelegramAuthData) => {
+      if (this.destroyRef.destroyed) return;
       // https://core.telegram.org/widgets/login-legacy
       // After a successful authorization, the widget returns data
       // by calling the callback function data-onauth with the JSON-object containing
       // id, first_name, last_name, username, photo_url, auth_date and hash fields.
-      authWithTelegramService.loginWithTelegram(
+      this.authWithTelegram.loginWithTelegram(
         botID,
         tgAuthData,
         this.isUserAuthenticated(),
       );
     };
 
+    const host = this.document.defaultView as
+      | (Window & { onTelegramAuth?: (data: ITelegramAuthData) => void })
+      | null;
+    if (!host) return;
+    host.onTelegramAuth = this.legacyCallback;
     const script = this.document.createElement('script');
 
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
