@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { LoginWithTelegramComponent } from './login-with-telegram.component';
 import { ITelegramOIDCNonce } from './sneat-auth-with-telegram.service';
 import { TelegramLoginConfig } from './telegram-login-config';
@@ -78,17 +78,17 @@ async function settle(
 function oidcButton(
   fixture: ComponentFixture<LoginWithTelegramComponent>,
 ): HTMLButtonElement | null {
-  return (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
-    'button.tg-oidc-login',
-  );
+  return (
+    fixture.nativeElement as HTMLElement
+  ).querySelector<HTMLButtonElement>('button.tg-oidc-login');
 }
 
 function legacyWidget(
   fixture: ComponentFixture<LoginWithTelegramComponent>,
 ): HTMLScriptElement | null {
-  return (fixture.nativeElement as HTMLElement).querySelector<HTMLScriptElement>(
-    'script[data-telegram-login]',
-  );
+  return (
+    fixture.nativeElement as HTMLElement
+  ).querySelector<HTMLScriptElement>('script[data-telegram-login]');
 }
 
 const sneatBot: Provider = {
@@ -150,7 +150,9 @@ describe('LoginWithTelegramComponent', () => {
       expect.any(Function),
     );
 
-    const callback = auth.mock.calls[0][1] as (r: { id_token?: string }) => void;
+    const callback = auth.mock.calls[0][1] as (r: {
+      id_token?: string;
+    }) => void;
     callback({ id_token: 'jwt' });
     expect(api.postAsAnonymous).toHaveBeenCalledWith(
       'auth/login-from-telegram-oidc?botID=SneatBot',
@@ -188,4 +190,50 @@ describe('LoginWithTelegramComponent', () => {
     expect(oidcButton(fixture)).toBeNull();
     expect(legacyWidget(fixture)).toBeNull();
   });
+});
+
+it('ignores a Telegram library resolving after the login view is destroyed', async () => {
+  let resolve!: () => void;
+  vi.mocked(loadTelegramLoginScript).mockImplementationOnce(
+    () =>
+      new Promise<void>((done) => {
+        resolve = done;
+      }),
+  );
+  const fixture = await createComponent(
+    [sneatBot],
+    apiMock({ clientID: '6042661328', nonce: 'n-1' }),
+  );
+  fixture.destroy();
+  const interval = vi.spyOn(globalThis, 'setInterval');
+  resolve();
+  await Promise.resolve();
+  expect(interval).not.toHaveBeenCalled();
+  interval.mockRestore();
+});
+
+it('removes only its own legacy callback on destruction', async () => {
+  const fixture = await createComponent([sneatBot], apiMock());
+  const host = window as Window & { onTelegramAuth?: unknown };
+  expect(host.onTelegramAuth).toBeTypeOf('function');
+  fixture.destroy();
+  expect(host.onTelegramAuth).toBeUndefined();
+  const next = await createComponent([sneatBot], apiMock());
+  const replacement = () => undefined;
+  host.onTelegramAuth = replacement;
+  next.destroy();
+  expect(host.onTelegramAuth).toBe(replacement);
+  delete host.onTelegramAuth;
+});
+
+it('unsubscribes a pending nonce request before it can mount a widget', async () => {
+  const nonce = new Subject<ITelegramOIDCNonce>();
+  const api = apiMock();
+  api.postAsAnonymous.mockReturnValue(nonce);
+  const fixture = await createComponent([sneatBot], api);
+  expect(nonce.observed).toBe(true);
+  fixture.destroy();
+  expect(nonce.observed).toBe(false);
+  nonce.next({ clientID: '6042661328', nonce: 'late' });
+  expect(loadTelegramLoginScript).not.toHaveBeenCalled();
 });
