@@ -22,6 +22,7 @@ export type SubscriptionRecoveryMode = 'live' | 'test';
 export interface SubscriptionRecoveryItem {
   id: string;
   label: string;
+  description?: string;
   action: string;
   path: string;
   query: Record<string, string>;
@@ -53,7 +54,9 @@ export const SUBSCRIPTION_RECOVERY =
     IonNote,
   ],
   template: `
-    @if (port && signedIn()) {
+    @if (
+      port && signedIn() && (busy() || error() || items().length || next())
+    ) {
       <ion-card aria-label="Unfinished subscriptions">
         <ion-card-header
           ><ion-card-title
@@ -75,13 +78,14 @@ export const SUBSCRIPTION_RECOVERY =
                 >
                   <ion-label class="ion-text-wrap"
                     ><h2>{{ item.label }}</h2>
+                    @if (item.description) {
+                      <p>{{ item.description }}</p>
+                    }
                     <p>{{ item.action }}</p></ion-label
                   >
                 </ion-item>
               }
             </ion-list>
-          } @else if (!busy() && !error()) {
-            <p>No subscriptions waiting for setup.</p>
           }
           @if (busy()) {
             <p role="status">Checking your purchases…</p>
