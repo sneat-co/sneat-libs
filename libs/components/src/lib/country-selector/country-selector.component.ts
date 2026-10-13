@@ -10,7 +10,7 @@ import {
   signal,
   SimpleChanges,
   ChangeDetectionStrategy,
-  input
+  input,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -89,8 +89,9 @@ export class CountrySelectorComponent implements OnInit, OnChanges {
                 c.geoRegions.includes('South America'))) ||
             c.geoRegions.includes(this.geoRegion() as GeoRegion),
         );
-    if (this.canBeUnknown() && this.unknownCountry()) {
-      countriesToShow = [...countriesToShow, this.unknownCountry()!];
+    const unknownCountry = this.unknownCountry();
+    if (this.canBeUnknown() && unknownCountry) {
+      countriesToShow = [...countriesToShow, unknownCountry];
     }
     return countriesToShow;
   });

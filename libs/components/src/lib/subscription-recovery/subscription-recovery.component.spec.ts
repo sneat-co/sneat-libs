@@ -43,6 +43,7 @@ it('loads only for signed-in buyers and clears all previous data on sign-out', a
       {
         id: 'one',
         label: 'Business monthly',
+        description: '13 Oct 2026 · €69.30 paid · Space acme',
         action: 'Finish setup',
         path: '/pricing/return',
         query: { mode: 'test', session_id: 'cs_test_one' },
@@ -53,6 +54,9 @@ it('loads only for signed-in buyers and clears all previous data on sign-out', a
   await fixture.whenStable();
   expect(load).toHaveBeenCalledWith('test', '');
   expect(fixture.nativeElement.textContent).toContain('Finish setup');
+  expect(fixture.nativeElement.textContent).toContain(
+    '13 Oct 2026 · €69.30 paid · Space acme',
+  );
   expect(
     fixture.nativeElement.querySelector('ion-item').getAttribute('href'),
   ).toContain('mode=test');
@@ -61,6 +65,28 @@ it('loads only for signed-in buyers and clears all previous data on sign-out', a
   expect(fixture.nativeElement.textContent).not.toContain('Business monthly');
   fixture.destroy();
   expect(stop).toHaveBeenCalled();
+});
+it('hides successful empty recovery while keeping loading and failures visible', async () => {
+  const { fixture, identity, load } = await setup();
+  let finish!: (value: unknown) => void;
+  load.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  identity('buyer');
+  await fixture.whenStable();
+  expect(fixture.nativeElement.textContent).toContain(
+    'Checking your purchases',
+  );
+  finish({ items: [] });
+  await fixture.whenStable();
+  await vi.waitFor(() => expect(fixture.nativeElement.querySelector('ion-card')).toBeNull());
+  load.mockRejectedValueOnce(new Error('offline'));
+  fixture.componentInstance.refresh();
+  await fixture.whenStable();
+  expect(fixture.nativeElement.textContent).toContain('Retry');
 });
 it('discards a delayed response after identity or mode changes', async () => {
   const { fixture, identity, load, params } = await setup();
