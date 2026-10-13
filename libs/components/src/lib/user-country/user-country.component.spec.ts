@@ -18,7 +18,10 @@ describe('UserCountryComponent', () => {
     userChanged: BehaviorSubject<unknown>;
     setUserCountry: ReturnType<typeof vi.fn>;
   };
-  let errorLogger: { logError: ReturnType<typeof vi.fn>; logErrorHandler: ReturnType<typeof vi.fn> };
+  let errorLogger: {
+    logError: ReturnType<typeof vi.fn>;
+    logErrorHandler: ReturnType<typeof vi.fn>;
+  };
   let countriesLoader: {
     getCountryByID: ReturnType<typeof vi.fn>;
     getCountries: ReturnType<typeof vi.fn>;
@@ -31,7 +34,7 @@ describe('UserCountryComponent', () => {
 
     userService = {
       userState: new BehaviorSubject<{ record?: { countryID?: string } }>({
-        record: undefined
+        record: undefined,
       }),
       user$: new BehaviorSubject({}),
       userChanged: new BehaviorSubject(undefined),
@@ -44,11 +47,13 @@ describe('UserCountryComponent', () => {
     };
 
     countriesLoader = {
-      getCountryByID: vi.fn(() => Promise.resolve({
-        id: 'US',
-        emoji: '🇺🇸',
-        title: 'United States'
-      })),
+      getCountryByID: vi.fn(() =>
+        Promise.resolve({
+          id: 'US',
+          emoji: '🇺🇸',
+          title: 'United States',
+        }),
+      ),
       getCountries: vi.fn(() => Promise.resolve([])),
     };
 
@@ -88,7 +93,10 @@ describe('UserCountryComponent', () => {
   });
 
   it('should call setCountry when onCountryOfResidenceChanged is invoked', () => {
-    const setCountrySpy = vi.spyOn(component as any, 'setCountry');
+    const setCountrySpy = vi.spyOn(
+      component as unknown as { setCountry(countryID?: string): void },
+      'setCountry',
+    );
     component['onCountryOfResidenceChanged']('US');
     expect(setCountrySpy).toHaveBeenCalledWith('US');
   });

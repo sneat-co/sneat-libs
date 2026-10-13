@@ -77,8 +77,7 @@ export class CountriesLoaderService {
    * Automatically loads country data if not yet loaded.
    */
   async getCountries(): Promise<readonly ICountry[]> {
-    await this.loadCountries();
-    return Object.values(this.countriesData!.countriesByID);
+    return Object.values((await this.loadedCountries()).countriesByID);
   }
 
   /**
@@ -86,8 +85,7 @@ export class CountriesLoaderService {
    * Automatically loads country data if not yet loaded.
    */
   async getCountriesByID(): Promise<Record<string, ICountry>> {
-    await this.loadCountries();
-    return this.countriesData!.countriesByID;
+    return (await this.loadedCountries()).countriesByID;
   }
 
   /**
@@ -95,8 +93,7 @@ export class CountriesLoaderService {
    * Automatically loads country data if not yet loaded.
    */
   async getCountryByID(id: string): Promise<ICountry | undefined> {
-    await this.loadCountries();
-    return this.countriesData!.countriesByID[id];
+    return (await this.loadedCountries()).countriesByID[id];
   }
 
   /**
@@ -104,8 +101,14 @@ export class CountriesLoaderService {
    * Automatically loads country data if not yet loaded.
    */
   async getUnknownCountry(): Promise<ICountry> {
+    return (await this.loadedCountries()).unknownCountry;
+  }
+
+  private async loadedCountries(): Promise<CountriesData> {
     await this.loadCountries();
-    return this.countriesData!.unknownCountry;
+    if (!this.countriesData)
+      throw new Error('Country data was cleared during loading');
+    return this.countriesData;
   }
 
   /**
