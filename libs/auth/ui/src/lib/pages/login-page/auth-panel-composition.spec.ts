@@ -17,6 +17,7 @@ import { ToastController } from '@ionic/angular';
 import { BehaviorSubject, NEVER, of } from 'rxjs';
 import { TelegramLoginConfig } from './telegram-login-config';
 import { AuthPanelComponent } from './auth-panel.component';
+import { EmailLoginFormComponent } from './email-login-form/email-login-form.component';
 
 describe('AuthPanelComponent composition', () => {
   it('renders real auth children with the panel-owned random ID provider', async () => {
@@ -74,6 +75,7 @@ describe('AuthPanelComponent composition', () => {
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AuthPanelComponent);
+    fixture.componentRef.setInput('initialMode', 'sign-in');
     fixture.detectChanges();
 
     expect(
@@ -82,6 +84,12 @@ describe('AuthPanelComponent composition', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-login-with-telegram'),
     ).not.toBeNull();
+    const emailForm = fixture.debugElement.query(
+      (element) => element.componentInstance instanceof EmailLoginFormComponent,
+    ).componentInstance as EmailLoginFormComponent;
+    expect(
+      (emailForm as unknown as { sign: () => 'in' | 'up' }).sign(),
+    ).toBe('in');
     fixture.destroy();
     TestBed.resetTestingModule();
   });

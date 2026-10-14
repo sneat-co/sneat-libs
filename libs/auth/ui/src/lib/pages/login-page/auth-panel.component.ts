@@ -38,6 +38,7 @@ import {
   IonText,
 } from '@ionic/angular';
 import {
+  AuthPanelInitialMode,
   EmailFormSigningWith,
   EmailLoginFormComponent,
 } from './email-login-form/email-login-form.component';
@@ -77,6 +78,7 @@ export interface AuthPanelAccountReadyChange {
 })
 export class AuthPanelComponent implements OnInit {
   readonly returnTo = input<string | undefined>();
+  readonly initialMode = input<AuthPanelInitialMode | undefined>();
   readonly showIntro = input(true);
   readonly showCredentials = input(true);
   @Output() readonly accountReadyChange =

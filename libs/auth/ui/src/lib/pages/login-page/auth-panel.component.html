@@ -29,6 +29,7 @@
 
     <sneat-email-login-form
       [returnTo]="safeReturnTo()"
+      [initialMode]="initialMode()"
       (signingWithChange)="onEmailFormStatusChanged($event)"
       (loggedIn)="onLoggedIn($event)"
     />
