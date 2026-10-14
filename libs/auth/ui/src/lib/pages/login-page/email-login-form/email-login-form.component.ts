@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  OnInit,
   Output,
   inject,
   input,
@@ -51,6 +52,7 @@ import { FirebaseError } from 'firebase/app';
 import { safeAuthReturnPath } from '../safe-auth-return-path';
 
 export type EmailFormSigningWith = 'email' | 'emailLink' | 'resetPassword';
+export type AuthPanelInitialMode = 'sign-in' | 'sign-up';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -77,8 +79,9 @@ import {
     IonButtons,
   ],
 })
-export class EmailLoginFormComponent {
+export class EmailLoginFormComponent implements OnInit {
   readonly returnTo = input<string | undefined>();
+  readonly initialMode = input<AuthPanelInitialMode | undefined>();
   readonly appInfo = inject<IAppInfo>(APP_INFO);
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
@@ -126,6 +129,15 @@ export class EmailLoginFormComponent {
           this.setSigningWith(undefined);
         }
       });
+    }
+  }
+
+  ngOnInit(): void {
+    // Keep the remembered-email heuristic for existing callers. A consumer can
+    // explicitly choose the first view without restricting later user toggles.
+    const initialMode = this.initialMode();
+    if (initialMode) {
+      this.sign.set(initialMode === 'sign-in' ? 'in' : 'up');
     }
   }
 
