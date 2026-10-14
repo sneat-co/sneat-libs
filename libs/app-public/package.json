@@ -1,6 +1,6 @@
 {
   "name": "@sneat/app-public",
-  "version": "0.27.32",
+  "version": "0.27.33",
   "publishConfig": {
     "access": "public"
   },
