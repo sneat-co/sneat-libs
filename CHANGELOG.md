@@ -1,3 +1,7 @@
+## 0.27.34 (2026-10-16)
+
+This was a version bump only, there were no code changes.
+
 ## 0.27.33 (2026-10-14)
 
 Adds an optional initial sign-in or sign-up mode to AuthPanel. Existing defaults and later user switching are preserved.
