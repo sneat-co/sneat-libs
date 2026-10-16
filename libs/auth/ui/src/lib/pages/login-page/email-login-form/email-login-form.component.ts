@@ -61,6 +61,7 @@ import {
 @Component({
   selector: 'sneat-email-login-form',
   templateUrl: 'email-login-form.component.html',
+  styleUrl: 'email-login-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,

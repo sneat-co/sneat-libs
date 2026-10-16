@@ -5,3 +5,4 @@ export * from './lib/pages/login-page/telegram-login-config';
 export * from './lib/components';
 export * from './lib/pipes/person-names.pipe';
 export * from './lib/sso';
+export * from './lib/pages/login-page/auth-panel-ui-config';

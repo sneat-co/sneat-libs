@@ -45,6 +45,7 @@ import {
 import { LoginWithTelegramComponent } from './login-with-telegram.component';
 import { safeAuthReturnPath } from './safe-auth-return-path';
 import { combineLatest } from 'rxjs';
+import { AUTH_PANEL_UI_CONFIG } from './auth-panel-ui-config';
 import { RandomIdService } from '@sneat/random';
 
 export interface AuthPanelAccountReadyChange {
@@ -77,6 +78,11 @@ export interface AuthPanelAccountReadyChange {
   providers: [RandomIdService],
 })
 export class AuthPanelComponent implements OnInit {
+  protected readonly uiConfig = inject(AUTH_PANEL_UI_CONFIG);
+  protected providerVisible(provider: AuthProviderID | 'telegram'): boolean {
+    return this.uiConfig.quickLoginProviders?.includes(provider) ?? true;
+  }
+
   readonly returnTo = input<string | undefined>();
   readonly initialMode = input<AuthPanelInitialMode | undefined>();
   readonly showIntro = input(true);
@@ -109,10 +115,7 @@ export class AuthPanelComponent implements OnInit {
     // This initial BehaviorSubject value is emitted after inputs and output
     // listeners are connected. Consumers can gate account-dependent work until
     // the matching user record is ready, even when auth resolved before mount.
-    combineLatest([
-      this.authStateService.authState,
-      this.userService.userState,
-    ])
+    combineLatest([this.authStateService.authState, this.userService.userState])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([authState, userState]) => {
         const uid = authState.user?.uid;
