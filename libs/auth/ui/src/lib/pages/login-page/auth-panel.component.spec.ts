@@ -8,6 +8,7 @@ import {
 } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
 import { BehaviorSubject } from 'rxjs';
+import { AUTH_PANEL_UI_CONFIG } from './auth-panel-ui-config';
 import { AuthPanelComponent } from './auth-panel.component';
 
 describe('AuthPanelComponent', () => {
@@ -21,7 +22,9 @@ describe('AuthPanelComponent', () => {
     retryUserRecordInitialization.mockClear();
     signInWith.mockReset();
     states = new BehaviorSubject<ISneatUserState>({ status: 'authenticating' });
-    authStates = new BehaviorSubject<ISneatAuthState>({ status: 'authenticating' });
+    authStates = new BehaviorSubject<ISneatAuthState>({
+      status: 'authenticating',
+    });
     await TestBed.configureTestingModule({
       imports: [AuthPanelComponent],
       providers: [
@@ -54,6 +57,61 @@ describe('AuthPanelComponent', () => {
     fixture.componentRef.setInput('returnTo', returnTo);
     return fixture.componentInstance;
   }
+
+  it('preserves the default header and providers', () => {
+    authStates.next({ status: 'notAuthenticated' });
+    create();
+    fixture.detectChanges();
+    const text = fixture.nativeElement.innerHTML;
+    expect(text).toContain('Quick login');
+    for (const provider of [
+      'Google',
+      'Microsoft',
+      'GitHub',
+      'Apple',
+      'Facebook',
+    ]) {
+      expect(text).toContain(`Login with ${provider}`);
+    }
+    expect(
+      fixture.nativeElement.querySelector('sneat-login-with-telegram'),
+    ).not.toBeNull();
+  });
+
+  it('applies a website provider allowlist and hidden header', () => {
+    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
+      useValue: {
+        showQuickLoginHeader: false,
+        quickLoginProviders: ['google.com', 'microsoft.com', 'github.com'],
+      },
+    });
+    authStates.next({ status: 'notAuthenticated' });
+    create();
+    fixture.detectChanges();
+    const text = fixture.nativeElement.innerHTML;
+    expect(text).not.toContain('Quick login');
+    expect(text).not.toContain('Login with Apple');
+    expect(text).not.toContain('Login with Facebook');
+    expect(
+      fixture.nativeElement.querySelector('sneat-login-with-telegram'),
+    ).toBeNull();
+    for (const provider of ['Google', 'Microsoft', 'GitHub']) {
+      expect(text).toContain(`Login with ${provider}`);
+    }
+  });
+
+  it('hides the quick login card for an empty allowlist', () => {
+    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
+      useValue: { quickLoginProviders: [] },
+    });
+    authStates.next({ status: 'notAuthenticated' });
+    create();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('ion-card')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
+  });
 
   it('waits for the matching user record after Firebase identity is authenticated', () => {
     const component = create('/subscribe?plan=pro&period=yearly&checkout=test');
@@ -110,7 +168,9 @@ describe('AuthPanelComponent', () => {
       record: {} as NonNullable<ISneatUserState['record']>,
       userRecordStatus: 'ready',
     });
-    const component = create('/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1');
+    const component = create(
+      '/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1',
+    );
     authStates.next({
       status: 'authenticated',
       loadingPhase: 'ready',
@@ -123,7 +183,9 @@ describe('AuthPanelComponent', () => {
     fixture.detectChanges();
 
     expect(ready).toEqual([{ uid: 'buyer', ready: true }]);
-    expect(fixture.nativeElement.textContent).toContain('Sign in with company SSO');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Sign in with company SSO',
+    );
   });
 
   it('does not report a persisted account ready when its current token is missing', () => {
@@ -132,7 +194,12 @@ describe('AuthPanelComponent', () => {
     component.accountReadyChange.subscribe((value) => ready.push(value));
     fixture.detectChanges();
     const user = { uid: 'buyer', isAnonymous: false };
-    authStates.next({ status: 'authenticated', loadingPhase: 'ready', token: null, user });
+    authStates.next({
+      status: 'authenticated',
+      loadingPhase: 'ready',
+      token: null,
+      user,
+    });
     states.next({
       status: 'authenticated',
       user: user as ISneatUserState['user'],
@@ -164,7 +231,9 @@ describe('AuthPanelComponent', () => {
     fixture.detectChanges();
 
     expect(ready.at(-1)).toEqual({ uid: 'buyer', ready: false });
-    expect(fixture.nativeElement.querySelector('sneat-email-login-form')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
   });
 
   it('never reports an anonymous identity as checkout-ready', () => {
@@ -172,7 +241,10 @@ describe('AuthPanelComponent', () => {
     const ready: Array<{ uid?: string; ready: boolean }> = [];
     component.accountReadyChange.subscribe((value) => ready.push(value));
     fixture.detectChanges();
-    const anonymous = { uid: 'anon', isAnonymous: true } as ISneatAuthState['user'];
+    const anonymous = {
+      uid: 'anon',
+      isAnonymous: true,
+    } as ISneatAuthState['user'];
     authStates.next({ status: 'authenticated', user: anonymous });
     states.next({
       status: 'authenticated',
@@ -234,7 +306,9 @@ describe('AuthPanelComponent', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-email-login-form'),
     ).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Sign in with company SSO');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Sign in with company SSO',
+    );
     expect(fixture.nativeElement.textContent).not.toContain(
       'Retry account setup',
     );
@@ -251,7 +325,9 @@ describe('AuthPanelComponent', () => {
     fixture.detectChanges();
 
     expect(ready.at(-1)).toEqual({ uid: undefined, ready: false });
-    expect(fixture.nativeElement.querySelector('sneat-email-login-form')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
   });
 
   it('restores credentials after auth failure for an anonymous identity', () => {
@@ -259,17 +335,25 @@ describe('AuthPanelComponent', () => {
     const ready: Array<{ uid?: string; ready: boolean }> = [];
     component.accountReadyChange.subscribe((value) => ready.push(value));
     fixture.detectChanges();
-    const anonymous = { uid: 'anon', isAnonymous: true } as ISneatAuthState['user'];
+    const anonymous = {
+      uid: 'anon',
+      isAnonymous: true,
+    } as ISneatAuthState['user'];
     authStates.next({
       status: 'authenticated',
       loadingPhase: 'failed',
       user: anonymous,
     });
-    states.next({ status: 'authenticated', user: anonymous as ISneatUserState['user'] });
+    states.next({
+      status: 'authenticated',
+      user: anonymous as ISneatUserState['user'],
+    });
     fixture.detectChanges();
 
     expect(ready.at(-1)).toEqual({ uid: 'anon', ready: false });
-    expect(fixture.nativeElement.querySelector('sneat-email-login-form')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
   });
 
   it('clears a resolved provider busy state when token loading later fails', async () => {
@@ -277,19 +361,25 @@ describe('AuthPanelComponent', () => {
     const component = create('/subscribe?plan=pro&period=monthly');
     fixture.detectChanges();
 
-    await (component as unknown as { loginWith(provider: string): Promise<void> })
-      .loginWith('google.com');
+    await (
+      component as unknown as { loginWith(provider: string): Promise<void> }
+    ).loginWith('google.com');
     authStates.next({
       status: 'authenticated',
       loadingPhase: 'failed',
       user: { uid: 'buyer', isAnonymous: false } as ISneatAuthState['user'],
     });
-    states.next({ status: 'authenticated', user: { uid: 'buyer' } as ISneatUserState['user'] });
+    states.next({
+      status: 'authenticated',
+      user: { uid: 'buyer' } as ISneatUserState['user'],
+    });
     fixture.detectChanges();
 
     expect(signInWith).toHaveBeenCalledWith('google.com');
     expect(fixture.nativeElement.querySelector('ion-item')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('ion-item[disabled]')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('ion-item[disabled]'),
+    ).toBeNull();
   });
 
   it('shows auth recovery controls when the wrapper hides normal credentials', () => {
@@ -300,8 +390,14 @@ describe('AuthPanelComponent', () => {
     states.next({ status: 'authenticated' });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain("We couldn't complete sign-in.");
-    expect(fixture.nativeElement.querySelector('sneat-email-login-form')).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Sign in with company SSO');
+    expect(fixture.nativeElement.textContent).toContain(
+      "We couldn't complete sign-in.",
+    );
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain(
+      'Sign in with company SSO',
+    );
   });
 });
