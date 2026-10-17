@@ -6,6 +6,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
+  IonBackButton,
+  IonButtons,
   IonButton,
   IonCard,
   IonContent,
@@ -27,6 +29,8 @@ import { safeAuthReturnPath } from '../login-page/safe-auth-return-path';
   templateUrl: 'sign-in-from-email-link-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IonBackButton,
+    IonButtons,
     IonHeader,
     IonToolbar,
     IonTitle,
