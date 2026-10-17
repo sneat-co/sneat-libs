@@ -1,6 +1,6 @@
 {
   "name": "@sneat/api-firebase-auth",
-  "version": "0.27.35",
+  "version": "0.27.36",
   "publishConfig": {
     "access": "public"
   },
