@@ -7,7 +7,9 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
+  IonBackButton,
   IonButton,
+  IonButtons,
   IonCard,
   IonCardContent,
   IonContent,
@@ -33,7 +35,9 @@ import { safeAuthReturnPath } from '../pages/login-page/safe-auth-return-path';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
+    IonBackButton,
     IonButton,
+    IonButtons,
     IonCard,
     IonCardContent,
     IonContent,
