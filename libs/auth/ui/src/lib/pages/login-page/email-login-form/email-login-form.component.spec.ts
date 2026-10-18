@@ -27,12 +27,17 @@ vi.mock('firebase/auth', async (importOriginal) => ({
 describe('EmailLoginFormComponent', () => {
   let fixture: ComponentFixture<EmailLoginFormComponent>;
   const logError = vi.fn();
+  const logEvent = vi.fn();
   const toastCreate = vi.fn();
   const initUserRecord = vi.fn();
 
   beforeEach(async () => {
     localStorage.removeItem('emailForSignIn');
     vi.clearAllMocks();
+    // ion-icon fetches its SVG assets from the happy-dom origin, which has no server (ECONNREFUSED noise).
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('', { status: 404 }),
+    );
     firebaseAuthMocks.sendEmailVerification.mockResolvedValue(undefined);
     initUserRecord.mockReturnValue(of(undefined));
     await TestBed.configureTestingModule({
@@ -44,7 +49,7 @@ describe('EmailLoginFormComponent', () => {
         },
         {
           provide: AnalyticsService,
-          useValue: { logEvent: vi.fn() },
+          useValue: { logEvent },
         },
         {
           provide: ErrorLogger,
@@ -74,6 +79,7 @@ describe('EmailLoginFormComponent', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     localStorage.removeItem('emailForSignIn');
   });
 
@@ -96,10 +102,15 @@ describe('EmailLoginFormComponent', () => {
     expect(selectedMode(create())).toBe('in');
   });
 
-  it('keeps the remembered-email sign-in default for existing callers', () => {
+  it('pre-fills the remembered email from localStorage', () => {
     localStorage.setItem('emailForSignIn', 'person@example.com');
 
-    expect(selectedMode(create())).toBe('in');
+    const component = create();
+
+    expect((component as unknown as { email: () => string }).email()).toBe(
+      'person@example.com',
+    );
+    expect(selectedMode(component)).toBe('in');
   });
 
   it('uses an explicit initial sign-in mode', () => {
@@ -305,6 +316,8 @@ describe('EmailLoginFormComponent', () => {
             el().querySelector('.existing-account-hint')?.textContent,
           ).toContain('already has an account');
           expect(logError).not.toHaveBeenCalled();
+          expect(logEvent).toHaveBeenCalledTimes(1);
+          expect(logEvent).toHaveBeenCalledWith('SignUpEmailAlreadyInUse');
           expect(toastCreate).not.toHaveBeenCalled();
           expect(alertSpy).not.toHaveBeenCalled();
           expect(initUserRecord).not.toHaveBeenCalled();
@@ -373,6 +386,11 @@ describe('EmailLoginFormComponent', () => {
         await settle();
 
         expect(selectedMode(component)).toBe('up');
+        expect(logEvent).not.toHaveBeenCalledWith('SignUpEmailAlreadyInUse');
+        expect(logEvent).toHaveBeenCalledWith(
+          'FailedToSignUpWithEmail',
+          undefined,
+        );
         expect(logError).toHaveBeenCalledWith(
           failure,
           'Failed to sign up with email',

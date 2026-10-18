@@ -9,9 +9,8 @@ describe('LoginPage', () => {
   });
 
   it('reuses the inline auth panel and preserves the login continuation', () => {
-    expect(template).toContain(
-      '<sneat-auth-panel [returnTo]="redirectTo" [showIntro]="false" />',
-    );
+    expect(template).toContain('[returnTo]="redirectTo"');
+    expect(template).toContain('[initialMode]="initialMode"');
     expect(authPanelTemplate).toContain('Sign in with company SSO');
     expect(authPanelTemplate).toContain('routerLink="/sso"');
   });
