@@ -193,9 +193,8 @@ describe('EmailLoginFormComponent', () => {
       const buttons = Array.from(
         el().querySelectorAll<HTMLElement>('ion-button'),
       );
-      const found = buttons.find((b) =>
-        b.innerHTML.replace(/<[^>]*>/g, '').includes(text),
-      );
+      // happy-dom reports empty textContent for these custom elements, so match on the markup.
+      const found = buttons.find((b) => b.innerHTML.includes(text));
       if (!found) {
         throw new Error('no action button: ' + text);
       }
