@@ -82,6 +82,10 @@ import {
 })
 export class EmailLoginFormComponent implements OnInit {
   readonly returnTo = input<string | undefined>();
+  /**
+   * Which tab the form opens on. Defaults to 'sign-in' because most visitors are
+   * returning users; pass 'sign-up' to open on the registration tab.
+   */
   readonly initialMode = input<AuthPanelInitialMode | undefined>();
   readonly appInfo = inject<IAppInfo>(APP_INFO);
   private readonly analyticsService =
@@ -96,7 +100,10 @@ export class EmailLoginFormComponent implements OnInit {
     optional: true,
   });
 
-  protected readonly sign = signal<'in' | 'up'>('up'); // TODO: document here what 'in' & 'up' means
+  /** The selected tab: 'in' is Sign in (existing account), 'up' is Sign up (new account). */
+  protected readonly sign = signal<'in' | 'up'>('in');
+  /** Set when a sign-up attempt found the email already registered; shows a hint on the Sign in tab. */
+  protected readonly existingAccountHint = signal(false);
   protected readonly email = signal('');
   protected readonly password = signal('');
   protected readonly firstName = signal('');
@@ -121,9 +128,6 @@ export class EmailLoginFormComponent implements OnInit {
   constructor() {
     const email = localStorage.getItem('emailForSignIn') || '';
     this.email.set(email);
-    if (email) {
-      this.sign.set('in');
-    }
     if (this.authStateService) {
       this.authStateService.authStatus.subscribe((status) => {
         if (status === 'notAuthenticated') {
@@ -134,8 +138,8 @@ export class EmailLoginFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Keep the remembered-email heuristic for existing callers. A consumer can
-    // explicitly choose the first view without restricting later user toggles.
+    // Sign in is the default tab. A consumer can explicitly choose the first
+    // view without restricting later user toggles.
     const initialMode = this.initialMode();
     if (initialMode) {
       this.sign.set(initialMode === 'sign-in' ? 'in' : 'up');
@@ -231,6 +235,10 @@ export class EmailLoginFormComponent implements OnInit {
           ),
         );
     } catch (e) {
+      if ((e as FirebaseError).code === 'auth/email-already-in-use') {
+        this.switchToSignInForExistingAccount();
+        return;
+      }
       this.handleError(
         e,
         'Failed to sign up with email',
@@ -250,7 +258,19 @@ export class EmailLoginFormComponent implements OnInit {
     }
   }
 
+  /**
+   * The email already has an account (a returning user landed on Sign up).
+   * That is not an error: move to the Sign in tab, keep the typed email and say why.
+   */
+  private switchToSignInForExistingAccount(): void {
+    this.analyticsService.logEvent('SignUpEmailAlreadyInUse');
+    this.setSigningWith(undefined);
+    this.existingAccountHint.set(true);
+    this.sign.set('in');
+  }
+
   public signIn(): void {
+    this.existingAccountHint.set(false);
     this.setSigningWith('email');
     this.email.set(this.email().trim());
     this.wrongPassword.set(false);
@@ -380,6 +400,9 @@ export class EmailLoginFormComponent implements OnInit {
   }
 
   signChanged(): void {
+    if (this.sign() === 'up') {
+      this.existingAccountHint.set(false);
+    }
     this.setFocusToEmail();
   }
 
