@@ -80,6 +80,14 @@
         }
       }
       @case ('in') {
+        @if (existingAccountHint()) {
+          <ion-item class="existing-account-hint" role="status">
+            <ion-label color="primary" class="ion-text-wrap">
+              This email already has an account. Enter your password to sign in,
+              or get a sign-in link by email.
+            </ion-label>
+          </ion-item>
+        }
         <ion-item>
           <ion-label class="ion-margin-end">
             <ion-icon name="key-outline" />

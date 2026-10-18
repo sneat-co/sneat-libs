@@ -37,6 +37,7 @@ import { ClassName, SneatBaseComponent } from '@sneat/ui';
 import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { AuthPanelComponent } from './auth-panel.component';
 import { safeAuthReturnPath } from './safe-auth-return-path';
+import type { AuthPanelInitialMode } from './email-login-form/email-login-form.component';
 
 type Action = 'join' | 'refuse'; // TODO: inject provider for action descriptions/messages.
 
@@ -88,6 +89,9 @@ export class LoginPageComponent extends SneatBaseComponent {
   protected readonly reason?: string;
   protected readonly reasonDetail?: string;
   protected readonly action?: Action; // TODO: document possible values?
+  // Optional `?mode=sign-up` or `?mode=sign-in` picks the tab the email form opens on.
+  // Absent or unknown values leave the form on its default (Sign in).
+  protected readonly initialMode?: AuthPanelInitialMode;
 
   protected readonly appTitle: string;
 
@@ -132,6 +136,9 @@ export class LoginPageComponent extends SneatBaseComponent {
     this.to = this.route.snapshot.queryParams['to']; // should we subscribe? I believe no.
     this.reason = this.route.snapshot.queryParams['reason'];
     this.reasonDetail = this.route.snapshot.queryParams['reasonDetail'];
+    const mode = this.route.snapshot.queryParams['mode'];
+    this.initialMode =
+      mode === 'sign-up' || mode === 'sign-in' ? mode : undefined;
     const action = location.hash.match(/[#&]action=(\w+)/);
     this.action = action?.[1] as Action;
 
