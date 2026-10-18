@@ -99,4 +99,46 @@ describe('EmailLoginFormComponent', () => {
 
     expect(selectedMode(component)).toBe('up');
   });
+
+  it('does not log "can not set focus to undefined input" when the mode changes or the page is entered', () => {
+    const error = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    try {
+      const component = create();
+      component.signChanged();
+      component.ionViewDidEnter();
+      expect(error).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it('does not log when sign-up finds the required company name missing', async () => {
+    const error = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const alertSpy = vi.fn();
+    vi.stubGlobal('alert', alertSpy);
+    try {
+      const component = create();
+      const fields = component as unknown as Record<
+        'email' | 'firstName' | 'lastName',
+        { set(value: string): void }
+      >;
+      fields.email.set('a@example.test');
+      fields.firstName.set('A');
+      fields.lastName.set('B');
+      (component.appInfo as { requiredSpaceType?: string }).requiredSpaceType =
+        'company';
+      await component.signUp();
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Company title is a required field',
+      );
+      expect(error).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
 });

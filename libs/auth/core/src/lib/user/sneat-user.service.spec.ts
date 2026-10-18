@@ -12,7 +12,7 @@ import {
 import { UserRecordService } from './user-record.service';
 import { SneatUserService } from './sneat-user.service';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of, Subject, firstValueFrom, throwError } from 'rxjs';
+import { of, NEVER, Subject, firstValueFrom, throwError } from 'rxjs';
 
 // Mock firestore functions
 vi.mock('firebase/firestore', async () => {
@@ -258,6 +258,50 @@ describe('SneatUserService', () => {
       expect(states.at(-1)).toMatchObject({
         record: { title: 'Persisted buyer' },
         userRecordStatus: 'ready',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('initializes the record of an account with several linked providers without sending "firebase" as its provider (init_user_record 400)', async () => {
+    vi.useFakeTimers();
+    try {
+      const { doc, onSnapshot } = await import('firebase/firestore');
+      vi.mocked(doc).mockReturnValue({ id: 'founder' } as never);
+      let watcher: { next: (snapshot: unknown) => void } | undefined;
+      vi.mocked(onSnapshot).mockImplementation(((_reference, observer) => {
+        watcher = observer as typeof watcher;
+        return vi.fn();
+      }) as never);
+      userRecordServiceMock.initUserRecord.mockReturnValue(NEVER);
+
+      authStateSubject.next({
+        status: 'authenticated',
+        user: {
+          uid: 'founder',
+          email: 'founder@example.test',
+          emailVerified: true,
+          isAnonymous: false,
+          // Firebase reports "firebase" here once an account has more than one linked provider.
+          providerId: 'firebase',
+          providerData: [
+            { providerId: 'google.com', email: 'founder@example.test' },
+            { providerId: 'github.com', email: 'founder@example.test' },
+          ],
+        } as never,
+      });
+      await vi.advanceTimersByTimeAsync(100);
+      watcher?.next({
+        ref: { id: 'founder' },
+        exists: () => false,
+        data: () => undefined,
+      });
+
+      expect(userRecordServiceMock.initUserRecord).toHaveBeenCalledWith({
+        email: 'founder@example.test',
+        emailIsVerified: true,
+        authProvider: 'google.com',
       });
     } finally {
       vi.useRealTimers();

@@ -388,11 +388,14 @@ export class EmailLoginFormComponent implements OnInit {
     this.setFocusToEmail();
   }
 
+  // Focus is deliberately not moved (the inputs are not referenced from the template, and a programmatic focus
+  // opens the on-screen keyboard on mobile). These used to call setFocusToInput(undefined), which only logged
+  // "can not set focus to undefined input" to the console, three times on every login page.
   private setFocusToEmail(): void {
-    this.setFocusToInput(undefined /*this.emailInput*/);
+    // no-op
   }
 
   private setFocusToSpaceTitle(): void {
-    this.setFocusToInput(undefined /*this.spaceTitleInput*/);
+    // no-op
   }
 }

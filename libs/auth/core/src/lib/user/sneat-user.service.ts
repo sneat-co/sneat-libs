@@ -29,10 +29,8 @@ import {
   SneatAuthStateService,
 } from '../sneat-auth-state-service';
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
-import {
-  IInitUserRecordRequest,
-  UserRecordService,
-} from './user-record.service';
+import { initUserRecordRequestFromAuthUser } from './init-user-record-request';
+import { UserRecordService } from './user-record.service';
 
 export interface ISneatUserState extends ISneatAuthState {
   record?: IUserRecord | null; // undefined => not loaded yet, null = does not exists
@@ -406,14 +404,7 @@ export class SneatUserService {
     }
     const operation = { uid, accountGeneration, id: ++this.initOperationID };
     this.activeInit = operation;
-    let request: IInitUserRecordRequest = {
-      email: authUser.email || undefined,
-      emailIsVerified: authUser.emailVerified,
-      authProvider: authUser?.providerId,
-    };
-    if (authUser?.displayName) {
-      request = { ...request, names: { fullName: authUser.displayName } };
-    }
+    const request = initUserRecordRequestFromAuthUser(authUser);
     this.userRecordService.initUserRecord(request).subscribe({
       next: () => {
         if (this.activeInit === operation) this.activeInit = undefined;
