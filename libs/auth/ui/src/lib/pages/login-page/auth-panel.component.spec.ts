@@ -19,6 +19,7 @@ describe('AuthPanelComponent', () => {
   const retryUserRecordInitialization = vi.fn();
 
   beforeEach(async () => {
+    sessionStorage.clear();
     retryUserRecordInitialization.mockClear();
     signInWith.mockReset();
     states = new BehaviorSubject<ISneatUserState>({ status: 'authenticating' });
@@ -380,6 +381,26 @@ describe('AuthPanelComponent', () => {
     expect(
       fixture.nativeElement.querySelector('ion-item[disabled]'),
     ).toBeNull();
+  });
+
+  it('keeps a bounded redirect intent while provider auth is pending', async () => {
+    let resolveSignIn!: () => void;
+    signInWith.mockReturnValue(new Promise<void>((resolve) => (resolveSignIn = resolve)));
+    const component = create('/reports?view=recent');
+
+    const pendingSignIn = (
+      component as unknown as { loginWith(provider: string): Promise<void> }
+    ).loginWith('google.com');
+    expect(sessionStorage.length).toBe(1);
+    const key = sessionStorage.key(0);
+    expect(key).toBeTruthy();
+    const storedIntent = key ? sessionStorage.getItem(key) : null;
+    expect(storedIntent).toBeTruthy();
+    expect(JSON.parse(storedIntent || '{}').returnTo).toBe('/reports?view=recent');
+
+    resolveSignIn();
+    await pendingSignIn;
+    expect(sessionStorage.length).toBe(0);
   });
 
   it('shows auth recovery controls when the wrapper hides normal credentials', () => {

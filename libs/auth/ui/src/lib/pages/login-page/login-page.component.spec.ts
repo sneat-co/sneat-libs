@@ -14,4 +14,12 @@ describe('LoginPage', () => {
     expect(authPanelTemplate).toContain('Sign in with company SSO');
     expect(authPanelTemplate).toContain('routerLink="/sso"');
   });
+
+  it('uses a neutral account choice with the current provider and app destination', () => {
+    expect(template).toContain('You’re signed in as');
+    expect(template).toContain('Signed in with {{ provider }}');
+    expect(template).toContain('Continue to {{ appTitle }}');
+    expect(template).toContain('Use another account');
+    expect(template).not.toContain('color="success"');
+  });
 });
