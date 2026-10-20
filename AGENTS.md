@@ -6,6 +6,9 @@ This is a **Sneat extension**. Build it against the shared platform standards.
 
 Before and while writing UI components, work through the **screen-flow checklist**:
 https://github.com/sneat-co/sneat-specs/blob/main/standards/frontend-ux/flows.md
+
+For per-element Ionic guidance, use the component reference:
+https://github.com/sneat-co/sneat-specs/tree/main/standards/frontend-ux/components
 (building-block docs — cards/buttons/lists/forms/modals/states/page-layout — live
 alongside it). If the `ui-flow` skill is available, invoke it.
 

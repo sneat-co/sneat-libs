@@ -44,6 +44,10 @@ import {
 } from './email-login-form/email-login-form.component';
 import { LoginWithTelegramComponent } from './login-with-telegram.component';
 import { safeAuthReturnPath } from './safe-auth-return-path';
+import {
+  clearLoginRedirectIntent,
+  markLoginRedirectIntent,
+} from './login-redirect-intent';
 import { combineLatest } from 'rxjs';
 import { AUTH_PANEL_UI_CONFIG } from './auth-panel-ui-config';
 import { RandomIdService } from '@sneat/random';
@@ -169,9 +173,12 @@ export class AuthPanelComponent implements OnInit {
 
   protected async loginWith(provider: AuthProviderID): Promise<void> {
     this.signingWith.set(provider);
+    markLoginRedirectIntent(this.safeReturnTo());
     try {
       await this.authStateService.signInWith(provider);
+      clearLoginRedirectIntent();
     } catch (error) {
+      clearLoginRedirectIntent();
       const message = (error as { errorMessage?: string }).errorMessage;
       if (
         message !== 'The user canceled the sign-in flow.' &&
