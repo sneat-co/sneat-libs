@@ -259,6 +259,30 @@ describe('SneatApiService public transport', () => {
     await postResult;
   });
 
+  it('sends password reset requests to the backend without an auth token', async () => {
+    bridge.beginAuthentication();
+    const payload = {
+      email: 'person@example.test',
+      returnUrl: 'https://app.example.test/account',
+    };
+
+    const result = firstValueFrom(
+      api.postAsAnonymous<{ ok: boolean }>(
+        'auth/request-password-reset',
+        payload,
+      ),
+    );
+
+    const request = http.expectOne(
+      'https://api.sneat.cloud/v0/auth/request-password-reset',
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(payload);
+    expect(request.request.headers.has('Authorization')).toBe(false);
+    request.flush({ ok: true });
+    await expect(result).resolves.toEqual({ ok: true });
+  });
+
   it('preserves custom base URLs, params, and request options', async () => {
     const customApi = new SneatApiService(
       TestBed.inject(HttpClient),

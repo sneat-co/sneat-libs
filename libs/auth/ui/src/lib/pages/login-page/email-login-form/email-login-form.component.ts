@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import {
   Auth,
-  sendPasswordResetEmail,
   sendSignInLinkToEmail,
 } from 'firebase/auth';
 import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
@@ -336,20 +335,30 @@ export class EmailLoginFormComponent implements OnInit {
   }
 
   public resetPassword(): void {
+    if (this.signingWith()) return;
     this.setSigningWith('resetPassword');
-    sendPasswordResetEmail(this.afAuth, this.email())
-      .then(() => {
-        this.setSigningWith(undefined);
-        this.showToast(
-          `Password reset link has been sent to email: ${this.email()}`,
-        );
+    this.sneatApiService
+      .postAsAnonymous<void>('auth/request-password-reset', {
+        email: this.email(),
+        returnUrl: this.passwordResetReturnUrl(),
       })
-      .catch(
-        this.errorHandler(
+      .subscribe({
+        next: () => {
+          this.setSigningWith(undefined);
+          this.showToast(
+            'If an account exists for this email, password reset instructions will be sent.',
+          );
+        },
+        error: this.errorHandler(
           'Failed to send password reset email',
           'FailedToSendPasswordResetEmail',
         ),
-      );
+      });
+  }
+
+  private passwordResetReturnUrl(): string {
+    const safeReturnTo = safeAuthReturnPath(this.returnTo());
+    return new URL(safeReturnTo ?? '/login', window.location.origin).toString();
   }
 
   private sendVerificationEmail(userCredential: UserCredential): void {

@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ToastController } from '@ionic/angular';
-import { of } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { SneatApiService } from '@sneat/api';
 import { UserRecordService } from '@sneat/auth-core';
 import {
@@ -16,6 +16,7 @@ import { EmailLoginFormComponent } from './email-login-form.component';
 const firebaseAuthMocks = vi.hoisted(() => ({
   createUserWithEmailAndPassword: vi.fn(),
   signInWithEmailAndPassword: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
   sendEmailVerification: vi.fn(),
 }));
 
@@ -30,6 +31,7 @@ describe('EmailLoginFormComponent', () => {
   const logEvent = vi.fn();
   const toastCreate = vi.fn();
   const initUserRecord = vi.fn();
+  const postAsAnonymous = vi.fn();
 
   beforeEach(async () => {
     localStorage.removeItem('emailForSignIn');
@@ -40,6 +42,7 @@ describe('EmailLoginFormComponent', () => {
     );
     firebaseAuthMocks.sendEmailVerification.mockResolvedValue(undefined);
     initUserRecord.mockReturnValue(of(undefined));
+    postAsAnonymous.mockReturnValue(of(undefined));
     await TestBed.configureTestingModule({
       imports: [EmailLoginFormComponent],
       providers: [
@@ -63,7 +66,11 @@ describe('EmailLoginFormComponent', () => {
         },
         {
           provide: SneatApiService,
-          useValue: { post: vi.fn(), setApiAuthToken: vi.fn() },
+          useValue: {
+            post: vi.fn(),
+            postAsAnonymous,
+            setApiAuthToken: vi.fn(),
+          },
         },
         {
           provide: UserRecordService,
@@ -97,6 +104,116 @@ describe('EmailLoginFormComponent', () => {
   function selectedMode(component: EmailLoginFormComponent): 'in' | 'up' {
     return (component as unknown as { sign: () => 'in' | 'up' }).sign();
   }
+
+  describe('password reset requests', () => {
+    function setEmail(component: EmailLoginFormComponent, email: string): void {
+      (component as unknown as { email: { set(value: string): void } }).email.set(
+        email,
+      );
+    }
+
+    function signingWith(component: EmailLoginFormComponent): unknown {
+      return (
+        component as unknown as { signingWith: () => unknown }
+      ).signingWith();
+    }
+
+    it('sends an anonymous request with a same-origin return URL', () => {
+      const component = create();
+      fixture.componentRef.setInput('returnTo', '/dashboard?tab=activity');
+      setEmail(component, 'person@example.test');
+      postAsAnonymous.mockReturnValue(NEVER);
+
+      component.resetPassword();
+      component.resetPassword();
+
+      expect(postAsAnonymous).toHaveBeenCalledWith(
+        'auth/request-password-reset',
+        {
+          email: 'person@example.test',
+          returnUrl: new URL(
+            '/dashboard?tab=activity',
+            window.location.origin,
+          ).toString(),
+        },
+      );
+      expect(postAsAnonymous).toHaveBeenCalledTimes(1);
+      expect(signingWith(component)).toBe('resetPassword');
+    });
+
+    it('uses the app login URL when returnTo attempts an open redirect', () => {
+      const component = create();
+      fixture.componentRef.setInput('returnTo', '#//evil.example/collect');
+      setEmail(component, 'person@example.test');
+      postAsAnonymous.mockReturnValue(NEVER);
+
+      component.resetPassword();
+
+      expect(postAsAnonymous).toHaveBeenCalledWith(
+        'auth/request-password-reset',
+        {
+          email: 'person@example.test',
+          returnUrl: new URL('/login', window.location.origin).toString(),
+        },
+      );
+    });
+
+    it('preserves a safe app return route', () => {
+      const component = create();
+      fixture.componentRef.setInput('returnTo', '/home');
+      setEmail(component, 'person@example.test');
+      postAsAnonymous.mockReturnValue(NEVER);
+
+      component.resetPassword();
+
+      expect(postAsAnonymous).toHaveBeenCalledWith(
+        'auth/request-password-reset',
+        {
+          email: 'person@example.test',
+          returnUrl: new URL('/home', window.location.origin).toString(),
+        },
+      );
+    });
+
+    it('clears busy state and shows an account-neutral success message', () => {
+      const component = create();
+      setEmail(component, 'person@example.test');
+      const present = vi.fn().mockResolvedValue(undefined);
+      toastCreate.mockResolvedValue({ present });
+
+      component.resetPassword();
+
+      expect(signingWith(component)).toBeUndefined();
+      expect(toastCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('If an account exists'),
+        }),
+      );
+      expect(toastCreate.mock.calls[0][0].message).not.toContain(
+        'person@example.test',
+      );
+    });
+
+    it('clears busy state and reports request errors without Firebase fallback', () => {
+      const component = create();
+      const failure = new Error('request failed');
+      postAsAnonymous.mockReturnValue(throwError(() => failure));
+
+      component.resetPassword();
+
+      expect(signingWith(component)).toBeUndefined();
+      expect(logEvent).toHaveBeenCalledWith(
+        'FailedToSendPasswordResetEmail',
+        undefined,
+      );
+      expect(logError).toHaveBeenCalledWith(
+        failure,
+        'Failed to send password reset email',
+        { report: true },
+      );
+      expect(firebaseAuthMocks.sendPasswordResetEmail).not.toHaveBeenCalled();
+    });
+  });
 
   it('defaults to sign-in when no remembered email exists', () => {
     expect(selectedMode(create())).toBe('in');
