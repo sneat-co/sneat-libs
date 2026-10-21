@@ -8,6 +8,7 @@ import type { HclAttribute, HclBlock, HclBody, SourceRange, StructuredArray, Str
   selector: 'sneat-structured-node',
   standalone: true,
   imports: [CommonModule, forwardRef(() => StructuredNodeComponent)],
+  styleUrls: ['./structured-node.css'],
   template: `
     @if (depth > maxDepth) {
       <span class="sd-limit">Nested value limit reached</span>
@@ -88,20 +89,6 @@ import type { HclAttribute, HclBlock, HclBody, SourceRange, StructuredArray, Str
       }
     }
   `,
-  styles: [`
-    :host { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
-    .sd-inline-array { display: inline-flex; flex-wrap: wrap; gap: .2rem; max-width: 100%; }
-    .sd-inline-item { white-space: normal; }
-    .sd-fields { display: grid; grid-template-columns: minmax(6rem, auto) minmax(0, 1fr); gap: .3rem .8rem; }
-    .sd-fields dt { font-weight: 600; }
-    .sd-fields dd { margin: 0; min-width: 0; }
-    .sd-list { margin: .2rem 0; padding-inline-start: 1.5rem; }
-    .sd-expression { font-family: monospace; }
-    .sd-source, .sd-link { border: 0; background: transparent; color: inherit; text-decoration: underline; cursor: pointer; }
-    .sd-source { font-size: .75em; margin-inline-start: .5rem; }
-    .sd-empty, .sd-null, .sd-limit { opacity: .75; }
-    .sd-hcl-member, .sd-hcl-block { display: block; margin-block: .25rem; }
-  `],
 })
 export class StructuredNodeComponent {
   @Input({ required: true }) node!: StructuredNode;
