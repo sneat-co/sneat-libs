@@ -1,3 +1,7 @@
+## 0.27.41 (2026-10-22)
+
+This was a version bump only, there were no code changes.
+
 ## 0.27.40 (2026-10-20)
 
 This was a version bump only, there were no code changes.
