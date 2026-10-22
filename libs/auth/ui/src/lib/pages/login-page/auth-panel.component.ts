@@ -105,7 +105,13 @@ export class AuthPanelComponent implements OnInit {
    * provider that will be connected once the user signs in the usual way.
    */
   protected readonly pendingLink = signal<
-    { readonly provider: string; readonly email?: string } | undefined
+    | {
+        readonly provider: string;
+        readonly email?: string;
+        /** False when no credential could be kept to link later. */
+        readonly autoLink: boolean;
+      }
+    | undefined
   >(undefined);
   protected readonly recordState = signal<
     'signed-out' | 'loading' | 'ready' | 'failed'
@@ -125,10 +131,19 @@ export class AuthPanelComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    // A redirect sign-in that hit an existing account comes back here.
-    if (this.authStateService.pendingCredentialLink) {
-      this.showPendingLink();
-    }
+    // A redirect sign-in that hit an existing account is read after this
+    // page renders, so follow the pending link rather than reading it once.
+    this.authStateService.pendingCredentialLinkChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((link) => {
+        if (link) {
+          this.pendingLink.set({
+            provider: authProviderTitle(link.providerId),
+            email: link.email,
+            autoLink: true,
+          });
+        }
+      });
     // This initial BehaviorSubject value is emitted after inputs and output
     // listeners are connected. Consumers can gate account-dependent work until
     // the matching user record is ready, even when auth resolved before mount.
@@ -194,7 +209,12 @@ export class AuthPanelComponent implements OnInit {
       clearLoginRedirectIntent();
       this.signingWith.set(undefined);
       if (isAccountExistsWithDifferentCredential(error)) {
-        this.showPendingLink();
+        if (!this.authStateService.pendingCredentialLink) {
+          this.pendingLink.set({
+            provider: authProviderTitle(provider),
+            autoLink: false,
+          });
+        }
         return;
       }
       const message = (error as { errorMessage?: string }).errorMessage;
@@ -208,15 +228,6 @@ export class AuthPanelComponent implements OnInit {
       }
       this.signingWith.set(undefined);
     }
-  }
-
-  private showPendingLink(): void {
-    const link = this.authStateService.pendingCredentialLink;
-    this.pendingLink.set(
-      link
-        ? { provider: authProviderTitle(link.providerId), email: link.email }
-        : { provider: 'this sign-in method' },
-    );
   }
 
   protected onLoggedIn(userCredential: UserCredential): void {

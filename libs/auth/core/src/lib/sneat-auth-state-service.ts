@@ -288,6 +288,7 @@ export class SneatAuthStateService {
 
   public signOut(): Promise<void> {
     clearCurrentSpace();
+    this.clearPendingCredentialLink();
     return this.fbAuth.signOut();
   }
 
@@ -414,6 +415,7 @@ export class SneatAuthStateService {
     const link = pendingCredentialLinkFromError(err);
     if (link) {
       savePendingCredentialLink(link);
+      this.pendingCredentialLink$.next(link);
       this.analyticsService.logEvent('pendingCredentialLinkSaved', {
         provider: link.providerId,
       });
@@ -426,32 +428,63 @@ export class SneatAuthStateService {
     return loadPendingCredentialLink();
   }
 
+  private readonly pendingCredentialLink$ = new BehaviorSubject<
+    IPendingCredentialLink | undefined
+  >(
+    // Reading also purges an expired entry left from an earlier visit, so a
+    // stale access token does not linger in storage.
+    loadPendingCredentialLink(),
+  );
+
+  /**
+   * The pending link as it changes — a redirect sign-in error is read after
+   * the login page has rendered, so the page subscribes rather than reading
+   * once.
+   */
+  public readonly pendingCredentialLinkChanges =
+    this.pendingCredentialLink$.asObservable();
+
+  private clearPendingCredentialLink(): void {
+    clearPendingCredentialLink();
+    if (this.pendingCredentialLink$.value) {
+      this.pendingCredentialLink$.next(undefined);
+    }
+  }
+
   private async linkPendingCredential(fbUser: User): Promise<void> {
     const link = loadPendingCredentialLink();
     if (!link) {
       return;
     }
     if (fbUser.providerData.some((p) => p.providerId === link.providerId)) {
-      clearPendingCredentialLink();
+      this.clearPendingCredentialLink();
       return;
     }
     if (
-      link.email &&
-      fbUser.email &&
+      !link.email ||
+      !fbUser.email ||
       link.email.toLowerCase() !== fbUser.email.toLowerCase()
     ) {
-      // A different account signed in: leave the link for the one it belongs
-      // to (it expires on its own).
+      // Link only to the account with the same email: the one-account-per-email
+      // rule means that account is the owner of the pending credential. Users
+      // with no email (Telegram, phone) never qualify. Leave the link for its
+      // owner; it expires on its own.
       return;
     }
-    clearPendingCredentialLink();
+    this.clearPendingCredentialLink();
     const credential = credentialOfPendingLink(link);
     if (!credential) {
       return;
     }
     try {
       const { user } = await linkWithCredential(fbUser, credential);
-      this.authUser$.next(createSneatAuthUserFromFbUser(user));
+      if (this.fbAuth.currentUser?.uid !== user.uid) {
+        // Signed out (or switched) while linking: don't resurrect the user.
+        return;
+      }
+      const authUser = createSneatAuthUserFromFbUser(user);
+      this.authUser$.next(authUser);
+      this.authState$.next({ ...this.authState$.value, user: authUser });
       this.analyticsService.logEvent('pendingCredentialLinked', {
         provider: link.providerId,
       });

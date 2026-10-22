@@ -16,7 +16,11 @@
         This email already has an account.
       }
       Sign in the way you did before — with email or another sign-in method —
-      and we'll connect {{ link.provider }} to it automatically.
+      @if (link.autoLink) {
+        and we'll connect {{ link.provider }} to it automatically.
+      } @else {
+        then connect {{ link.provider }} from your account page.
+      }
     </p>
   </div>
 }

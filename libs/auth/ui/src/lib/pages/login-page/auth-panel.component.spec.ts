@@ -8,7 +8,7 @@ import {
   SneatUserService,
 } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { AUTH_PANEL_UI_CONFIG } from './auth-panel-ui-config';
 import { AuthPanelComponent } from './auth-panel.component';
 
@@ -19,6 +19,7 @@ describe('AuthPanelComponent', () => {
   const signInWith = vi.fn();
   const retryUserRecordInitialization = vi.fn();
   let pendingCredentialLink: IPendingCredentialLink | undefined;
+  let pendingCredentialLinkChanges: Subject<IPendingCredentialLink | undefined>;
   const logError = vi.fn();
 
   beforeEach(async () => {
@@ -27,6 +28,7 @@ describe('AuthPanelComponent', () => {
     signInWith.mockReset();
     logError.mockReset();
     pendingCredentialLink = undefined;
+    pendingCredentialLinkChanges = new Subject();
     states = new BehaviorSubject<ISneatUserState>({ status: 'authenticating' });
     authStates = new BehaviorSubject<ISneatAuthState>({
       status: 'authenticating',
@@ -41,6 +43,9 @@ describe('AuthPanelComponent', () => {
             signInWith,
             get pendingCredentialLink() {
               return pendingCredentialLink;
+            },
+            get pendingCredentialLinkChanges() {
+              return pendingCredentialLinkChanges.asObservable();
             },
           },
         },
@@ -431,6 +436,7 @@ describe('AuthPanelComponent', () => {
   it('explains how to connect a provider whose email already has an account', async () => {
     signInWith.mockImplementation(async () => {
       pendingCredentialLink = githubLink;
+      pendingCredentialLinkChanges.next(githubLink);
       throw accountExists;
     });
     const component = create();
@@ -450,7 +456,7 @@ describe('AuthPanelComponent', () => {
     ).toBeNull();
   });
 
-  it('still explains the conflict when no credential could be kept', async () => {
+  it('does not promise automatic linking when no credential could be kept', async () => {
     signInWith.mockRejectedValue(accountExists);
     const component = create();
     fixture.detectChanges();
@@ -462,12 +468,16 @@ describe('AuthPanelComponent', () => {
 
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('This email already has an account.');
-    expect(text).toContain('connect this sign-in method');
+    expect(text).toContain('then connect GitHub from your account page');
+    expect(text).not.toContain('automatically');
   });
 
-  it('shows a pending link left by a redirect sign-in', () => {
-    pendingCredentialLink = githubLink;
+  it('shows a pending link from a redirect sign-in that resolves after render', () => {
     create();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('already has');
+
+    pendingCredentialLinkChanges.next(githubLink);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain(

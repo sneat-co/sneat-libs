@@ -91,6 +91,8 @@ describe('SneatAuthStateService', () => {
   let operationBlockerMock: { isBlocked: Mock };
 
   beforeEach(() => {
+    // The service reads any pending credential link when it is created.
+    localStorage.clear();
     operationBlockerMock = {
       isBlocked: vi.fn().mockReturnValue(false),
     };
@@ -675,6 +677,7 @@ describe('SneatAuthStateService', () => {
       vi.mocked(linkWithCredential).mockResolvedValue({
         user: linkedUser,
       } as UserCredential);
+      authMock.currentUser = linkedUser;
       const user = fbUser();
 
       onAuthStateChangedCallback.next(user);
@@ -689,6 +692,70 @@ describe('SneatAuthStateService', () => {
       expect(authUser?.providerData.map((p) => p.providerId)).toContain(
         'github.com',
       );
+      const state = await firstValueFrom(service.authState);
+      expect(state.user?.providerData.map((p) => p.providerId)).toContain(
+        'github.com',
+      );
+    });
+
+    it('does not bring back a user who signed out while linking', async () => {
+      savePendingCredentialLink(githubLink);
+      const linkedUser = fbUser({ uid: 'u1' });
+      vi.mocked(linkWithCredential).mockResolvedValue({
+        user: linkedUser,
+      } as UserCredential);
+      authMock.currentUser = null;
+      const published: unknown[] = [];
+      service.authUser.subscribe((u) => published.push(u));
+      published.length = 0;
+
+      onAuthStateChangedCallback.next(fbUser());
+      published.length = 0; // ignore the sign-in publication itself
+      await flush();
+
+      expect(linkWithCredential).toHaveBeenCalled();
+      expect(published).toEqual([]);
+    });
+
+    it('never links to a user without an email', async () => {
+      savePendingCredentialLink(githubLink);
+
+      onAuthStateChangedCallback.next(fbUser({ email: null }));
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+      expect(service.pendingCredentialLink).toEqual(githubLink);
+    });
+
+    it('never links a pending credential that has no email', async () => {
+      savePendingCredentialLink({ ...githubLink, email: undefined });
+
+      onAuthStateChangedCallback.next(fbUser());
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+    });
+
+    it('announces pending link changes', () => {
+      const seen: unknown[] = [];
+      service.pendingCredentialLinkChanges.subscribe((l) => seen.push(l));
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
+
+      service.rememberPendingCredentialLink(conflict);
+
+      expect(seen).toEqual([undefined, githubLink]);
+    });
+
+    it('forgets the pending link on sign-out', async () => {
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
+      service.rememberPendingCredentialLink(conflict);
+      const seen: unknown[] = [];
+      service.pendingCredentialLinkChanges.subscribe((l) => seen.push(l));
+
+      await service.signOut();
+
+      expect(service.pendingCredentialLink).toBeUndefined();
+      expect(seen).toEqual([githubLink, undefined]);
     });
 
     it('logs and clears when linking fails', async () => {
