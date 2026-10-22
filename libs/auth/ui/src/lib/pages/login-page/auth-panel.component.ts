@@ -209,7 +209,11 @@ export class AuthPanelComponent implements OnInit {
       clearLoginRedirectIntent();
       this.signingWith.set(undefined);
       if (isAccountExistsWithDifferentCredential(error)) {
-        if (!this.authStateService.pendingCredentialLink) {
+        // A pending link for another provider (an earlier attempt) is not
+        // this one: say how to connect this provider by hand.
+        if (
+          this.authStateService.pendingCredentialLink?.providerId !== provider
+        ) {
           this.pendingLink.set({
             provider: authProviderTitle(provider),
             autoLink: false,

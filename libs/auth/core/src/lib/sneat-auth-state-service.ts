@@ -454,6 +454,8 @@ export class SneatAuthStateService {
   private async linkPendingCredential(fbUser: User): Promise<void> {
     const link = loadPendingCredentialLink();
     if (!link) {
+      // Gone or expired: stop announcing it.
+      this.clearPendingCredentialLink();
       return;
     }
     if (fbUser.providerData.some((p) => p.providerId === link.providerId)) {

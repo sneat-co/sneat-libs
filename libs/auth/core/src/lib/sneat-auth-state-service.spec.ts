@@ -746,6 +746,20 @@ describe('SneatAuthStateService', () => {
       expect(seen).toEqual([undefined, githubLink]);
     });
 
+    it('stops announcing a pending link that expired before sign-in', async () => {
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
+      service.rememberPendingCredentialLink(conflict);
+      localStorage.clear(); // as if it expired
+      const seen: unknown[] = [];
+      service.pendingCredentialLinkChanges.subscribe((l) => seen.push(l));
+
+      onAuthStateChangedCallback.next(fbUser());
+      await flush();
+
+      expect(seen).toEqual([githubLink, undefined]);
+      expect(linkWithCredential).not.toHaveBeenCalled();
+    });
+
     it('forgets the pending link on sign-out', async () => {
       vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
       service.rememberPendingCredentialLink(conflict);

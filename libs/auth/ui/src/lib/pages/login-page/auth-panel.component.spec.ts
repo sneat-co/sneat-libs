@@ -472,6 +472,22 @@ describe('AuthPanelComponent', () => {
     expect(text).not.toContain('automatically');
   });
 
+  it('names the provider being signed in with, not an older pending link', async () => {
+    pendingCredentialLink = { ...githubLink, providerId: 'google.com' };
+    signInWith.mockRejectedValue(accountExists);
+    const component = create();
+    fixture.detectChanges();
+
+    await (
+      component as unknown as { loginWith(provider: string): Promise<void> }
+    ).loginWith('github.com');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'then connect GitHub from your account page',
+    );
+  });
+
   it('shows a pending link from a redirect sign-in that resolves after render', () => {
     create();
     fixture.detectChanges();

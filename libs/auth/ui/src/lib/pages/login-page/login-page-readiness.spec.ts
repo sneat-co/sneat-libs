@@ -16,7 +16,7 @@ import {
   SNEAT_FIREBASE_AUTH,
 } from '@sneat/core';
 import { RANDOM_ID_OPTIONS } from '@sneat/random';
-import { BehaviorSubject, NEVER } from 'rxjs';
+import { BehaviorSubject, NEVER, of } from 'rxjs';
 import { TelegramLoginConfig } from './telegram-login-config';
 import {
   clearLoginRedirectIntent,
@@ -62,6 +62,7 @@ describe('LoginPageComponent persisted record readiness', () => {
             authState: authState.asObservable(),
             authStatus: authStatus.asObservable(),
             authUser: authUser.asObservable(),
+            pendingCredentialLinkChanges: of(undefined),
             signOut: vi.fn().mockResolvedValue(undefined),
             signInWith: vi.fn(),
           },
