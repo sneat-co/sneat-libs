@@ -4,7 +4,9 @@ import { Router } from '@angular/router';
 import { BrowserOptions } from '@sentry/browser';
 import { ChunkLoadErrorHandler } from './chunk-load-error.handler';
 
-export const provideSentryAppInitializer = (options: BrowserOptions) => {
+type SentryInitOptions = Parameters<typeof init>[0] | BrowserOptions;
+
+export const provideSentryAppInitializer = (options: SentryInitOptions) => {
   initSentry(options);
   return [
     ...sentryAppInitializerProviders,
@@ -14,9 +16,9 @@ export const provideSentryAppInitializer = (options: BrowserOptions) => {
   ];
 };
 
-function initSentry(options: BrowserOptions): void {
+function initSentry(options: SentryInitOptions): void {
   // console.log('initSentry()');
-  init(options);
+  init(options as Parameters<typeof init>[0]);
 }
 
 const sentryAppInitializerProviders = [
