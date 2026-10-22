@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  input,
   signal,
   inject,
 } from '@angular/core';
@@ -53,6 +54,12 @@ import { UserAuthAProviderStatusComponent } from './user-auth-provider-status';
 export class UserAuthAccountsComponent extends SneatBaseComponent {
   private readonly sneatUserService = inject(SneatUserService);
   private readonly sneatApiService = inject(SneatApiService);
+
+  /**
+   * The messaging-apps section (Telegram, WhatsApp, Viber) and its Sneat.app
+   * copy. Apps that only need sign-in methods turn it off.
+   */
+  readonly showMessagingApps = input(true);
 
   protected readonly $userRecord = signal<IUserRecord | undefined>(undefined);
 

@@ -1,6 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
+  IPendingCredentialLink,
   ISneatAuthState,
   ISneatUserState,
   SneatAuthStateService,
@@ -17,11 +18,15 @@ describe('AuthPanelComponent', () => {
   let authStates: BehaviorSubject<ISneatAuthState>;
   const signInWith = vi.fn();
   const retryUserRecordInitialization = vi.fn();
+  let pendingCredentialLink: IPendingCredentialLink | undefined;
+  const logError = vi.fn();
 
   beforeEach(async () => {
     sessionStorage.clear();
     retryUserRecordInitialization.mockClear();
     signInWith.mockReset();
+    logError.mockReset();
+    pendingCredentialLink = undefined;
     states = new BehaviorSubject<ISneatUserState>({ status: 'authenticating' });
     authStates = new BehaviorSubject<ISneatAuthState>({
       status: 'authenticating',
@@ -31,7 +36,13 @@ describe('AuthPanelComponent', () => {
       providers: [
         {
           provide: SneatAuthStateService,
-          useValue: { authState: authStates.asObservable(), signInWith },
+          useValue: {
+            authState: authStates.asObservable(),
+            signInWith,
+            get pendingCredentialLink() {
+              return pendingCredentialLink;
+            },
+          },
         },
         {
           provide: SneatUserService,
@@ -43,7 +54,7 @@ describe('AuthPanelComponent', () => {
         },
         {
           provide: ErrorLogger,
-          useValue: { logError: vi.fn() },
+          useValue: { logError },
         },
       ],
     })
@@ -385,7 +396,9 @@ describe('AuthPanelComponent', () => {
 
   it('keeps a bounded redirect intent while provider auth is pending', async () => {
     let resolveSignIn!: () => void;
-    signInWith.mockReturnValue(new Promise<void>((resolve) => (resolveSignIn = resolve)));
+    signInWith.mockReturnValue(
+      new Promise<void>((resolve) => (resolveSignIn = resolve)),
+    );
     const component = create('/reports?view=recent');
 
     const pendingSignIn = (
@@ -396,11 +409,82 @@ describe('AuthPanelComponent', () => {
     expect(key).toBeTruthy();
     const storedIntent = key ? sessionStorage.getItem(key) : null;
     expect(storedIntent).toBeTruthy();
-    expect(JSON.parse(storedIntent || '{}').returnTo).toBe('/reports?view=recent');
+    expect(JSON.parse(storedIntent || '{}').returnTo).toBe(
+      '/reports?view=recent',
+    );
 
     resolveSignIn();
     await pendingSignIn;
     expect(sessionStorage.length).toBe(0);
+  });
+
+  const githubLink: IPendingCredentialLink = {
+    providerId: 'github.com',
+    email: 'me@example.com',
+    createdAt: 0,
+    credential: {},
+  };
+  const accountExists = {
+    code: 'auth/account-exists-with-different-credential',
+  };
+
+  it('explains how to connect a provider whose email already has an account', async () => {
+    signInWith.mockImplementation(async () => {
+      pendingCredentialLink = githubLink;
+      throw accountExists;
+    });
+    const component = create();
+    fixture.detectChanges();
+
+    await (
+      component as unknown as { loginWith(provider: string): Promise<void> }
+    ).loginWith('github.com');
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('me@example.com already has an account.');
+    expect(text).toContain("we'll connect GitHub to it automatically");
+    expect(logError).not.toHaveBeenCalled();
+    expect(
+      fixture.nativeElement.querySelector('ion-item[disabled]'),
+    ).toBeNull();
+  });
+
+  it('still explains the conflict when no credential could be kept', async () => {
+    signInWith.mockRejectedValue(accountExists);
+    const component = create();
+    fixture.detectChanges();
+
+    await (
+      component as unknown as { loginWith(provider: string): Promise<void> }
+    ).loginWith('github.com');
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('This email already has an account.');
+    expect(text).toContain('connect this sign-in method');
+  });
+
+  it('shows a pending link left by a redirect sign-in', () => {
+    pendingCredentialLink = githubLink;
+    create();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      "we'll connect GitHub to it automatically",
+    );
+  });
+
+  it('logs other provider sign-in errors', async () => {
+    signInWith.mockRejectedValue(new Error('boom'));
+    const component = create();
+    fixture.detectChanges();
+
+    await (
+      component as unknown as { loginWith(provider: string): Promise<void> }
+    ).loginWith('github.com');
+
+    expect(logError).toHaveBeenCalled();
   });
 
   it('shows auth recovery controls when the wrapper hides normal credentials', () => {

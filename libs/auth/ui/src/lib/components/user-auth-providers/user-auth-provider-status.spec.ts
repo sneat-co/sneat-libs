@@ -53,6 +53,17 @@ describe('UserAuthAProviderStatusComponent', () => {
     expect(view.isDisabled()).toBe(true);
   });
 
+  it('describes GitHub', () => {
+    fixture.componentRef.setInput('providerID', 'github.com');
+    const view = component as unknown as {
+      provider: () => { title: string; icon: string };
+    };
+    expect(view.provider()).toMatchObject({
+      title: 'GitHub',
+      icon: 'logo-github',
+    });
+  });
+
   it('connects and disconnects the selected provider', async () => {
     const view = component as unknown as {
       connect: () => void;

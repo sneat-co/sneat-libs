@@ -33,6 +33,7 @@ import {
   signInWithPopup,
   signInWithRedirect,
   linkWithPopup,
+  linkWithCredential,
   unlink,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -41,6 +42,14 @@ import {
 // TODO: fix & remove this eslint hint @nrwl/nx/enforce-module-boundaries
 
 import { newRandomId } from '@sneat/random';
+import {
+  IPendingCredentialLink,
+  clearPendingCredentialLink,
+  credentialOfPendingLink,
+  loadPendingCredentialLink,
+  pendingCredentialLinkFromError,
+  savePendingCredentialLink,
+} from './pending-credential-link';
 
 export enum AuthStatuses {
   authenticating = 'authenticating',
@@ -229,6 +238,9 @@ export class SneatAuthStateService {
           return;
         }
         const status = AuthStatuses.authenticated;
+        if (fbUser && !fbUser.isAnonymous) {
+          void this.linkPendingCredential(fbUser);
+        }
         this.authUser$.next(authUser);
         this.authState$.next({
           ...this.authState$.value,
@@ -382,8 +394,73 @@ export class SneatAuthStateService {
       await signInWithRedirect(this.fbAuth, authProvider);
       return undefined;
     }
-    const userCredential = await signInWithPopup(this.fbAuth, authProvider);
-    return Promise.resolve(userCredential);
+    try {
+      return await signInWithPopup(this.fbAuth, authProvider);
+    } catch (err) {
+      this.rememberPendingCredentialLink(err);
+      throw err;
+    }
+  }
+
+  /**
+   * Keeps the credential from an `account-exists-with-different-credential`
+   * error, so it is linked to the existing account as soon as the user signs
+   * in the way they did before. Returns the pending link, or undefined for any
+   * other error. Call it for redirect sign-in errors too.
+   */
+  public rememberPendingCredentialLink(
+    err: unknown,
+  ): IPendingCredentialLink | undefined {
+    const link = pendingCredentialLinkFromError(err);
+    if (link) {
+      savePendingCredentialLink(link);
+      this.analyticsService.logEvent('pendingCredentialLinkSaved', {
+        provider: link.providerId,
+      });
+    }
+    return link;
+  }
+
+  /** The provider waiting to be linked on next sign-in, if any. */
+  public get pendingCredentialLink(): IPendingCredentialLink | undefined {
+    return loadPendingCredentialLink();
+  }
+
+  private async linkPendingCredential(fbUser: User): Promise<void> {
+    const link = loadPendingCredentialLink();
+    if (!link) {
+      return;
+    }
+    if (fbUser.providerData.some((p) => p.providerId === link.providerId)) {
+      clearPendingCredentialLink();
+      return;
+    }
+    if (
+      link.email &&
+      fbUser.email &&
+      link.email.toLowerCase() !== fbUser.email.toLowerCase()
+    ) {
+      // A different account signed in: leave the link for the one it belongs
+      // to (it expires on its own).
+      return;
+    }
+    clearPendingCredentialLink();
+    const credential = credentialOfPendingLink(link);
+    if (!credential) {
+      return;
+    }
+    try {
+      const { user } = await linkWithCredential(fbUser, credential);
+      this.authUser$.next(createSneatAuthUserFromFbUser(user));
+      this.analyticsService.logEvent('pendingCredentialLinked', {
+        provider: link.providerId,
+      });
+    } catch (err) {
+      this.errorLogger.logError(
+        err,
+        `Failed to connect ${link.providerId} to your account`,
+      );
+    }
   }
 
   public async linkWith(
@@ -465,11 +542,7 @@ export type AuthProviderID =
   | 'phone';
 
 export type AuthProviderName =
-  | 'Google'
-  | 'Apple'
-  | 'Microsoft'
-  | 'Facebook'
-  | 'GitHub';
+  'Google' | 'Apple' | 'Microsoft' | 'Facebook' | 'GitHub';
 
 function getAuthProvider(authProviderID: AuthProviderID): AuthProvider {
   switch (authProviderID) {

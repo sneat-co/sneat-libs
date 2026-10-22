@@ -19,6 +19,8 @@ import {
   ISneatAuthState,
   SneatAuthStateService,
   SneatUserService,
+  authProviderTitle,
+  isAccountExistsWithDifferentCredential,
   isSneatAccountReady,
 } from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
@@ -98,6 +100,13 @@ export class AuthPanelComponent implements OnInit {
     AuthProviderID | EmailFormSigningWith | undefined
   >(undefined);
   protected readonly authRecoveryNeeded = signal(false);
+  /**
+   * Set when sign-in hit an email that already has an account: names the
+   * provider that will be connected once the user signs in the usual way.
+   */
+  protected readonly pendingLink = signal<
+    { readonly provider: string; readonly email?: string } | undefined
+  >(undefined);
   protected readonly recordState = signal<
     'signed-out' | 'loading' | 'ready' | 'failed'
   >('loading');
@@ -116,6 +125,10 @@ export class AuthPanelComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
+    // A redirect sign-in that hit an existing account comes back here.
+    if (this.authStateService.pendingCredentialLink) {
+      this.showPendingLink();
+    }
     // This initial BehaviorSubject value is emitted after inputs and output
     // listeners are connected. Consumers can gate account-dependent work until
     // the matching user record is ready, even when auth resolved before mount.
@@ -179,6 +192,11 @@ export class AuthPanelComponent implements OnInit {
       clearLoginRedirectIntent();
     } catch (error) {
       clearLoginRedirectIntent();
+      this.signingWith.set(undefined);
+      if (isAccountExistsWithDifferentCredential(error)) {
+        this.showPendingLink();
+        return;
+      }
       const message = (error as { errorMessage?: string }).errorMessage;
       if (
         message !== 'The user canceled the sign-in flow.' &&
@@ -190,6 +208,15 @@ export class AuthPanelComponent implements OnInit {
       }
       this.signingWith.set(undefined);
     }
+  }
+
+  private showPendingLink(): void {
+    const link = this.authStateService.pendingCredentialLink;
+    this.pendingLink.set(
+      link
+        ? { provider: authProviderTitle(link.providerId), email: link.email }
+        : { provider: 'this sign-in method' },
+    );
   }
 
   protected onLoggedIn(userCredential: UserCredential): void {

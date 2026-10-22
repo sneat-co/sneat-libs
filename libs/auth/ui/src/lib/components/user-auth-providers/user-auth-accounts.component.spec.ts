@@ -46,4 +46,31 @@ describe('UserAuthAccountsComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('offers GitHub among the sign-in methods', () => {
+    fixture.detectChanges();
+    const providers = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'sneat-user-auth-provider-status',
+      ) as NodeListOf<Element>,
+    ).map((el) => el.getAttribute('providerID'));
+    expect(providers).toEqual([
+      'google.com',
+      'apple.com',
+      'microsoft.com',
+      'github.com',
+    ]);
+  });
+
+  it('shows messaging apps by default and hides them on request', () => {
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Messaging apps');
+    fixture.componentRef.setInput('showMessagingApps', false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Messaging apps');
+    expect(
+      fixture.nativeElement.querySelectorAll('sneat-user-auth-provider-status')
+        .length,
+    ).toBe(4);
+  });
 });
