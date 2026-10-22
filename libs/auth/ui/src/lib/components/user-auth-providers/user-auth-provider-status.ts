@@ -79,6 +79,13 @@ export class UserAuthAProviderStatusComponent implements OnDestroy {
           icon: 'logo-apple',
           color: 'dark',
         };
+      case 'github.com':
+        return {
+          id,
+          title: 'GitHub',
+          icon: 'logo-github',
+          color: 'dark',
+        };
       case 'microsoft.com':
         return {
           id,

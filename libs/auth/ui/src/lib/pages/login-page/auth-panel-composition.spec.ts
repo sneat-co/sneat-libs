@@ -45,6 +45,7 @@ describe('AuthPanelComponent composition', () => {
           useValue: {
             authState,
             authStatus: of('authenticated'),
+            pendingCredentialLinkChanges: of(undefined),
             signInWith: vi.fn(),
           },
         },

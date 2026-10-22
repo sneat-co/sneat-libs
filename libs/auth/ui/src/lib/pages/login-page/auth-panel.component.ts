@@ -19,6 +19,8 @@ import {
   ISneatAuthState,
   SneatAuthStateService,
   SneatUserService,
+  authProviderTitle,
+  isAccountExistsWithDifferentCredential,
   isSneatAccountReady,
 } from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
@@ -98,6 +100,19 @@ export class AuthPanelComponent implements OnInit {
     AuthProviderID | EmailFormSigningWith | undefined
   >(undefined);
   protected readonly authRecoveryNeeded = signal(false);
+  /**
+   * Set when sign-in hit an email that already has an account: names the
+   * provider that will be connected once the user signs in the usual way.
+   */
+  protected readonly pendingLink = signal<
+    | {
+        readonly provider: string;
+        readonly email?: string;
+        /** False when no credential could be kept to link later. */
+        readonly autoLink: boolean;
+      }
+    | undefined
+  >(undefined);
   protected readonly recordState = signal<
     'signed-out' | 'loading' | 'ready' | 'failed'
   >('loading');
@@ -116,6 +131,19 @@ export class AuthPanelComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
+    // A redirect sign-in that hit an existing account is read after this
+    // page renders, so follow the pending link rather than reading it once.
+    this.authStateService.pendingCredentialLinkChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((link) => {
+        if (link) {
+          this.pendingLink.set({
+            provider: authProviderTitle(link.providerId),
+            email: link.email,
+            autoLink: true,
+          });
+        }
+      });
     // This initial BehaviorSubject value is emitted after inputs and output
     // listeners are connected. Consumers can gate account-dependent work until
     // the matching user record is ready, even when auth resolved before mount.
@@ -179,6 +207,20 @@ export class AuthPanelComponent implements OnInit {
       clearLoginRedirectIntent();
     } catch (error) {
       clearLoginRedirectIntent();
+      this.signingWith.set(undefined);
+      if (isAccountExistsWithDifferentCredential(error)) {
+        // A pending link for another provider (an earlier attempt) is not
+        // this one: say how to connect this provider by hand.
+        if (
+          this.authStateService.pendingCredentialLink?.providerId !== provider
+        ) {
+          this.pendingLink.set({
+            provider: authProviderTitle(provider),
+            autoLink: false,
+          });
+        }
+        return;
+      }
       const message = (error as { errorMessage?: string }).errorMessage;
       if (
         message !== 'The user canceled the sign-in flow.' &&

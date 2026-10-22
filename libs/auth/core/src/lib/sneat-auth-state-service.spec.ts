@@ -12,7 +12,17 @@ import {
 } from './sneat-auth-state-service';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { firstValueFrom, Observer } from 'rxjs';
-import { User, UserCredential } from 'firebase/auth';
+import {
+  User,
+  UserCredential,
+  linkWithCredential,
+  signInWithPopup,
+} from 'firebase/auth';
+import {
+  credentialOfPendingLink,
+  pendingCredentialLinkFromError,
+  savePendingCredentialLink,
+} from './pending-credential-link';
 
 // Mock Capacitor
 vi.mock('@capacitor/core', () => ({
@@ -53,6 +63,7 @@ vi.mock('firebase/auth', () => {
     signInWithCustomToken: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
     signInWithPopup: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
     linkWithPopup: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
+    linkWithCredential: vi.fn(),
     unlink: vi.fn().mockResolvedValue({ uid: 'test', providerData: [] }),
     signInWithCredential: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
     createUserWithEmailAndPassword: vi.fn(),
@@ -60,6 +71,12 @@ vi.mock('firebase/auth', () => {
     getAuth: vi.fn().mockReturnValue({}),
   };
 });
+
+vi.mock('./pending-credential-link', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./pending-credential-link')>()),
+  pendingCredentialLinkFromError: vi.fn(),
+  credentialOfPendingLink: vi.fn().mockReturnValue('restored-credential'),
+}));
 
 describe('SneatAuthStateService', () => {
   let service: SneatAuthStateService;
@@ -74,6 +91,8 @@ describe('SneatAuthStateService', () => {
   let operationBlockerMock: { isBlocked: Mock };
 
   beforeEach(() => {
+    // The service reads any pending credential link when it is created.
+    localStorage.clear();
     operationBlockerMock = {
       isBlocked: vi.fn().mockReturnValue(false),
     };
@@ -502,10 +521,7 @@ describe('SneatAuthStateService', () => {
           user: { uid: userID, getIdToken },
         });
 
-        const result = await service[method](
-          'member@example.com',
-          'password',
-        );
+        const result = await service[method]('member@example.com', 'password');
 
         expect(providerMethod).toHaveBeenCalledWith(
           authMock,
@@ -601,6 +617,215 @@ describe('SneatAuthStateService', () => {
       await expect(service.unlinkAuthProvider('google.com')).rejects.toMatch(
         /Failed to unlink google.com account/,
       );
+    });
+  });
+
+  describe('pending credential link', () => {
+    const githubLink = {
+      providerId: 'github.com',
+      email: 'me@example.com',
+      createdAt: Date.now(),
+      credential: { providerId: 'github.com' },
+    };
+    const conflict = {
+      code: 'auth/account-exists-with-different-credential',
+    };
+    const fbUser = (overrides: Partial<User> = {}) =>
+      ({
+        uid: 'u1',
+        isAnonymous: false,
+        emailVerified: true,
+        email: 'Me@Example.com',
+        providerId: 'firebase',
+        providerData: [{ providerId: 'google.com' }],
+        ...overrides,
+      }) as unknown as User;
+    const flush = () => new Promise((resolve) => setTimeout(resolve));
+
+    beforeEach(() => {
+      localStorage.clear();
+      vi.mocked(pendingCredentialLinkFromError).mockReset();
+      vi.mocked(linkWithCredential).mockReset();
+    });
+
+    it('remembers the credential when popup sign-in hits an existing account', async () => {
+      vi.mocked(signInWithPopup).mockRejectedValueOnce(conflict);
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
+
+      await expect(service.signInWith('github.com')).rejects.toBe(conflict);
+
+      expect(pendingCredentialLinkFromError).toHaveBeenCalledWith(conflict);
+      expect(service.pendingCredentialLink).toEqual(githubLink);
+    });
+
+    it('stores nothing for other errors', () => {
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(undefined);
+      expect(service.rememberPendingCredentialLink(new Error('x'))).toBe(
+        undefined,
+      );
+      expect(service.pendingCredentialLink).toBeUndefined();
+    });
+
+    it('links the pending credential when the same email signs in', async () => {
+      savePendingCredentialLink(githubLink);
+      const linkedUser = fbUser({
+        providerData: [
+          { providerId: 'google.com' },
+          { providerId: 'github.com' },
+        ] as User['providerData'],
+      });
+      vi.mocked(linkWithCredential).mockResolvedValue({
+        user: linkedUser,
+      } as UserCredential);
+      authMock.currentUser = linkedUser;
+      const user = fbUser();
+
+      onAuthStateChangedCallback.next(user);
+      await flush();
+
+      expect(linkWithCredential).toHaveBeenCalledWith(
+        user,
+        'restored-credential',
+      );
+      expect(service.pendingCredentialLink).toBeUndefined();
+      const authUser = await firstValueFrom(service.authUser);
+      expect(authUser?.providerData.map((p) => p.providerId)).toContain(
+        'github.com',
+      );
+      const state = await firstValueFrom(service.authState);
+      expect(state.user?.providerData.map((p) => p.providerId)).toContain(
+        'github.com',
+      );
+    });
+
+    it('does not bring back a user who signed out while linking', async () => {
+      savePendingCredentialLink(githubLink);
+      const linkedUser = fbUser({ uid: 'u1' });
+      vi.mocked(linkWithCredential).mockResolvedValue({
+        user: linkedUser,
+      } as UserCredential);
+      authMock.currentUser = null;
+      const published: unknown[] = [];
+      service.authUser.subscribe((u) => published.push(u));
+      published.length = 0;
+
+      onAuthStateChangedCallback.next(fbUser());
+      published.length = 0; // ignore the sign-in publication itself
+      await flush();
+
+      expect(linkWithCredential).toHaveBeenCalled();
+      expect(published).toEqual([]);
+    });
+
+    it('never links to a user without an email', async () => {
+      savePendingCredentialLink(githubLink);
+
+      onAuthStateChangedCallback.next(fbUser({ email: null }));
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+      expect(service.pendingCredentialLink).toEqual(githubLink);
+    });
+
+    it('never links a pending credential that has no email', async () => {
+      savePendingCredentialLink({ ...githubLink, email: undefined });
+
+      onAuthStateChangedCallback.next(fbUser());
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+    });
+
+    it('announces pending link changes', () => {
+      const seen: unknown[] = [];
+      service.pendingCredentialLinkChanges.subscribe((l) => seen.push(l));
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
+
+      service.rememberPendingCredentialLink(conflict);
+
+      expect(seen).toEqual([undefined, githubLink]);
+    });
+
+    it('stops announcing a pending link that expired before sign-in', async () => {
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
+      service.rememberPendingCredentialLink(conflict);
+      localStorage.clear(); // as if it expired
+      const seen: unknown[] = [];
+      service.pendingCredentialLinkChanges.subscribe((l) => seen.push(l));
+
+      onAuthStateChangedCallback.next(fbUser());
+      await flush();
+
+      expect(seen).toEqual([githubLink, undefined]);
+      expect(linkWithCredential).not.toHaveBeenCalled();
+    });
+
+    it('forgets the pending link on sign-out', async () => {
+      vi.mocked(pendingCredentialLinkFromError).mockReturnValue(githubLink);
+      service.rememberPendingCredentialLink(conflict);
+      const seen: unknown[] = [];
+      service.pendingCredentialLinkChanges.subscribe((l) => seen.push(l));
+
+      await service.signOut();
+
+      expect(service.pendingCredentialLink).toBeUndefined();
+      expect(seen).toEqual([githubLink, undefined]);
+    });
+
+    it('logs and clears when linking fails', async () => {
+      savePendingCredentialLink(githubLink);
+      vi.mocked(linkWithCredential).mockRejectedValue(new Error('in use'));
+
+      onAuthStateChangedCallback.next(fbUser());
+      await flush();
+
+      expect(service.pendingCredentialLink).toBeUndefined();
+      expect(TestBed.inject(ErrorLogger).logError).toHaveBeenCalled();
+    });
+
+    it('does not link to an account with a different email', async () => {
+      savePendingCredentialLink(githubLink);
+
+      onAuthStateChangedCallback.next(fbUser({ email: 'other@example.com' }));
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+      expect(service.pendingCredentialLink).toEqual(githubLink);
+    });
+
+    it('drops the link when the provider is already connected', async () => {
+      savePendingCredentialLink(githubLink);
+
+      onAuthStateChangedCallback.next(
+        fbUser({
+          providerData: [{ providerId: 'github.com' }] as User['providerData'],
+        }),
+      );
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+      expect(service.pendingCredentialLink).toBeUndefined();
+    });
+
+    it('drops a link whose credential cannot be restored', async () => {
+      savePendingCredentialLink(githubLink);
+      vi.mocked(credentialOfPendingLink).mockReturnValueOnce(undefined);
+
+      onAuthStateChangedCallback.next(fbUser());
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+      expect(service.pendingCredentialLink).toBeUndefined();
+    });
+
+    it('ignores anonymous users', async () => {
+      savePendingCredentialLink(githubLink);
+
+      onAuthStateChangedCallback.next(fbUser({ isAnonymous: true }));
+      await flush();
+
+      expect(linkWithCredential).not.toHaveBeenCalled();
+      expect(service.pendingCredentialLink).toEqual(githubLink);
     });
   });
 });
