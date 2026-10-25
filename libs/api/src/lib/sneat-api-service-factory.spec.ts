@@ -6,7 +6,7 @@ import {
 } from './sneat-api-service-factory';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { Auth } from 'firebase/auth';
-import { SneatApiBaseUrl } from './sneat-api-service';
+import { SneatApiBaseUrl, SneatApiService } from './sneat-api-service';
 import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import * as coreModule from '@sneat/core';
 
@@ -56,27 +56,34 @@ describe('SneatApiServiceFactory', () => {
     });
 
     it('should throw error for unknown store type', () => {
-      TestBed.runInInjectionContext(() => {
-        // 'github' is a valid storeId for parseStoreRef but not handled by factory
-        expect(() => factory.getSneatApiService('github')).toThrow(
-          'unknown store type: github',
-        );
-      });
+      // 'github' is a valid storeId for parseStoreRef but not handled by factory
+      expect(() => factory.getSneatApiService('github')).toThrow(
+        'unknown store type: github',
+      );
     });
 
-    it('should return service for firestore type', () => {
-      TestBed.runInInjectionContext(() => {
-        const service = factory.getSneatApiService('firestore');
-        expect(service).toBeTruthy();
-      });
+    // Regression (NG0203): callers reach getSneatApiService() from UI event
+    // handlers — e.g. datatug.app's "create new project" submit — where there
+    // is NO active injection context. The factory used to call `inject()`
+    // inside this method, so every such call threw NG0203 and project creation
+    // failed. These tests deliberately do NOT wrap the call in
+    // TestBed.runInInjectionContext(): doing so is what hid the bug, because
+    // the test provided the very context production never has.
+    it('should return service for firestore type without an injection context', () => {
+      const service = factory.getSneatApiService('firestore');
+      expect(service).toBeTruthy();
     });
 
     it('should cache and return same service instance for same storeId', () => {
-      TestBed.runInInjectionContext(() => {
-        const service1 = factory.getSneatApiService('firestore');
-        const service2 = factory.getSneatApiService('firestore');
-        expect(service1).toBe(service2);
-      });
+      const service1 = factory.getSneatApiService('firestore');
+      const service2 = factory.getSneatApiService('firestore');
+      expect(service1).toBe(service2);
+    });
+
+    it('should return the same instance as TestBed.inject(SneatApiService)', () => {
+      expect(factory.getSneatApiService('firestore')).toBe(
+        TestBed.inject(SneatApiService),
+      );
     });
   });
 

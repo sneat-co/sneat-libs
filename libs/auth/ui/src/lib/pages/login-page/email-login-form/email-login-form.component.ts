@@ -2,14 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  OnInit,
   Output,
   inject,
+  input,
   signal,
   viewChild,
 } from '@angular/core';
 import {
   Auth,
-  sendPasswordResetEmail,
   sendSignInLinkToEmail,
 } from 'firebase/auth';
 import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
@@ -31,7 +32,11 @@ import {
   IonText,
 } from '@ionic/angular';
 import { SneatApiService } from '@sneat/api';
-import { IInitUserRecordRequest, UserRecordService } from '@sneat/auth-core';
+import {
+  IInitUserRecordRequest,
+  SneatAuthStateService,
+  UserRecordService,
+} from '@sneat/auth-core';
 import { createSetFocusToInput } from '@sneat/ui';
 import {
   AnalyticsService,
@@ -43,8 +48,10 @@ import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { RandomIdService } from '@sneat/random';
 import { UserCredential, sendEmailVerification } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
+import { safeAuthReturnPath } from '../safe-auth-return-path';
 
 export type EmailFormSigningWith = 'email' | 'emailLink' | 'resetPassword';
+export type AuthPanelInitialMode = 'sign-in' | 'sign-up';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -53,6 +60,7 @@ import {
 @Component({
   selector: 'sneat-email-login-form',
   templateUrl: 'email-login-form.component.html',
+  styleUrl: 'email-login-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
@@ -71,7 +79,13 @@ import {
     IonButtons,
   ],
 })
-export class EmailLoginFormComponent {
+export class EmailLoginFormComponent implements OnInit {
+  readonly returnTo = input<string | undefined>();
+  /**
+   * Which tab the form opens on. Defaults to 'sign-in' because most visitors are
+   * returning users; pass 'sign-up' to open on the registration tab.
+   */
+  readonly initialMode = input<AuthPanelInitialMode | undefined>();
   readonly appInfo = inject<IAppInfo>(APP_INFO);
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
@@ -81,8 +95,14 @@ export class EmailLoginFormComponent {
   private readonly randomIdService = inject(RandomIdService);
   private readonly sneatApiService = inject(SneatApiService);
   private readonly userRecordService = inject(UserRecordService);
+  private readonly authStateService = inject(SneatAuthStateService, {
+    optional: true,
+  });
 
-  protected readonly sign = signal<'in' | 'up'>('up'); // TODO: document here what 'in' & 'up' means
+  /** The selected tab: 'in' is Sign in (existing account), 'up' is Sign up (new account). */
+  protected readonly sign = signal<'in' | 'up'>('in');
+  /** Set when a sign-up attempt found the email already registered; shows a hint on the Sign in tab. */
+  protected readonly existingAccountHint = signal(false);
   protected readonly email = signal('');
   protected readonly password = signal('');
   protected readonly firstName = signal('');
@@ -107,8 +127,21 @@ export class EmailLoginFormComponent {
   constructor() {
     const email = localStorage.getItem('emailForSignIn') || '';
     this.email.set(email);
-    if (email) {
-      this.sign.set('in');
+    if (this.authStateService) {
+      this.authStateService.authStatus.subscribe((status) => {
+        if (status === 'notAuthenticated') {
+          this.setSigningWith(undefined);
+        }
+      });
+    }
+  }
+
+  ngOnInit(): void {
+    // Sign in is the default tab. A consumer can explicitly choose the first
+    // view without restricting later user toggles.
+    const initialMode = this.initialMode();
+    if (initialMode) {
+      this.sign.set(initialMode === 'sign-in' ? 'in' : 'up');
     }
   }
 
@@ -201,6 +234,10 @@ export class EmailLoginFormComponent {
           ),
         );
     } catch (e) {
+      if ((e as FirebaseError).code === 'auth/email-already-in-use') {
+        this.switchToSignInForExistingAccount();
+        return;
+      }
       this.handleError(
         e,
         'Failed to sign up with email',
@@ -220,7 +257,19 @@ export class EmailLoginFormComponent {
     }
   }
 
+  /**
+   * The email already has an account (a returning user landed on Sign up).
+   * That is not an error: move to the Sign in tab, keep the typed email and say why.
+   */
+  private switchToSignInForExistingAccount(): void {
+    this.analyticsService.logEvent('SignUpEmailAlreadyInUse');
+    this.setSigningWith(undefined);
+    this.existingAccountHint.set(true);
+    this.sign.set('in');
+  }
+
   public signIn(): void {
+    this.existingAccountHint.set(false);
     this.setSigningWith('email');
     this.email.set(this.email().trim());
     this.wrongPassword.set(false);
@@ -244,9 +293,11 @@ export class EmailLoginFormComponent {
     this.setSigningWith('emailLink');
     this.email.set(this.email().trim());
     this.saveEmailForReuse();
+    const actionURL = new URL('sign-in-from-email-link', document.baseURI);
+    const returnTo = safeAuthReturnPath(this.returnTo());
+    if (returnTo) actionURL.searchParams.set('returnTo', returnTo);
     sendSignInLinkToEmail(this.afAuth, this.email(), {
-      // url: 'https://dailyscrum.app/pwa/sign-in',
-      url: document.baseURI + 'sign-in-from-email-link',
+      url: actionURL.toString(),
       handleCodeInApp: true,
     })
       .then(() => {
@@ -284,20 +335,30 @@ export class EmailLoginFormComponent {
   }
 
   public resetPassword(): void {
+    if (this.signingWith()) return;
     this.setSigningWith('resetPassword');
-    sendPasswordResetEmail(this.afAuth, this.email())
-      .then(() => {
-        this.setSigningWith(undefined);
-        this.showToast(
-          `Password reset link has been sent to email: ${this.email()}`,
-        );
+    this.sneatApiService
+      .postAsAnonymous<void>('auth/request-password-reset', {
+        email: this.email(),
+        returnUrl: this.passwordResetReturnUrl(),
       })
-      .catch(
-        this.errorHandler(
+      .subscribe({
+        next: () => {
+          this.setSigningWith(undefined);
+          this.showToast(
+            'If an account exists for this email, password reset instructions will be sent.',
+          );
+        },
+        error: this.errorHandler(
           'Failed to send password reset email',
           'FailedToSendPasswordResetEmail',
         ),
-      );
+      });
+  }
+
+  private passwordResetReturnUrl(): string {
+    const safeReturnTo = safeAuthReturnPath(this.returnTo());
+    return new URL(safeReturnTo ?? '/login', window.location.origin).toString();
   }
 
   private sendVerificationEmail(userCredential: UserCredential): void {
@@ -311,6 +372,7 @@ export class EmailLoginFormComponent {
   }
 
   private onLoggedIn(userCredential: UserCredential): void {
+    this.setSigningWith(undefined);
     this.loggedIn.emit(userCredential);
   }
 
@@ -347,18 +409,25 @@ export class EmailLoginFormComponent {
   }
 
   signChanged(): void {
+    if (this.sign() === 'up') {
+      this.existingAccountHint.set(false);
+    }
     this.setFocusToEmail();
   }
 
   ionViewDidEnter(): void {
+    this.setSigningWith(undefined);
     this.setFocusToEmail();
   }
 
+  // Focus is deliberately not moved (the inputs are not referenced from the template, and a programmatic focus
+  // opens the on-screen keyboard on mobile). These used to call setFocusToInput(undefined), which only logged
+  // "can not set focus to undefined input" to the console, three times on every login page.
   private setFocusToEmail(): void {
-    this.setFocusToInput(undefined /*this.emailInput*/);
+    // no-op
   }
 
   private setFocusToSpaceTitle(): void {
-    this.setFocusToInput(undefined /*this.spaceTitleInput*/);
+    // no-op
   }
 }

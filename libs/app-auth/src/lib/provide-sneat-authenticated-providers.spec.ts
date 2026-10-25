@@ -454,12 +454,20 @@ describe('SneatAuthenticatedLifecycle', () => {
     await Promise.resolve();
   });
 
-  it('reports redirect completion errors without aborting startup', async () => {
+  it.each([
+    ['reports redirect completion errors without aborting startup', undefined],
+    [
+      'keeps a redirect credential for an existing account instead of reporting it',
+      { providerId: 'github.com' },
+    ],
+  ])('%s', async (_, pendingLink) => {
     const error = new Error('redirect failed');
     mocks.getRedirectResult.mockRejectedValue(error);
+    const rememberPendingCredentialLink = vi.fn().mockReturnValue(pendingLink);
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
+    consoleError.mockClear();
     TestBed.configureTestingModule({
       providers: [
         SneatAuthenticatedLifecycle,
@@ -469,7 +477,11 @@ describe('SneatAuthenticatedLifecycle', () => {
         },
         {
           provide: SneatAuthStateService,
-          useValue: { authState: new Subject<ISneatAuthState>(), fbAuth: {} },
+          useValue: {
+            authState: new Subject<ISneatAuthState>(),
+            fbAuth: {},
+            rememberPendingCredentialLink,
+          },
         },
         {
           provide: Router,
@@ -491,6 +503,14 @@ describe('SneatAuthenticatedLifecycle', () => {
     });
     TestBed.inject(SneatAuthenticatedLifecycle).start();
     await Promise.resolve();
-    expect(consoleError).toHaveBeenCalledWith('getRedirectResult failed', error);
+    expect(rememberPendingCredentialLink).toHaveBeenCalledWith(error);
+    if (pendingLink) {
+      expect(consoleError).not.toHaveBeenCalled();
+    } else {
+      expect(consoleError).toHaveBeenCalledWith(
+        'getRedirectResult failed',
+        error,
+      );
+    }
   });
 });

@@ -4,7 +4,10 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
+  IonBackButton,
+  IonButtons,
   IonButton,
   IonCard,
   IonContent,
@@ -19,12 +22,15 @@ import {
 } from '@ionic/angular';
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
+import { safeAuthReturnPath } from '../login-page/safe-auth-return-path';
 
 @Component({
   selector: 'sneat-sign-in-from-email-link-page',
   templateUrl: 'sign-in-from-email-link-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IonBackButton,
+    IonButtons,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -38,6 +44,7 @@ import { ErrorLogger, IErrorLogger } from '@sneat/core';
   ],
 })
 export class SignInFromEmailLinkPageComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly authStateService = inject(SneatAuthStateService);
   private readonly navController = inject(NavController);
@@ -45,6 +52,9 @@ export class SignInFromEmailLinkPageComponent {
   protected readonly email = signal('');
   protected readonly emailFromStorage = signal(false);
   protected readonly isSigning = signal(false);
+  private readonly returnTo = safeAuthReturnPath(
+    this.route.snapshot.queryParamMap.get('returnTo'),
+  );
 
   constructor() {
     const email = localStorage.getItem('emailForSignIn') || '';
@@ -60,7 +70,7 @@ export class SignInFromEmailLinkPageComponent {
     this.authStateService.signInWithEmailLink(this.email()).subscribe({
       next: () => {
         this.navController
-          .navigateRoot('/')
+          .navigateRoot(this.returnTo ?? '/')
           .catch(
             this.errorLogger.logErrorHandler(
               'Failed to navigate to root page after signing in with email link',

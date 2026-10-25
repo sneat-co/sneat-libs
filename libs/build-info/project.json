@@ -1,0 +1,32 @@
+{
+  "name": "build-info",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "root": "libs/build-info",
+  "sourceRoot": "libs/build-info/bin",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/libs/build-info"],
+      "options": {
+        "parallel": false,
+        "commands": [
+          "rm -rf dist/libs/build-info",
+          "mkdir -p dist/libs/build-info/bin",
+          "cp libs/build-info/package.json dist/libs/build-info/package.json",
+          "cp libs/build-info/README.md dist/libs/build-info/README.md",
+          "cp libs/build-info/bin/stamp-build-info.mjs dist/libs/build-info/bin/stamp-build-info.mjs",
+          "chmod +x dist/libs/build-info/bin/stamp-build-info.mjs"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{workspaceRoot}/coverage/libs/build-info"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  },
+  "tags": ["scope:foundation"]
+}

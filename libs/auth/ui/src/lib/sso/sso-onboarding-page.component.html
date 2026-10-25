@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-buttons slot="start"
+      ><ion-back-button defaultHref="/sso"
+    /></ion-buttons>
+    <ion-title>Set up company SSO</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-content>
+      <h1>Choose the organisation that owns SSO</h1>
+      @if (domain) {
+        <p>
+          Continue setup for <strong>{{ domain }}</strong
+          >.
+        </p>
+      }
+      <p>Only a space owner or admin can configure enterprise sign-in.</p>
+    </ion-card-content>
+  </ion-card>
+
+  @if (manageableSpaces().length) {
+    <ion-list>
+      @for (entry of manageableSpaces(); track entry[0]) {
+        <ion-item button detail (click)="selectSpace(entry[0])">
+          <ion-label>
+            <strong>{{ spaceTitle(entry[1]) }}</strong>
+            <p>{{ entry[1].type }}</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  <ion-card>
+    <ion-card-content>
+      <h2>Create a Sneat space</h2>
+      <ion-item>
+        <ion-label position="stacked">Company or organisation name</ion-label>
+        <ion-input
+          name="company-name"
+          [ngModel]="companyName()"
+          (ngModelChange)="companyName.set($event)"
+          [disabled]="busy()"
+          (keyup.enter)="createSpace()"
+        />
+      </ion-item>
+      @if (error()) {
+        <p>
+          <ion-text color="danger">{{ error() }}</ion-text>
+        </p>
+      }
+      <ion-button
+        expand="block"
+        class="ion-margin-top"
+        [disabled]="!companyName().trim() || busy()"
+        (click)="createSpace()"
+      >
+        @if (busy()) {
+          <ion-spinner name="lines-small" slot="start" />
+        }
+        Create space and continue
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

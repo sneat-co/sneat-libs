@@ -1,0 +1,40 @@
+ion-segment-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+.email-login-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 4px;
+
+  ion-button {
+    margin-inline: 0;
+    white-space: nowrap;
+  }
+
+  ion-button[disabled][fill='clear'] {
+    flex: 0 0 auto;
+    --padding-start: 2px;
+    --padding-end: 2px;
+  }
+}
+
+@media (max-width: 575px) {
+  .password-button-suffix {
+    display: none;
+  }
+
+  .email-login-actions {
+    padding-inline: 10px;
+    gap: 3px;
+
+    ion-button {
+      min-width: 0;
+      --padding-start: 8px;
+      --padding-end: 8px;
+      font-size: 12px;
+    }
+  }
+}

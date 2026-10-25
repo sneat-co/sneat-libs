@@ -78,6 +78,9 @@
       "@sneat/components": [
         "libs/components/src/index.ts"
       ],
+      "@sneat/media": [
+        "libs/media/src/index.ts"
+      ],
       "@sneat/auth-ui": [
         "libs/auth/ui/src/index.ts"
       ],
@@ -110,6 +113,12 @@
       ],
       "@sneat/space-nav-router": [
         "libs/space/nav-router/src/index.ts"
+      ],
+      "@sneat/structured-data": [
+        "./libs/structured-data/src/index.ts"
+      ],
+      "@sneat/structured-data/core": [
+        "./libs/structured-data/src/lib/core/index.ts"
       ]
     },
     "noUncheckedSideEffectImports": false,

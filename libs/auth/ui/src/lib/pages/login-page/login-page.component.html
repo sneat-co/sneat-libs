@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar color="light">
     <ion-buttons slot="start">
-      <ion-back-button />
+      <ion-back-button defaultHref="/" />
     </ion-buttons>
     <ion-title>Login &#64; {{ appTitle }}</ion-title>
   </ion-toolbar>
@@ -25,158 +25,62 @@
     </ion-card>
   }
 
-  <p style="text-align: center; font-size: smaller">
-    <ion-text color="medium">
-      Sign in with your Sneat account.
-    </ion-text>
-  </p>
+  @if (!showAccountChoice()) {
+    <p style="text-align: center; font-size: smaller">
+      <ion-text color="medium">Sign in with your Sneat account.</ion-text>
+    </p>
+  }
 
-  @if (isAuthenticating()) {
+  @if (
+    isAuthenticating() ||
+    isPreparingFreshAccount() ||
+    isRedirectingAfterFreshSignIn()
+  ) {
     <ion-card>
       <ion-card-content class="ion-text-center ion-padding">
         <ion-spinner name="lines" />
         <p class="ion-no-margin ion-padding-top">Signing you in…</p>
       </ion-card-content>
     </ion-card>
-  } @else if (isAuthenticated()) {
-    <ion-card color="success">
-      <ion-card-content>
-        <p>
+  } @else if (showAccountChoice()) {
+    <ion-card class="account-choice-card">
+      <ion-card-content class="ion-text-center ion-padding">
+        <h2 class="ion-no-margin">
           @if (signedInAs()) {
-            You are already signed in as <strong>{{ signedInAs() }}</strong>.
+            You’re signed in as <strong>{{ signedInAs() }}</strong>
           } @else {
-            You are already signed in.
+            You’re already signed in
           }
-        </p>
-        <ion-button expand="block" (click)="continueToApp()">Continue</ion-button>
+        </h2>
+        @if (signedInWith(); as provider) {
+          <p class="ion-margin-top ion-margin-bottom">Signed in with {{ provider }}</p>
+        }
+        @if (isAccountReady()) {
+          <ion-button expand="block" (click)="continueToApp()">Continue to {{ appTitle }}</ion-button>
+        }
         <ion-button
           expand="block"
           fill="outline"
           color="medium"
           (click)="reLogin()"
         >
-          Re-login as someone else
+          Use another account
         </ion-button>
       </ion-card-content>
     </ion-card>
+    @if (!isAccountReady()) {
+      <sneat-auth-panel
+        [returnTo]="redirectTo"
+        [showIntro]="false"
+        [showCredentials]="false"
+      />
+    }
   } @else {
-    <sneat-email-login-form
-      (signingWithChange)="onEmailFormStatusChanged()"
-      (loggedIn)="onLoggedIn($event)"
+    <sneat-auth-panel
+      [returnTo]="redirectTo"
+      [initialMode]="initialMode"
+      [showIntro]="false"
     />
-
-  <ion-card>
-    <ion-item-divider color="light">
-      <ion-label
-        color="medium"
-        style="text-align: center; width: 100%; font-weight: bold"
-      >
-        Quick login
-      </ion-label>
-    </ion-item-divider>
-    <ion-grid class="ion-grid-layout">
-      @if (!isNativePlatform) {
-        <ion-row>
-          <ion-col>
-            <div class="ion-padding" style="text-align: center">
-              <sneat-login-with-telegram />
-            </div>
-          </ion-col>
-        </ion-row>
-      }
-      <ion-row>
-        <ion-col size="12" size-md="6">
-          <ion-list lines="none">
-            <ion-item
-              (click)="loginWith('google.com')"
-              tappable
-              [disabled]="!!signingWith()"
-            >
-              @if (signingWith() === "google.com") {
-                <ion-spinner slot="start" name="lines-small" />
-              } @else {
-                <ion-icon color="danger" name="logo-google" slot="start" />
-              }
-              <ion-label color="danger"> Login with Google</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <ion-list lines="none">
-            <ion-item
-              (click)="loginWith('apple.com')"
-              tappable
-              [disabled]="!!signingWith()"
-            >
-              @if (signingWith() === "apple.com") {
-                <ion-spinner slot="start" name="lines-small" />
-              } @else {
-                <ion-icon color="dark" name="logo-apple" slot="start" />
-              }
-
-              <ion-label color="dark"> Login with Apple</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12" size-md="6">
-          <ion-list lines="none">
-            <ion-item
-              (click)="loginWith('microsoft.com')"
-              tappable
-              [disabled]="!!signingWith()"
-            >
-              @if (signingWith() === "microsoft.com") {
-                <ion-spinner
-                  slot="start"
-                  color="secondary"
-                  name="lines-small"
-                />
-              } @else {
-                <ion-icon slot="start" color="secondary" name="logo-windows" />
-              }
-              <ion-label color="secondary">Login with Microsoft</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <ion-list lines="none">
-            <ion-item
-              (click)="loginWith('facebook.com')"
-              tappable
-              [disabled]="!!signingWith()"
-            >
-              @if (signingWith() === "facebook.com") {
-                <ion-spinner slot="start" color="primary" name="lines-small" />
-              } @else {
-                <ion-icon slot="start" color="primary" name="logo-facebook" />
-              }
-              <ion-label color="primary">Login with Facebook</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12" size-md="6">
-          <ion-list lines="none">
-            <ion-item
-              (click)="loginWith('github.com')"
-              tappable
-              [disabled]="!!signingWith()"
-            >
-              @if (signingWith() === "github.com") {
-                <ion-spinner slot="start" color="tertiary" name="lines-small" />
-              } @else {
-                <ion-icon slot="start" color="tertiary" name="logo-github" />
-              }
-              <ion-label color="tertiary">Login with GitHub</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-card>
   }
 
   <p style="text-align: center; font-size: smaller">

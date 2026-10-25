@@ -57,9 +57,13 @@ export class SneatAuthenticatedLifecycle {
     if (this.started) return;
     this.started = true;
     this.telegram.authenticateIfTelegramWebApp();
-    getRedirectResult(this.authState.fbAuth).catch((error) =>
-      console.error('getRedirectResult failed', error),
-    );
+    getRedirectResult(this.authState.fbAuth).catch((error) => {
+      // An email that already has an account surfaces here after a redirect
+      // sign-in: keep the credential so it links on the next sign-in.
+      if (!this.authState.rememberPendingCredentialLink(error)) {
+        console.error('getRedirectResult failed', error);
+      }
+    });
     this.authState.authState
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((state) => (this.authStatus = state.status));

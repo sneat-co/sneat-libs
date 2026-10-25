@@ -4,5 +4,6 @@ export * from './lib/sneat-auth.interface';
 export * from './lib/sneat-auth-guard';
 export * from './lib/redirect-to-login.guard';
 export * from './lib/sneat-auth-state-service';
+export * from './lib/pending-credential-link';
 export * from './lib/telegram-auth.service';
 export * from './lib/user';

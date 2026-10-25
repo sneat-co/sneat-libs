@@ -1,7 +1,8 @@
 import { Injector } from '@angular/core';
-import { Firestore, collection } from 'firebase/firestore';
+import { Firestore, collection, getFirestore } from 'firebase/firestore';
 import { SneatApiService } from '@sneat/api';
 import { SneatUrlOperationBlocker } from '@sneat/core';
+import { SNEAT_FIREBASE_APP } from '@sneat/core';
 import { firstValueFrom, of } from 'rxjs';
 import {
   GlobalSpaceItemService,
@@ -14,6 +15,7 @@ vi.mock('firebase/firestore', async () => {
   return {
     ...actual,
     collection: vi.fn(() => ({ id: 'mock-collection' })),
+    getFirestore: vi.fn(),
   };
 });
 
@@ -151,7 +153,7 @@ describe('ModuleSpaceItemService', () => {
     } as unknown as SneatApiService;
     mockInjector = Injector.create({
       providers: [
-        { provide: Firestore, useValue: injectedFirestore },
+        { provide: SNEAT_FIREBASE_APP, useValue: { name: 'host-app' } },
         {
           provide: SneatUrlOperationBlocker,
           useValue: { isBlocked: vi.fn().mockReturnValue(false) },
@@ -160,6 +162,7 @@ describe('ModuleSpaceItemService', () => {
     });
 
     vi.mocked(collection).mockReturnValue({ id: 'spaces' } as unknown);
+    vi.mocked(getFirestore).mockReturnValue(injectedFirestore);
 
     service = new ModuleSpaceItemService(
       mockInjector,
@@ -188,6 +191,7 @@ describe('ModuleSpaceItemService', () => {
 
     expect(sdkFreeService.afs).toBe(injectedFirestore);
     expect(sdkFreeService.sneatApiService).toBe(mockSneatApiService);
+    expect(getFirestore).toHaveBeenCalledWith({ name: 'host-app' });
   });
 
   it('should throw error if moduleID is not provided', () => {

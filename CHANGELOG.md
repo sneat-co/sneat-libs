@@ -1,3 +1,107 @@
+## 0.27.41 (2026-10-22)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.40 (2026-10-20)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.39 (2026-10-20)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.38 (2026-10-18)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.37 (2026-10-18)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.36 (2026-10-17)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.35 (2026-10-17)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.34 (2026-10-16)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.33 (2026-10-14)
+
+Adds an optional initial sign-in or sign-up mode to AuthPanel. Existing defaults and later user switching are preserved.
+
+## 0.27.32 (2026-10-13)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.31 (2026-10-12)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.30 (2026-10-09)
+
+Adds a reusable inline sign-in and signup panel, shared persisted-account readiness checks, and recovery from account setup or sign-in failures. Preserves validated checkout continuations through email-link and SSO sign-in. The auth-ui package requires auth-core 0.27.30 or a compatible newer patch.
+
+## 0.27.29 (2026-10-07)
+
+Adds `@sneat/structured-data`, a reusable read-only Angular and PrimeNG viewer for JSON, YAML, and HCL. It supports configurable tables, objects and lists, accordion sections, wrapping inline scalar lists, source locations, and bounded repository configuration resolution. HCL expressions are preserved without evaluation; parser and configuration errors retain access to the original source.
+
+## 0.27.28 (2026-10-07)
+
+Includes a reusable contact-role assignment editor and assignment model, with null-safe handling of assignment changes. Also suppresses alerts for expected permission-denied errors and fixes a race in Space data-object subscriptions.
+
+## 0.27.27 (2026-09-24)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.26 (2026-09-15)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.25 (2026-09-11)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.24 (2026-09-10)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.23 (2026-09-10)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.22 (2026-09-10)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.21 (2026-09-10)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.20 (2026-09-08)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.19 (2026-09-08)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.18 (2026-09-08)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.17 (2026-09-07)
+
+This was a version bump only, there were no code changes.
+
+## 0.27.16 (2026-09-06)
+
+This was a version bump only, there were no code changes.
+
 ## 0.27.15 (2026-09-06)
 
 This was a version bump only, there were no code changes.

@@ -1,6 +1,6 @@
+import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ModalController } from '@ionic/angular';
-import { ErrorLogger } from '@sneat/core';
 import type { ComponentProps, ComponentRef } from '@ionic/core';
 import { SelectorBaseService } from './selector-base.service';
 import { ISelectorOptions } from './selector-options';
@@ -39,12 +39,15 @@ describe('SelectorBaseService', () => {
       providers: [
         TestSelectorService,
         { provide: ModalController, useValue: modalController },
-        { provide: ErrorLogger, useValue: {} },
       ],
     });
     const service = TestBed.inject(TestSelectorService);
+    const callerInjector = TestBed.inject(Injector);
     const selection = service.select();
     await vi.waitFor(() => expect(componentProps).toBeDefined());
+    expect(modalController.create).toHaveBeenCalledWith(
+      expect.objectContaining({ injector: callerInjector }),
+    );
     const selectedItems = [{ id: 'alice' }, { id: 'bob' }];
 
     const callback = (
@@ -74,7 +77,6 @@ describe('SelectorBaseService', () => {
       providers: [
         TestSelectorService,
         { provide: ModalController, useValue: modalController },
-        { provide: ErrorLogger, useValue: {} },
       ],
     });
     const service = TestBed.inject(TestSelectorService);

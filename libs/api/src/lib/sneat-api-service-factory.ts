@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { ISneatApiService, SneatApiService } from '@sneat/api-public';
 import { parseStoreRef } from '@sneat/core';
 
@@ -26,6 +26,10 @@ export const getStoreUrl = (storeId: string): string => {
 
 @Injectable({ providedIn: 'root' })
 export class SneatApiServiceFactory {
+  // The Injector is captured while the factory is constructed (an injection
+  // context) and used to resolve services later — see getSneatApiService().
+  private readonly injector = inject(Injector);
+
   private services: Record<string, ISneatApiService> = {};
 
   public getSneatApiService(storeId: string): ISneatApiService {
@@ -49,7 +53,11 @@ export class SneatApiServiceFactory {
     // const baseUrl = getStoreUrl(storeRefToId(storeRef));
     switch (storeRef.type) {
       case 'firestore':
-        this.services[id] = service = inject(SneatApiService);
+        // Resolve via the captured Injector, never `inject()`: callers invoke
+        // this from UI event handlers (e.g. a "create project" button click),
+        // where no injection context is active and `inject()` throws NG0203 —
+        // which is exactly what broke project creation on datatug.app.
+        this.services[id] = service = this.injector.get(SneatApiService);
         return service;
       default:
         throw new Error('unknown store type: ' + storeRef.type);

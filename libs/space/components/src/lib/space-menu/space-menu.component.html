@@ -30,6 +30,19 @@
     <ion-icon name="people-circle-outline" slot="start" />
     <ion-label>Members</ion-label>
   </ion-item>
+  @if ($showSSO()) {
+    <ion-item
+      tappable
+      [routerLink]="spacePageUrl('settings/sso')"
+      routerDirection="root"
+      [disabled]="$disabled()"
+      [class.currentPage]="$currentPage() === 'settings'"
+      (click)="closeMenu()"
+    >
+      <ion-icon name="key-outline" slot="start" />
+      <ion-label>Enterprise SSO</ion-label>
+    </ion-item>
+  }
   <ion-item
     tappable
     lines="none"

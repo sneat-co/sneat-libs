@@ -1,14 +1,39 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable, Optional } from '@angular/core';
+import { Inject, Injectable, Optional } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { captureException, showReportDialog } from '@sentry/angular';
 import { IErrorLogger, ILogErrorOptions } from '@sneat/core';
+import { ERROR_LOGGER_DEFAULTS } from './error-logger-defaults';
 
 const defaultErrorToastDuration = 7000;
 
+export function isPermissionDenied(e: unknown): boolean {
+  if (!e || typeof e !== 'object') {
+    return false;
+  }
+  const code = (e as { code?: unknown }).code;
+  if (code === 'permission-denied' || code === 'firestore/permission-denied') {
+    return true;
+  }
+  const msg = (e as { message?: unknown }).message;
+  if (typeof msg === 'string') {
+    return (
+      msg.includes('permission-denied') ||
+      msg.includes("false for '") ||
+      msg.includes('PERMISSION_DENIED')
+    );
+  }
+  return false;
+}
+
 @Injectable()
 export class ErrorLoggerService implements IErrorLogger {
-  constructor(@Optional() private readonly toastController: ToastController) {}
+  constructor(
+    @Optional() private readonly toastController: ToastController,
+    @Optional()
+    @Inject(ERROR_LOGGER_DEFAULTS)
+    private readonly defaults: ILogErrorOptions | null,
+  ) {}
 
   public readonly logErrorHandler =
     (message?: string, options?: ILogErrorOptions) => (e: unknown) =>
@@ -56,7 +81,12 @@ export class ErrorLoggerService implements IErrorLogger {
         return;
       }
     }
-    if (options?.report === undefined || options.report) {
+    const isDenied = isPermissionDenied(e);
+    if (
+      options?.report === undefined
+        ? !isDenied && (this.defaults?.report ?? true)
+        : options.report
+    ) {
       if (window.location.hostname !== 'localhost') {
         try {
           const eventId = message
@@ -64,7 +94,9 @@ export class ErrorLoggerService implements IErrorLogger {
             : captureException(e);
 
           // console.log('Captured error by Sentry with eventId:', eventId);
-          if (options?.feedback === undefined || options.feedback) {
+          const feedback =
+            options?.feedback ?? this.defaults?.feedback ?? true;
+          if (feedback) {
             showReportDialog({ eventId });
           }
         } catch (ex) {
@@ -75,7 +107,9 @@ export class ErrorLoggerService implements IErrorLogger {
         }
       }
     }
-    if (options?.show || options?.show === undefined) {
+    const show =
+      options?.show ?? (isDenied ? false : (this.defaults?.show ?? true));
+    if (show) {
       this.showError(e, options?.showDuration);
     }
     return; // return message ? { error: e, message } : e;

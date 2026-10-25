@@ -1,0 +1,9 @@
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../dist/libs/structured-data",
+  "lib": {
+    "entryFile": "src/index.ts"
+  },
+  "assets": [{"input":"src/assets","glob":"**/*","output":"assets"}],
+  "allowedNonPeerDependencies": ["jsonc-parser", "yaml", "tslib"]
+}

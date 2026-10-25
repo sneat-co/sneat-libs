@@ -1,4 +1,5 @@
 import { EnumAsUnionOfKeys, GroupKind, SpaceType } from '@sneat/core';
+import { IMediaRef } from '@sneat/extension-media-contract';
 import { IAvatar } from './avatar';
 import { IPersonNames } from './person-names';
 
@@ -11,6 +12,7 @@ export interface IUserRecord {
   readonly email?: string;
   readonly emailIsVerified?: boolean;
   readonly avatar?: IAvatar;
+  readonly avatarMedia?: IMediaRef;
   readonly spaceIDs?: readonly string[];
   readonly spaces?: Record<string, IUserSpaceBrief>;
   readonly names?: IPersonNames;

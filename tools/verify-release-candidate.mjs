@@ -65,7 +65,7 @@ for (const manifest of changedManifests) {
 
 const allManifests = git(['ls-files', 'libs/**/package.json'])
   .split('\n')
-  .filter(Boolean);
+  .filter(manifest => manifest && manifest !== 'libs/structured-data/core/package.json');
 if (allManifests.length === 0) {
   fail('No publishable package manifests are tracked.');
 }

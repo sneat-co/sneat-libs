@@ -30,6 +30,17 @@ test('accepts a release candidate that also refreshes pnpm-lock.yaml', () => {
   assert.equal(run(directory, '--cached').stdout.trim(), '0.26.0');
 });
 
+test('ignores the structured-data secondary entrypoint manifest in fixed release checks', () => {
+  const directory = fixture();
+  mkdirSync(join(directory, 'libs/structured-data/core'), { recursive: true });
+  writeFileSync(join(directory, 'libs/structured-data/core/package.json'),
+    '{"name":"@sneat/structured-data/core"}\n');
+  git(directory, ['add', 'libs/structured-data/core/package.json']);
+  git(directory, ['commit', '-m', 'feat: add secondary entrypoint']);
+  prepareCandidate(directory, '0.26.0');
+  assert.equal(run(directory, '--cached').stdout.trim(), '0.26.0');
+});
+
 test('skips an ordinary manifest-only source change', () => {
   const directory = fixture();
   writeManifest(directory, 'libs/alpha/package.json', '@sneat/alpha', '0.25.0', {

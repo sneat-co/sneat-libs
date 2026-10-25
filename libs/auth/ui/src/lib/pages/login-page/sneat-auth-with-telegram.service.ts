@@ -14,6 +14,12 @@ export interface ITelegramAuthData {
   hash: string;
 }
 
+/** What the server hands the page before it opens Telegram's OpenID popup. */
+export interface ITelegramOIDCNonce {
+  clientID: string;
+  nonce: string;
+}
+
 interface IResponse {
   token: string;
 }
@@ -24,23 +30,52 @@ export class SneatAuthWithTelegramService {
   private readonly apiService = inject(SneatApiService);
   private readonly authService = inject(SneatAuthStateService);
 
+  /** Legacy Login Widget: posts the widget's signed payload. */
   public loginWithTelegram(
     botID: string,
     tgAuthData: ITelegramAuthData,
     isUserAuthenticated: boolean,
   ): void {
-    const postRequest: (
-      endpoint: string,
-      body: unknown,
-    ) => Observable<IResponse> = isUserAuthenticated
-      ? (endpoint: string, body: unknown) =>
-          this.apiService.post<IResponse>(endpoint, body)
-      : (endpoint: string, body: unknown) =>
-          this.apiService.postAsAnonymous<IResponse>(endpoint, body);
-    postRequest(
+    this.signIn(
       'auth/login-from-telegram-widget?botID=' + botID,
       tgAuthData,
-    ).subscribe({
+      isUserAuthenticated,
+    );
+  }
+
+  /**
+   * Asks the server for the bot's OpenID Client ID and a fresh nonce. Fails
+   * with 400 for a bot that has no OpenID login configured server-side.
+   */
+  public getTelegramOIDCNonce(botID: string): Observable<ITelegramOIDCNonce> {
+    return this.apiService.postAsAnonymous<ITelegramOIDCNonce>(
+      'auth/telegram-oidc-nonce?botID=' + botID,
+      {},
+    );
+  }
+
+  /** OpenID login: posts the id_token Telegram's popup returned. */
+  public loginWithTelegramOIDC(
+    botID: string,
+    idToken: string,
+    isUserAuthenticated: boolean,
+  ): void {
+    this.signIn(
+      'auth/login-from-telegram-oidc?botID=' + botID,
+      { id_token: idToken },
+      isUserAuthenticated,
+    );
+  }
+
+  private signIn(
+    endpoint: string,
+    body: unknown,
+    isUserAuthenticated: boolean,
+  ): void {
+    const request = isUserAuthenticated
+      ? this.apiService.post<IResponse>(endpoint, body)
+      : this.apiService.postAsAnonymous<IResponse>(endpoint, body);
+    request.subscribe({
       next: (response) => {
         this.authService
           .signInWithToken(response.token)

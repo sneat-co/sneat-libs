@@ -1,0 +1,307 @@
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="spaceHomeURL" />
+    </ion-buttons>
+    <ion-title>Enterprise SSO</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (loading() || !userRecordLoaded()) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner />
+      <p>Loading SSO settings…</p>
+    </div>
+  } @else if (!isAdmin()) {
+    <ion-card color="danger">
+      <ion-card-content>
+        <h1>Owner or admin access required</h1>
+        <p>You do not have permission to configure SSO for this space.</p>
+      </ion-card-content>
+    </ion-card>
+  } @else {
+    <ion-card>
+      <ion-card-content>
+        <h1>Company sign-in</h1>
+        <p>Set up OIDC or SAML without changing Sneat users or memberships.</p>
+        <p aria-label="Setup progress">
+          Step {{ step() }} of 4
+          @if (config(); as current) {
+            · Status:
+            <ion-badge
+              [color]="current.status === 'active' ? 'success' : 'medium'"
+              >{{ current.status }}</ion-badge
+            >
+          }
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    @if (step() === 1) {
+      <ion-card>
+        <ion-card-content>
+          <h2>1. Choose your identity provider</h2>
+          <p>Pick a guided preset or use a standards-based connection.</p>
+          <ion-button
+            fill="outline"
+            [color]="providerPreset() === 'entra' ? 'primary' : 'medium'"
+            (click)="chooseProvider('entra')"
+            >Microsoft Entra ID</ion-button
+          >
+          <ion-button
+            fill="outline"
+            [color]="providerPreset() === 'okta' ? 'primary' : 'medium'"
+            (click)="chooseProvider('okta')"
+            >Okta</ion-button
+          >
+          <ion-button
+            fill="outline"
+            [color]="providerPreset() === 'keycloak' ? 'primary' : 'medium'"
+            (click)="chooseProvider('keycloak')"
+            >Keycloak</ion-button
+          >
+          <ion-button
+            fill="outline"
+            [color]="providerPreset() === 'generic_oidc' ? 'primary' : 'medium'"
+            (click)="chooseProvider('generic_oidc')"
+            >Generic OIDC</ion-button
+          >
+          <ion-button
+            fill="outline"
+            [color]="providerPreset() === 'generic_saml' ? 'primary' : 'medium'"
+            (click)="chooseProvider('generic_saml')"
+            >SAML 2.0</ion-button
+          >
+
+          <ion-item class="ion-margin-top">
+            <ion-label position="stacked">Primary email domain</ion-label>
+            <ion-input
+              name="email-domain"
+              placeholder="acme.com"
+              [ngModel]="domain()"
+              (ngModelChange)="domain.set($event)"
+              [disabled]="busy()"
+            />
+          </ion-item>
+          <ion-button
+            expand="block"
+            class="ion-margin-top"
+            [disabled]="!domainValid() || busy()"
+            (click)="prepareDomain()"
+          >
+            @if (busy()) {
+              <ion-spinner name="lines-small" slot="start" />
+            }
+            Continue to domain verification
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    } @else if (step() === 2) {
+      <ion-card>
+        <ion-card-content>
+          <h2>2. Prove control of {{ domain() }}</h2>
+          <p>
+            Add this TXT record in your DNS provider. This prevents an arbitrary
+            identity provider from claiming somebody else’s email domain.
+          </p>
+          <ion-item>
+            <ion-label position="stacked">DNS record name</ion-label>
+            <ion-input
+              name="dns-record-name"
+              readonly
+              [value]="config()?.domainVerification?.recordName"
+            />
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">TXT value</ion-label>
+            <ion-input
+              name="dns-record-value"
+              readonly
+              [value]="config()?.domainVerification?.recordValue"
+            />
+          </ion-item>
+          <p>
+            <ion-text color="medium"
+              >DNS changes may need a few minutes to propagate.</ion-text
+            >
+          </p>
+          <ion-button fill="clear" (click)="changeDomainOrProvider()"
+            >Back</ion-button
+          >
+          <ion-button [disabled]="busy()" (click)="verifyDomain()">
+            @if (busy()) {
+              <ion-spinner name="lines-small" slot="start" />
+            }
+            Check DNS record
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    } @else if (step() === 3) {
+      <ion-card>
+        <ion-card-content>
+          <h2>3. Connect {{ protocol().toUpperCase() }}</h2>
+          @if (isOIDC()) {
+            <p>
+              Register <strong>{{ oidcRedirectURL }}</strong>
+              as the provider redirect URI.
+            </p>
+            <ion-item>
+              <ion-label position="stacked">OIDC issuer</ion-label>
+              <ion-input
+                name="issuer"
+                type="url"
+                placeholder="https://login.microsoftonline.com/tenant-id/v2.0"
+                [ngModel]="issuer()"
+                (ngModelChange)="issuer.set($event)"
+                [disabled]="busy()"
+              />
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Client ID</ion-label>
+              <ion-input
+                name="client-id"
+                autocomplete="off"
+                [ngModel]="clientID()"
+                (ngModelChange)="clientID.set($event)"
+                [disabled]="busy()"
+              />
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Client secret</ion-label>
+              <ion-input
+                name="client-secret"
+                type="password"
+                autocomplete="new-password"
+                [placeholder]="
+                  config()?.hasClientSecret
+                    ? 'Leave blank to keep it, or enter a replacement'
+                    : 'Required'
+                "
+                [ngModel]="clientSecret()"
+                (ngModelChange)="clientSecret.set($event)"
+                [disabled]="busy()"
+              />
+            </ion-item>
+          } @else {
+            <p>
+              Give your IdP the DataTug service-provider metadata URL, then
+              paste the IdP metadata XML below.
+            </p>
+            <ion-item>
+              <ion-label position="stacked">SP metadata URL</ion-label>
+              <ion-input
+                name="saml-sp-metadata-url"
+                readonly
+                [value]="samlMetadataURL"
+              />
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">IdP metadata XML</ion-label>
+              <ion-textarea
+                name="saml-idp-metadata"
+                autoGrow="true"
+                rows="8"
+                [placeholder]="
+                  config()?.hasSamlMetadata
+                    ? 'Paste replacement metadata, or leave blank to keep it'
+                    : '<EntityDescriptor …>'
+                "
+                [ngModel]="samlMetadata()"
+                (ngModelChange)="samlMetadata.set($event)"
+                [disabled]="busy()"
+              />
+            </ion-item>
+          }
+
+          <ion-item>
+            <ion-label position="stacked"
+              >Company login host (optional)</ion-label
+            >
+            <ion-input
+              name="login-host"
+              placeholder="acme.datatug.app"
+              [ngModel]="loginHost()"
+              (ngModelChange)="loginHost.set($event)"
+              [disabled]="busy()"
+            />
+          </ion-item>
+          <p>
+            <ion-text color="medium"
+              >A company host fixes the login page to this email domain. Only
+              approved Sneat-owned host suffixes can be claimed.</ion-text
+            >
+          </p>
+          <ion-button fill="clear" (click)="changeDomainOrProvider()"
+            >Back</ion-button
+          >
+          <ion-button
+            [disabled]="!connectionValid() || busy()"
+            (click)="save()"
+          >
+            @if (busy()) {
+              <ion-spinner name="lines-small" slot="start" />
+            }
+            Save and continue
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    } @else {
+      <ion-card>
+        <ion-card-content>
+          <h2>4. Test and manage SSO</h2>
+          <p>
+            Saving does not activate SSO. Activation requires a complete,
+            validated sign-in through your configured provider.
+          </p>
+          <ion-button [disabled]="busy()" (click)="testAndActivate()">
+            @if (busy()) {
+              <ion-spinner name="lines-small" slot="start" />
+            }
+            {{
+              config()?.status === 'active'
+                ? 'Test SSO again'
+                : 'Test & Activate SSO'
+            }}
+          </ion-button>
+          <ion-button
+            fill="outline"
+            [disabled]="busy()"
+            (click)="editConnection()"
+          >
+            Edit or rotate credentials
+          </ion-button>
+          @if (config()?.status === 'active') {
+            <ion-button
+              color="warning"
+              fill="outline"
+              [disabled]="busy()"
+              (click)="disable()"
+            >
+              Disable SSO
+            </ion-button>
+          }
+          <ion-button
+            color="danger"
+            fill="clear"
+            [disabled]="busy()"
+            (click)="deleteConfiguration()"
+          >
+            Delete configuration
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    @if (error()) {
+      <ion-card color="danger">
+        <ion-card-content>{{ error() }}</ion-card-content>
+      </ion-card>
+    }
+    @if (success()) {
+      <ion-card color="success">
+        <ion-card-content>{{ success() }}</ion-card-content>
+      </ion-card>
+    }
+  }
+</ion-content>

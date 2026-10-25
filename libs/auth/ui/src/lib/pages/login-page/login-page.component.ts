@@ -1,8 +1,6 @@
-import { Component, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Capacitor } from '@capacitor/core';
 import {
   NavController,
   IonBackButton,
@@ -10,56 +8,51 @@ import {
   IonButtons,
   IonCard,
   IonCardContent,
-  IonCol,
   IonContent,
-  IonGrid,
   IonHeader,
-  IonIcon,
-  IonItem,
-  IonItemDivider,
-  IonLabel,
-  IonList,
-  IonRow,
   IonSpinner,
   IonText,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
 import {
-  AuthProviderID,
-  AuthStatuses,
   ILoginEventsHandler,
   ISneatAuthState,
   LoginEventsHandler,
   SneatAuthStateService,
+  ISneatUserState,
+  SneatUserService,
+  isSneatAccountReady,
 } from '@sneat/auth-core';
-import { SneatUserService } from '@sneat/auth-core';
 import {
   AnalyticsService,
   APP_INFO,
+  clearCurrentSpace,
   currentSpacePath,
   IAnalyticsService,
   IAppInfo,
+  readCurrentSpace,
+  SpaceTypeFamily,
 } from '@sneat/core';
 import { RandomIdService } from '@sneat/random';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest } from 'rxjs';
+import { AuthPanelComponent } from './auth-panel.component';
+import { safeAuthReturnPath } from './safe-auth-return-path';
 import {
-  EmailFormSigningWith,
-  EmailLoginFormComponent,
-} from './email-login-form/email-login-form.component';
-import { UserCredential } from 'firebase/auth';
-import { LoginWithTelegramComponent } from './login-with-telegram.component';
+  clearLoginRedirectIntent,
+  consumeLoginRedirectIntent,
+} from './login-redirect-intent';
+import type { AuthPanelInitialMode } from './email-login-form/email-login-form.component';
 
 type Action = 'join' | 'refuse'; // TODO: inject provider for action descriptions/messages.
 
 @Component({
   selector: 'sneat-login',
   templateUrl: './login-page.component.html',
+  styleUrl: './login-page.component.scss',
   imports: [
-    FormsModule,
-    LoginWithTelegramComponent,
-    EmailLoginFormComponent,
+    AuthPanelComponent,
     IonHeader,
     IonToolbar,
     IonButton,
@@ -70,15 +63,7 @@ type Action = 'join' | 'refuse'; // TODO: inject provider for action description
     IonCardContent,
     IonText,
     IonCard,
-    IonItemDivider,
-    IonLabel,
-    IonRow,
-    IonCol,
-    IonItem,
     IonSpinner,
-    IonIcon,
-    IonList,
-    IonGrid,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -102,10 +87,7 @@ export class LoginPageComponent extends SneatBaseComponent {
     { optional: true },
   );
 
-  protected readonly signingWith = signal<AuthProviderID | undefined>(
-    undefined,
-  );
-  private readonly redirectTo?: string;
+  protected redirectTo?: string;
   protected readonly to?: string;
   // Free-text explanation of WHY sign-in is needed, passed by the calling page
   // as query params (rendered as escaped text — never as HTML):
@@ -114,8 +96,9 @@ export class LoginPageComponent extends SneatBaseComponent {
   protected readonly reason?: string;
   protected readonly reasonDetail?: string;
   protected readonly action?: Action; // TODO: document possible values?
-
-  protected readonly isNativePlatform = Capacitor.isNativePlatform();
+  // Optional `?mode=sign-up` or `?mode=sign-in` picks the tab the email form opens on.
+  // Absent or unknown values leave the form on its default (Sign in).
+  protected readonly initialMode?: AuthPanelInitialMode;
 
   protected readonly appTitle: string;
 
@@ -125,113 +108,240 @@ export class LoginPageComponent extends SneatBaseComponent {
   // authenticated-but-stuck state is obvious rather than looking like sign-in
   // is broken.
   protected readonly isAuthenticated = computed(
-    () => this.authStatus() === 'authenticated',
+    () =>
+      this.authState()?.status === 'authenticated' &&
+      !!this.authState()?.user?.uid &&
+      !this.authState()?.user?.isAnonymous,
+  );
+  private readonly loginEntry = signal<'resolving' | 'signed-out' | 'existing-session' | 'fresh-sign-in'>('resolving');
+  private pageActive = true;
+  private loginEntryResolved = false;
+  private redirectStarted = false;
+  private loginRedirectIntent = consumeLoginRedirectIntent();
+  protected readonly showAccountChoice = computed(
+    () => this.loginEntry() === 'existing-session' && this.isAuthenticated(),
   );
   // While Firebase is still resolving the session — the initial state, and the
   // brief window right after a signInWithRedirect return — show a "signing you
   // in" spinner instead of flashing the sign-in form before we navigate onward.
   protected readonly isAuthenticating = computed(
-    () => this.authStatus() === 'authenticating',
+    () =>
+      this.authState()?.status === 'authenticating' &&
+      this.authState()?.loadingPhase !== 'failed',
   );
-  private readonly authStatus = toSignal(this.authStateService.authStatus);
-  private readonly authUser = toSignal(this.authStateService.authUser);
+  protected readonly isPreparingFreshAccount = computed(
+    () =>
+      this.loginEntry() === 'fresh-sign-in' &&
+      this.isAuthenticated() &&
+      !this.isAccountReady() &&
+      this.authState()?.loadingPhase !== 'failed' &&
+      this.userState()?.userRecordStatus !== 'failed',
+  );
+  protected readonly isRedirectingAfterFreshSignIn = computed(
+    () =>
+      this.loginEntry() === 'fresh-sign-in' &&
+      this.isAuthenticated() &&
+      this.isAccountReady(),
+  );
+  private readonly authState = toSignal(this.authStateService.authState);
+  private readonly userState = toSignal(this.userService.userState);
+  protected readonly isAccountReady = computed(() => {
+    const userState = this.userState();
+    const authState = this.authState();
+    return isSneatAccountReady(authState, userState);
+  });
   protected readonly signedInAs = computed(() => {
-    const u = this.authUser();
+    const u = this.authState()?.user;
     return u?.displayName || u?.email || u?.uid || '';
+  });
+  protected readonly signedInWith = computed(() => {
+    const user = this.authState()?.user;
+    // providerId is the current provider only when Firebase has a single
+    // provider identity. Linked accounts expose a generic "firebase" value;
+    // do not mistake one of their linked providers for the active session.
+    const providerID = user?.providerId;
+    switch (providerID) {
+      case 'google.com': return 'Google';
+      case 'microsoft.com': return 'Microsoft';
+      case 'github.com': return 'GitHub';
+      case 'apple.com': return 'Apple';
+      case 'facebook.com': return 'Facebook';
+      case 'password': return 'email and password';
+      case 'phone': return 'phone';
+      default: return undefined;
+    }
   });
 
   constructor() {
     super();
     const appInfo = this.appInfo;
     this.appTitle = appInfo.appTitle || 'Sneat.app';
-    if (location.hash.startsWith('#/')) {
-      this.redirectTo = location.hash.substring(1);
-    }
+    this.refreshRedirectTarget();
     this.to = this.route.snapshot.queryParams['to']; // should we subscribe? I believe no.
     this.reason = this.route.snapshot.queryParams['reason'];
     this.reasonDetail = this.route.snapshot.queryParams['reasonDetail'];
+    const mode = this.route.snapshot.queryParams['mode'];
+    this.initialMode =
+      mode === 'sign-up' || mode === 'sign-in' ? mode : undefined;
     const action = location.hash.match(/[#&]action=(\w+)/);
     this.action = action?.[1] as Action;
 
-    const userRecordLoaded = new Subject<void>();
-    this.userService.userState
-      .pipe(takeUntil(userRecordLoaded), this.takeUntilDestroyed())
+    combineLatest([this.authStateService.authState, this.userService.userState])
+      .pipe(this.takeUntilDestroyed())
       .subscribe({
-        next: (userState) => {
-          if (userState.record) {
-            userRecordLoaded.next();
-          } else {
-            return;
-          }
-          // Fall back to the persisted current space so it is restored after login.
-          const redirectTo = this.redirectTo || currentSpacePath() || '/';
-          this.navController
-            .navigateRoot(redirectTo)
-            .catch(
-              this.errorLogger.logErrorHandler(
-                'Failed to navigate back to ' + redirectTo,
-              ),
-            );
-        },
+        next: ([authState, userState]) => this.handleAuthAndUserState(authState, userState),
         error: this.errorHandler('Failed to get user state after login'),
       });
   }
 
-  protected onEmailFormStatusChanged(signingWith?: EmailFormSigningWith): void {
-    this.signingWith.set(signingWith as AuthProviderID);
+  // Ionic caches routed pages in its navigation stack. Refresh the target and
+  // auth-entry decision on each return to this page, and ignore auth updates
+  // while the page is covered by another view.
+  ionViewWillEnter(): void {
+    this.pageActive = true;
+    this.loginEntry.set('resolving');
+    this.loginEntryResolved = false;
+    this.redirectStarted = false;
+    this.refreshRedirectTarget();
+    const authState = this.authState();
+    if (authState && !this.loginEntryResolved) {
+      this.resolveLoginEntry(authState);
+    }
+    const userState = this.userState();
+    if (authState && userState) {
+      this.handleAuthAndUserState(authState, userState);
+    }
+  }
+
+  ionViewWillLeave(): void {
+    this.pageActive = false;
+  }
+
+  private refreshRedirectTarget(): void {
+    const hashTarget = location.hash.startsWith('#/')
+      ? safeAuthReturnPath(location.hash.substring(1))
+      : undefined;
+    this.redirectTo =
+      hashTarget ||
+      safeAuthReturnPath(this.route.snapshot.queryParams['returnTo']) ||
+      this.loginRedirectIntent?.returnTo;
+  }
+
+  private resolveLoginEntry(authState: ISneatAuthState): void {
+    // A session-check placeholder is not evidence that this visit began with
+    // an existing account or with a completed sign-in.
+    if (
+      authState.status === 'authenticating' &&
+      authState.loadingPhase === 'checking-session' &&
+      !authState.user
+    ) return;
+    this.loginEntryResolved = true;
+    const hasSignedInIdentity =
+      (authState.status === 'authenticated' || !!authState.user?.uid) &&
+      authState.loadingPhase !== 'failed' &&
+      authState.user?.isAnonymous !== true;
+    this.loginEntry.set(
+      hasSignedInIdentity
+        ? this.loginRedirectIntent
+          ? 'fresh-sign-in'
+          : 'existing-session'
+        : 'signed-out',
+    );
+  }
+
+  private handleAuthAndUserState(
+    authState: ISneatAuthState,
+    userState: ISneatUserState,
+  ): void {
+    if (!this.pageActive) return;
+    if (!this.loginEntryResolved) {
+      this.resolveLoginEntry(authState);
+      if (!this.loginEntryResolved) return;
+      if (this.loginEntry() === 'existing-session') return;
+    } else if (
+      this.loginEntry() === 'signed-out' &&
+      (authState.status === 'authenticated' || !!authState.user?.uid)
+    ) {
+      this.loginEntry.set('fresh-sign-in');
+    }
+
+    const userRecord = userState.record;
+    if (
+      this.loginEntry() !== 'fresh-sign-in' ||
+      !userRecord ||
+      !isSneatAccountReady(authState, userState) ||
+      this.redirectStarted
+    ) return;
+    clearLoginRedirectIntent();
+    this.loginRedirectIntent = undefined;
+    this.redirectStarted = true;
+    // Fall back to the persisted current space so it is restored after login,
+    // but only if the user actually has access to it.
+    const space = readCurrentSpace();
+    const hasAccess = !!space && (
+      userRecord.spaceIDs?.includes(space.id) ||
+      (!!userRecord.spaces && space.id in userRecord.spaces)
+    );
+    if (space && !hasAccess) {
+      clearCurrentSpace();
+    }
+    const activePath = hasAccess ? currentSpacePath() : undefined;
+    const family = Object.entries(userRecord.spaces || {}).find(
+      ([, brief]) => brief.type === SpaceTypeFamily,
+    );
+    const familyPath = family
+      ? `/space/${SpaceTypeFamily}/${family[0]}`
+      : undefined;
+    const redirectTo = this.redirectTo || activePath || familyPath || '/';
+    this.navController
+      .navigateRoot(redirectTo)
+      .catch((err) => {
+        this.redirectStarted = false;
+        this.errorLogger.logError(
+          err,
+          'Failed to navigate back to ' + redirectTo,
+        );
+      });
   }
 
   // Proceed into the app from the "already signed in" panel.
   protected continueToApp(): void {
-    const redirectTo = this.redirectTo || currentSpacePath() || '/';
+    if (!this.showAccountChoice() || !this.isAccountReady()) return;
+    const space = readCurrentSpace();
+    const userState = this.userState();
+    const hasAccess = !!space && !!userState?.record && (
+      userState.record.spaceIDs?.includes(space.id) ||
+      (!!userState.record.spaces && space.id in userState.record.spaces)
+    );
+    if (space && !hasAccess) {
+      clearCurrentSpace();
+    }
+    const activePath = hasAccess ? currentSpacePath() : undefined;
+    const family = Object.entries(userState?.record?.spaces || {}).find(
+      ([, brief]) => brief.type === SpaceTypeFamily,
+    );
+    const familyPath = family
+      ? `/space/${SpaceTypeFamily}/${family[0]}`
+      : undefined;
+    const redirectTo = this.redirectTo || activePath || familyPath || '/';
     this.navController
       .navigateRoot(redirectTo)
-      .catch(this.errorLogger.logErrorHandler('Failed to navigate to ' + redirectTo));
+      .catch((err) => {
+        this.errorLogger.logError(
+          err,
+          'Failed to navigate to ' + redirectTo,
+        );
+      });
   }
 
   // Sign out so the sign-in form is shown again (e.g. to log in as someone else).
   protected reLogin(): void {
+    clearCurrentSpace();
+    this.loginEntry.set('signed-out');
+    this.loginEntryResolved = true;
     this.authStateService
       .signOut()
       .catch(this.errorLogger.logErrorHandler('Failed to sign out for re-login'));
-  }
-
-  protected async loginWith(provider: AuthProviderID) {
-    this.signingWith.set(provider);
-    try {
-      await this.authStateService.signInWith(provider);
-      // We do not reset this.signingWith in case of succesful sign in as we should redirect from login page
-      // and not to allow user to do a double sign-in.
-    } catch (e) {
-      const errMsg = (e as { errorMessage?: string }).errorMessage;
-      if (
-        errMsg !== 'The user canceled the sign-in flow.' &&
-        !errMsg?.includes(
-          'com.apple.AuthenticationServices.AuthorizationError error 1001.',
-        )
-      ) {
-        this.errorLogger.logError(e, `Failed to sign-in with ${provider}`);
-      }
-      this.signingWith.set(undefined);
-    }
-  }
-
-  protected onLoggedIn(userCredential: UserCredential): void {
-    this.signingWith.set(undefined);
-    if (!userCredential.user) {
-      return;
-    }
-    if (userCredential.user.email) {
-      const prevEmail = localStorage.getItem('emailForSignIn') || '';
-      if (!prevEmail) {
-        localStorage.setItem('emailForSignIn', userCredential.user.email);
-      }
-    }
-    const authState: ISneatAuthState = {
-      status: AuthStatuses.authenticated,
-      user: userCredential.user,
-    };
-    this.userService.onUserSignedIn(authState);
   }
 
   private errorHandler(
@@ -254,6 +364,5 @@ export class LoginPageComponent extends SneatBaseComponent {
     this.errorLogger.logError(err, m, {
       report: !(err as { code: unknown }).code,
     });
-    this.signingWith.set(undefined);
   }
 }

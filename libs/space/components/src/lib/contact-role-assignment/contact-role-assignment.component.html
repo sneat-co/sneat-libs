@@ -1,0 +1,46 @@
+<ion-list aria-label="Contact role assignments">
+  @for (row of draft(); track key(row)) {
+    <ion-item>
+      <ion-label>{{ row.title || row.contact.itemID }}</ion-label>
+      @if (hasUnknownRole(row)) {
+        <ion-label
+          >Existing roles: {{ row.roleIDs.join(', ') }} (read-only)</ion-label
+        >
+      } @else {
+        @for (role of roles(); track role.id) {
+          <ion-checkbox
+            [checked]="row.roleIDs.includes(role.id)"
+            [disabled]="!canEdit()"
+            (ionChange)="setRole(row, role.id, $event.detail.checked)"
+            >{{ role.label }}</ion-checkbox
+          >
+        }
+        <ion-button [disabled]="!canEdit()" (click)="remove(row)"
+          >Remove</ion-button
+        >
+      }
+    </ion-item>
+  } @empty {
+    <ion-item><ion-label>No contacts assigned.</ion-label></ion-item>
+  }
+</ion-list>
+@if (!configured()) {
+  <p>Contact assignment is unavailable for this item.</p>
+} @else if (readonly()) {
+  <p>Contact assignments are read-only.</p>
+}
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+@if (pending()) {
+  <ion-spinner aria-label="Updating contact assignments" />
+}
+<ion-button [disabled]="!canEdit()" (click)="addContact()"
+  >Add contact</ion-button
+>
+<ion-button [disabled]="!canEdit() || !changed()" (click)="save()"
+  >Save</ion-button
+>
+<ion-button [disabled]="locked() || !changed()" (click)="cancel()"
+  >Cancel</ion-button
+>
