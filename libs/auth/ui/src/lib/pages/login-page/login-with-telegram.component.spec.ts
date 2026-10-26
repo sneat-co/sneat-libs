@@ -4,7 +4,7 @@ import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
 import { Observable, Subject, of, throwError } from 'rxjs';
-import { LoginWithTelegramComponent } from './login-with-telegram.component';
+import { LoginWithTelegramComponent } from '../../../index';
 import { ITelegramOIDCNonce } from './sneat-auth-with-telegram.service';
 import { TelegramLoginConfig } from './telegram-login-config';
 import { loadTelegramLoginScript } from './telegram-login-js';
