@@ -1,8 +1,13 @@
-import { Injectable, inject } from '@angular/core';
+import { DestroyRef, Injectable, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SneatApiService } from '@sneat/api';
-import { SneatAuthStateService } from '@sneat/auth-core';
+import {
+  AuthStatuses,
+  ISneatAuthState,
+  SneatAuthStateService,
+} from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
-import { Observable } from 'rxjs';
+import { Observable, filter, take, takeUntil } from 'rxjs';
 
 export interface ITelegramAuthData {
   id: number;
@@ -29,6 +34,44 @@ export class SneatAuthWithTelegramService {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly apiService = inject(SneatApiService);
   private readonly authService = inject(SneatAuthStateService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly linkUserID?: string;
+  private linkContextInvalidated = false;
+
+  constructor() {
+    // Auth state replays its current principal synchronously. If it is not
+    // ready, authenticated linking fails closed for this control's lifetime.
+    let initialState: ISneatAuthState | undefined;
+    this.authService.authState
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe((state) => {
+        initialState = state;
+      });
+    this.linkUserID =
+      initialState?.status === AuthStatuses.authenticated
+        ? initialState.user?.uid
+        : undefined;
+    this.authService.authState
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((state) => {
+        if (!this.matchesLinkUser(state)) {
+          // Never revive an old popup after an A -> B -> A account transition.
+          this.linkContextInvalidated = true;
+        }
+      });
+  }
+
+  private matchesLinkUser(state: ISneatAuthState): boolean {
+    return (
+      !!this.linkUserID &&
+      state.status === AuthStatuses.authenticated &&
+      state.user?.uid === this.linkUserID
+    );
+  }
+
+  private linkContextIsCurrent(): boolean {
+    return !!this.linkUserID && !this.linkContextInvalidated;
+  }
 
   /** Legacy Login Widget: posts the widget's signed payload. */
   public loginWithTelegram(
@@ -72,11 +115,29 @@ export class SneatAuthWithTelegramService {
     body: unknown,
     isUserAuthenticated: boolean,
   ): void {
+    if (isUserAuthenticated && !this.linkContextIsCurrent()) {
+      this.errorLogger.logErrorHandler('Telegram account linking stopped')(
+        new Error(
+          'Your sign-in changed. Reload this page before authorizing Telegram.',
+        ),
+      );
+      return;
+    }
     const request = isUserAuthenticated
       ? this.apiService.post<IResponse>(endpoint, body)
       : this.apiService.postAsAnonymous<IResponse>(endpoint, body);
-    request.subscribe({
+    const guardedRequest = isUserAuthenticated
+      ? request.pipe(
+          takeUntil(
+            this.authService.authState.pipe(
+              filter((state) => !this.matchesLinkUser(state)),
+            ),
+          ),
+        )
+      : request;
+    guardedRequest.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
+        if (isUserAuthenticated && !this.linkContextIsCurrent()) return;
         this.authService
           .signInWithToken(response.token)
           .catch(

@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
+import { newRandomId } from '@sneat/random';
 import {
   ITelegramAuthData,
   ITelegramOIDCNonce,
@@ -28,6 +29,11 @@ import {
 
 /** Server nonces live 10 minutes; refresh well inside that. */
 const OIDC_NONCE_REFRESH_MS = 8 * 60 * 1000;
+
+type LegacyTelegramWindow = Window & {
+  [name: `sneatTelegramAuth_${string}`]:
+    ((data: ITelegramAuthData) => void) | undefined;
+};
 
 /**
  * Telegram login button. Bots with OpenID login configured server-side use
@@ -85,16 +91,20 @@ export class LoginWithTelegramComponent implements OnInit {
 
   private nonceTimer?: ReturnType<typeof setInterval>;
   private legacyCallback?: (data: ITelegramAuthData) => void;
+  private readonly legacyCallbackName = `sneatTelegramAuth_${newRandomId({
+    len: 20,
+    digits: true,
+    lowerCaseLetters: true,
+    upperCaseLetters: true,
+  })}` as const;
 
   constructor() {
     // Register while the view is alive, never from a late loader continuation.
     this.destroyRef.onDestroy(() => {
       clearInterval(this.nonceTimer);
-      const host = this.document.defaultView as
-        | (Window & { onTelegramAuth?: (data: ITelegramAuthData) => void })
-        | null;
-      if (host && host.onTelegramAuth === this.legacyCallback)
-        delete host.onTelegramAuth;
+      const host = this.document.defaultView as LegacyTelegramWindow | null;
+      if (host && host[this.legacyCallbackName] === this.legacyCallback)
+        delete host[this.legacyCallbackName];
     });
   }
 
@@ -198,11 +208,9 @@ export class LoginWithTelegramComponent implements OnInit {
       );
     };
 
-    const host = this.document.defaultView as
-      | (Window & { onTelegramAuth?: (data: ITelegramAuthData) => void })
-      | null;
+    const host = this.document.defaultView as LegacyTelegramWindow | null;
     if (!host) return;
-    host.onTelegramAuth = this.legacyCallback;
+    host[this.legacyCallbackName] = this.legacyCallback;
     const script = this.document.createElement('script');
 
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -212,7 +220,7 @@ export class LoginWithTelegramComponent implements OnInit {
     if (!this.userPic()) {
       script.setAttribute('data-userpic', 'false');
     }
-    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+    script.setAttribute('data-onauth', `${this.legacyCallbackName}(user)`);
     this.el.nativeElement.appendChild(script);
   }
 }

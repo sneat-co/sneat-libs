@@ -4,7 +4,7 @@ import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
 import { Observable, Subject, of, throwError } from 'rxjs';
-import { LoginWithTelegramComponent } from './login-with-telegram.component';
+import { LoginWithTelegramComponent } from '../../../index';
 import { ITelegramOIDCNonce } from './sneat-auth-with-telegram.service';
 import { TelegramLoginConfig } from './telegram-login-config';
 import { loadTelegramLoginScript } from './telegram-login-js';
@@ -49,7 +49,13 @@ async function createComponent(
       { provide: SneatApiService, useValue: api },
       {
         provide: SneatAuthStateService,
-        useValue: { signInWithToken: vi.fn(() => Promise.resolve()) },
+        useValue: {
+          signInWithToken: vi.fn(() => Promise.resolve()),
+          authState: of({
+            status: 'authenticated',
+            user: { uid: 'current-user' },
+          }),
+        },
       },
       ...extraProviders,
     ],
@@ -212,18 +218,63 @@ it('ignores a Telegram library resolving after the login view is destroyed', asy
   interval.mockRestore();
 });
 
-it('removes only its own legacy callback on destruction', async () => {
+function widgetCallbackName(
+  fixture: ComponentFixture<LoginWithTelegramComponent>,
+): string {
+  const expression = fixture.nativeElement
+    .querySelector('script[data-onauth]')
+    ?.getAttribute('data-onauth');
+  const name = /^([A-Za-z_$][\w$]*)\(user\)$/.exec(expression ?? '')?.[1];
+  if (!name)
+    throw new Error('Expected an identifier-only Widget callback expression');
+  return name;
+}
+
+it('removes only its own uniquely named legacy callback on destruction', async () => {
   const fixture = await createComponent([sneatBot], apiMock());
-  const host = window as Window & { onTelegramAuth?: unknown };
-  expect(host.onTelegramAuth).toBeTypeOf('function');
+  const host = window as unknown as Record<string, unknown>;
+  const name = widgetCallbackName(fixture);
+  expect(host[name]).toBeTypeOf('function');
   fixture.destroy();
-  expect(host.onTelegramAuth).toBeUndefined();
+  expect(host[name]).toBeUndefined();
   const next = await createComponent([sneatBot], apiMock());
+  const nextName = widgetCallbackName(next);
+  expect(nextName).not.toBe(name);
   const replacement = () => undefined;
-  host.onTelegramAuth = replacement;
+  host[nextName] = replacement;
   next.destroy();
-  expect(host.onTelegramAuth).toBe(replacement);
-  delete host.onTelegramAuth;
+  expect(host[nextName]).toBe(replacement);
+  delete host[nextName];
+});
+
+it('never resolves an old widget expression to a remounted control callback', async () => {
+  const previous = await createComponent([sneatBot], apiMock());
+  const oldName = widgetCallbackName(previous);
+  previous.destroy();
+  const api = apiMock();
+  const current = await createComponent([sneatBot], api);
+  const newName = widgetCallbackName(current);
+  const host = window as unknown as Record<string, unknown>;
+  expect(newName).not.toBe(oldName);
+  // The vendor expression looks up its callback name when it delivers data.
+  const oldLookup = host[oldName];
+  if (typeof oldLookup === 'function') oldLookup({ id: 1, hash: 'old' });
+  expect(host[oldName]).toBeUndefined();
+  expect(api.post).not.toHaveBeenCalled();
+  expect(api.postAsAnonymous).toHaveBeenCalledTimes(1); // nonce discovery only
+  const currentLookup = host[newName];
+  if (typeof currentLookup !== 'function')
+    throw new Error('Expected the fresh Widget callback');
+  currentLookup({
+    id: 2,
+    first_name: 'New',
+    auth_date: 1,
+    hash: 'synthetic-new-proof',
+  });
+  expect(api.postAsAnonymous).toHaveBeenLastCalledWith(
+    'auth/login-from-telegram-widget?botID=SneatBot',
+    expect.objectContaining({ id: 2 }),
+  );
 });
 
 it('unsubscribes a pending nonce request before it can mount a widget', async () => {
