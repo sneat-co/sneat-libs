@@ -68,7 +68,7 @@
     "eslint-plugin-json": "4.0.1",
     "firebase": "12.10.0",
     "firebase-tools": "^15.23.0",
-    "happy-dom": "^20.10.6",
+    "happy-dom": "^21.0.0",
     "ng-packagr": "22.1.1",
     "nx": "23.2.1",
     "posthog-js": "1.357.0",

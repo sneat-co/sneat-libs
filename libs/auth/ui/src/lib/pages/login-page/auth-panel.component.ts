@@ -1,4 +1,8 @@
 import {
+  AuthProviderButtonsComponent,
+  OAUTH_PROVIDER_IDS,
+} from '@sneat/auth-ui/provider-buttons';
+import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
@@ -31,10 +35,8 @@ import {
   IonCol,
   IonGrid,
   IonIcon,
-  IonItem,
   IonItemDivider,
   IonLabel,
-  IonList,
   IonRow,
   IonSpinner,
   IonText,
@@ -66,6 +68,7 @@ export interface AuthPanelAccountReadyChange {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
+    AuthProviderButtonsComponent,
     EmailLoginFormComponent,
     LoginWithTelegramComponent,
     IonButton,
@@ -73,10 +76,8 @@ export interface AuthPanelAccountReadyChange {
     IonCol,
     IonGrid,
     IonIcon,
-    IonItem,
     IonItemDivider,
     IonLabel,
-    IonList,
     IonRow,
     IonSpinner,
     IonText,
@@ -99,6 +100,12 @@ export class AuthPanelComponent implements OnInit {
   protected readonly signingWith = signal<
     AuthProviderID | EmailFormSigningWith | undefined
   >(undefined);
+  protected readonly oauthProviders = OAUTH_PROVIDER_IDS.filter((provider) =>
+    this.providerVisible(provider),
+  );
+  protected readonly oauthSigningWith = computed(() =>
+    OAUTH_PROVIDER_IDS.find((provider) => provider === this.signingWith()),
+  );
   protected readonly authRecoveryNeeded = signal(false);
   /**
    * Set when sign-in hit an email that already has an account: names the

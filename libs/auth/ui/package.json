@@ -1,6 +1,6 @@
 {
   "name": "@sneat/auth-ui",
-  "version": "0.27.41",
+  "version": "0.27.42",
   "publishConfig": {
     "access": "public"
   },
@@ -19,6 +19,7 @@
     "@sneat/space-services": "^0.27.0"
   },
   "dependencies": {
+    "ionicons": "8.1.0",
     "tslib": "2.8.1"
   },
   "type": "module"

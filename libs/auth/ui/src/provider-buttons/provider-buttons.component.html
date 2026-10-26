@@ -1,0 +1,38 @@
+@for (row of rows(); track $index) {
+  <ion-row>
+    @for (provider of row; track provider.id) {
+      <ion-col size="12" size-md="6">
+        <ion-list lines="none">
+          <ion-item
+            [button]="true"
+            [detail]="false"
+            type="button"
+            [disabled]="disabled() || !!busy()"
+            [attr.aria-busy]="busy() === provider.id ? 'true' : null"
+            [attr.data-provider]="provider.id"
+            (click)="select(provider.id)"
+          >
+            @if (busy() === provider.id) {
+              <ion-spinner
+                slot="start"
+                name="lines-small"
+                [color]="provider.spinnerColor"
+                aria-hidden="true"
+              />
+            } @else {
+              <ion-icon
+                slot="start"
+                [color]="provider.color"
+                [icon]="provider.icon"
+                aria-hidden="true"
+              />
+            }
+            <ion-label [color]="provider.color">{{
+              label(provider)
+            }}</ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+    }
+  </ion-row>
+}
