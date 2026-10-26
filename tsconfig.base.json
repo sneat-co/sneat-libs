@@ -81,6 +81,9 @@
       "@sneat/media": [
         "libs/media/src/index.ts"
       ],
+      "@sneat/auth-ui/provider-buttons": [
+        "libs/auth/ui/src/provider-buttons/index.ts"
+      ],
       "@sneat/auth-ui": [
         "libs/auth/ui/src/index.ts"
       ],

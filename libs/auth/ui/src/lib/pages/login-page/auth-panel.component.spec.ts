@@ -1,3 +1,6 @@
+import { addIcons } from 'ionicons';
+import { businessOutline } from 'ionicons/icons';
+import { AuthProviderButtonsComponent } from '@sneat/auth-ui/provider-buttons';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
@@ -23,6 +26,8 @@ describe('AuthPanelComponent', () => {
   const logError = vi.fn();
 
   beforeEach(async () => {
+    // The host app already registers the panel's company-SSO icon.
+    addIcons({ 'business-outline': businessOutline });
     sessionStorage.clear();
     retryUserRecordInitialization.mockClear();
     signInWith.mockReset();
@@ -64,7 +69,10 @@ describe('AuthPanelComponent', () => {
       ],
     })
       .overrideComponent(AuthPanelComponent, {
-        set: { imports: [], schemas: [CUSTOM_ELEMENTS_SCHEMA] },
+        set: {
+          imports: [AuthProviderButtonsComponent],
+          schemas: [CUSTOM_ELEMENTS_SCHEMA],
+        },
       })
       .compileComponents();
   });
@@ -115,6 +123,30 @@ describe('AuthPanelComponent', () => {
     for (const provider of ['Google', 'Microsoft', 'GitHub']) {
       expect(text).toContain(`Login with ${provider}`);
     }
+  });
+
+  it('delegates the extracted selection to existing authentication and busy state', async () => {
+    authStates.next({ status: 'notAuthenticated' });
+    signInWith.mockReturnValue(new Promise(() => undefined));
+    create();
+    fixture.detectChanges();
+    const google = fixture.nativeElement.querySelector(
+      '[data-provider="google.com"]',
+    ) as HTMLElement;
+    google.click();
+    await fixture.whenStable();
+    expect(signInWith).toHaveBeenCalledExactlyOnceWith('google.com');
+    for (const item of fixture.nativeElement.querySelectorAll('ion-item'))
+      expect(item.disabled).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('sneat-login-with-telegram'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[routerLink="/sso"]'),
+    ).not.toBeNull();
   });
 
   it('hides the quick login card for an empty allowlist', () => {
