@@ -24,6 +24,12 @@ export interface ISneatApiResponse<T> {
 }
 
 export interface ISneatApiService {
+  /** Send a request without resolving or updating the shared auth token bridge. */
+  postAsAnonymous<T>(
+    endpoint: string,
+    body: unknown,
+    options?: IHttpRequestOptions,
+  ): Observable<T>;
   post<I, O>(
     endpoint: string,
     body: I,
@@ -44,5 +50,9 @@ export interface ISneatApiService {
     params?: HttpParams,
     options?: IHttpRequestOptions,
   ): Observable<T>;
-  delete<T>(endpoint: string, params?: HttpParams, body?: unknown): Observable<T>;
+  delete<T>(
+    endpoint: string,
+    params?: HttpParams,
+    body?: unknown,
+  ): Observable<T>;
 }
