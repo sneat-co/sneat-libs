@@ -103,11 +103,15 @@ export class SneatApiService implements ISneatApiService, OnDestroy {
     });
   }
 
-  postAsAnonymous<T>(endpoint: string, body: unknown): Observable<T> {
+  postAsAnonymous<T>(
+    endpoint: string,
+    body: unknown,
+    options?: IHttpRequestOptions,
+  ): Observable<T> {
     if (this.operationBlocker.isBlocked('server-requests')) {
       return NEVER;
     }
-    return this.httpClient.post<T>(this.baseUrl + endpoint, body);
+    return this.httpClient.post<T>(this.baseUrl + endpoint, body, options);
   }
 
   delete<T>(
