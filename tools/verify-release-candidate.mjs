@@ -13,14 +13,17 @@ if (cached === committed) {
 
 const baseline = cached ? 'HEAD' : 'HEAD^1';
 const target = cached ? null : 'HEAD';
-const changedFiles = git([
-  'diff',
-  '--name-only',
-  '--diff-filter=ACDMRT',
+// Keep status information: only deletions may consume a preexisting plan.
+// Disable rename detection so renaming a plan also exposes a forbidden addition.
+const diffEntries = git([
+  'diff', '--name-status', '-z', '--no-renames', '--diff-filter=ACDMRT',
   ...(cached ? ['--cached', baseline] : [baseline, target]),
-])
-  .split('\n')
-  .filter(Boolean);
+]).split('\0').filter(Boolean);
+const changedStatus = new Map();
+for (let index = 0; index < diffEntries.length; index += 2) {
+  changedStatus.set(diffEntries[index + 1], diffEntries[index]);
+}
+const changedFiles = [...changedStatus.keys()];
 
 // Package manifests also change during ordinary feature/dependency work. A
 // release candidate is distinguished by the generated workspace changelog.
@@ -37,7 +40,7 @@ const manifestPattern = /^libs\/(?:[^/]+\/)+package\.json$/;
 // every release candidate, not scope creep.
 const allowedExtraFiles = new Set(['CHANGELOG.md', 'pnpm-lock.yaml']);
 const disallowedFiles = changedFiles.filter(
-  file => !allowedExtraFiles.has(file) && !manifestPattern.test(file),
+  file => !allowedExtraFiles.has(file) && !manifestPattern.test(file) && !isConsumedVersionPlan(file),
 );
 if (disallowedFiles.length > 0) {
   fail(`Release candidate changes non-release files: ${disallowedFiles.join(', ')}`);
@@ -107,6 +110,19 @@ if (printVersion) {
   console.log(
     `Validated fixed release ${candidateVersion}: ${changedManifests.length} changed manifests, ${allManifests.length} packages.`,
   );
+}
+
+function isConsumedVersionPlan(path) {
+  if (!/^\.nx\/version-plans\/[^/\r\n]+\.md$/.test(path) || changedStatus.get(path) !== 'D') {
+    return false;
+  }
+  // Nx creates regular, non-executable files. A symlink or arbitrary metadata
+  // deletion must not masquerade as a consumed native fixed-group plan.
+  const entry = git(['ls-tree', baseline, '--', path]);
+  if (!/^100644 blob [a-f0-9]+\t/.test(entry)) return false;
+  const content = readRevisionFile(baseline, path);
+  const header = content.match(/^---\r?\n__default__: (?:patch|minor|major)\r?\n---(?:\r?\n|$)/);
+  return !!header && !!content.slice(header[0].length).trim();
 }
 
 function git(args) {

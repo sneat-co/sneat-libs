@@ -36,7 +36,22 @@ jobs:
           node-version: 24
       - run: pnpm install --frozen-lockfile
       - name: Prepare version and changelog
-        run: pnpm nx release "${{ inputs.bump }}" --skip-publish
+        env:
+          RELEASE_BUMP: ${{ inputs.bump }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${RELEASE_BUMP}" in
+            patch|minor) ;;
+            *) echo 'Unsupported release bump' >&2; exit 1 ;;
+          esac
+          if git ls-files --error-unmatch -- ':(glob).nx/version-plans/*.md' >/dev/null 2>&1; then
+            echo 'Using tracked native version plans; the manual bump is used only when no plans exist.'
+            pnpm nx release --skip-publish
+          else
+            echo "No tracked version plans; using the requested ${RELEASE_BUMP} bump."
+            pnpm nx release "${RELEASE_BUMP}" --skip-publish
+          fi
       - name: Validate the staged release candidate
         id: candidate
         shell: bash
