@@ -1,3 +1,7 @@
+## 0.27.45 (2026-10-27)
+
+This was a version bump only, there were no code changes.
+
 ## 0.27.44 (2026-10-27)
 
 ### 🩹 Fixes
