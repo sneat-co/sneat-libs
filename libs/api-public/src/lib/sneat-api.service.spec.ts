@@ -275,8 +275,8 @@ describe('SneatApiService public transport', () => {
       };
 
       it('forwards explicit options without reading or changing shared auth', async () => {
-        const resolveToken = vi.fn((_forceRefresh: boolean) =>
-          Promise.resolve('signed-in-token'),
+        const resolveToken = vi.fn<(forceRefresh: boolean) => Promise<string>>(
+          () => Promise.resolve('signed-in-token'),
         );
         bridge.beginAuthentication().resolveWithTokenResolver(resolveToken);
         const resolveBridge = vi.spyOn(bridge, 'resolvedToken');
