@@ -1,3 +1,13 @@
+## 0.27.44 (2026-10-27)
+
+### 🩹 Fixes
+
+- Keep authenticated Telegram linking usable after a same-principal token refresh while preserving readiness and identity-loss fences. ([a484c30](https://github.com/sneat-co/sneat-libs/commit/a484c30))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.43 (2026-10-26)
 
 This was a version bump only, there were no code changes.
