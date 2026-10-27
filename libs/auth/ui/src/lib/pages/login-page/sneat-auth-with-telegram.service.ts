@@ -37,6 +37,7 @@ export class SneatAuthWithTelegramService {
   private readonly destroyRef = inject(DestroyRef);
   private readonly linkUserID?: string;
   private linkContextInvalidated = false;
+  private linkState?: ISneatAuthState;
 
   constructor() {
     // Auth state replays its current principal synchronously. If it is not
@@ -48,29 +49,50 @@ export class SneatAuthWithTelegramService {
         initialState = state;
       });
     this.linkUserID =
-      initialState?.status === AuthStatuses.authenticated
+      initialState && this.isAuthenticatedReady(initialState)
         ? initialState.user?.uid
         : undefined;
     this.authService.authState
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((state) => {
-        if (!this.matchesLinkUser(state)) {
+        this.linkState = state;
+        if (!this.preservesLinkPrincipal(state)) {
           // Never revive an old popup after an A -> B -> A account transition.
           this.linkContextInvalidated = true;
         }
       });
   }
 
-  private matchesLinkUser(state: ISneatAuthState): boolean {
+  private isAuthenticatedReady(state: ISneatAuthState): boolean {
     return (
-      !!this.linkUserID &&
       state.status === AuthStatuses.authenticated &&
-      state.user?.uid === this.linkUserID
+      !!state.user?.uid &&
+      !state.err &&
+      // Older public callers omit loadingPhase. An explicit pending phase is
+      // never ready, and the real auth service's ready state needs its token.
+      (state.loadingPhase === undefined ||
+        (state.loadingPhase === 'ready' && !!state.token))
     );
   }
 
-  private linkContextIsCurrent(): boolean {
-    return !!this.linkUserID && !this.linkContextInvalidated;
+  private preservesLinkPrincipal(state: ISneatAuthState): boolean {
+    return (
+      !!this.linkUserID &&
+      state.user?.uid === this.linkUserID &&
+      !state.err &&
+      (this.isAuthenticatedReady(state) ||
+        (state.status === AuthStatuses.authenticating &&
+          state.loadingPhase === 'getting-token'))
+    );
+  }
+
+  private linkContextIsReady(): boolean {
+    return (
+      !this.linkContextInvalidated &&
+      !!this.linkState &&
+      this.preservesLinkPrincipal(this.linkState) &&
+      this.isAuthenticatedReady(this.linkState)
+    );
   }
 
   /** Legacy Login Widget: posts the widget's signed payload. */
@@ -115,10 +137,12 @@ export class SneatAuthWithTelegramService {
     body: unknown,
     isUserAuthenticated: boolean,
   ): void {
-    if (isUserAuthenticated && !this.linkContextIsCurrent()) {
+    if (isUserAuthenticated && !this.linkContextIsReady()) {
       this.errorLogger.logErrorHandler('Telegram account linking stopped')(
         new Error(
-          'Your sign-in changed. Reload this page before authorizing Telegram.',
+          this.linkContextInvalidated
+            ? 'Your sign-in changed. Reload this page before authorizing Telegram.'
+            : 'Your sign-in is refreshing. Try again after your account is ready.',
         ),
       );
       return;
@@ -130,14 +154,14 @@ export class SneatAuthWithTelegramService {
       ? request.pipe(
           takeUntil(
             this.authService.authState.pipe(
-              filter((state) => !this.matchesLinkUser(state)),
+              filter((state) => !this.preservesLinkPrincipal(state)),
             ),
           ),
         )
       : request;
     guardedRequest.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        if (isUserAuthenticated && !this.linkContextIsCurrent()) return;
+        if (isUserAuthenticated && !this.linkContextIsReady()) return;
         this.authService
           .signInWithToken(response.token)
           .catch(

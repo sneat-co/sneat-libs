@@ -186,6 +186,18 @@ describe('SneatAuthWithTelegramService', () => {
     },
   );
 
+  it.each(['checking-session', 'failed'] as const)(
+    'permanently rejects an unexpected same-UID %s phase',
+    (loadingPhase) => {
+      const service = TestBed.inject(SneatAuthWithTelegramService);
+      authState.next({ ...ready('account-A'), status: AuthStatuses.authenticating, loadingPhase });
+      authState.next(ready('account-A'));
+      login(service, 'widget');
+      expect(api.post).not.toHaveBeenCalled();
+      expect(signInWithToken).not.toHaveBeenCalled();
+    },
+  );
+
   it('refuses a missing authenticated owner while preserving anonymous sign-in', () => {
     authState.next({ status: AuthStatuses.notAuthenticated });
     const service = TestBed.inject(SneatAuthWithTelegramService);
