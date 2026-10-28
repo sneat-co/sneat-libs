@@ -7,3 +7,4 @@ export * from './lib/components';
 export * from './lib/pipes/person-names.pipe';
 export * from './lib/sso';
 export * from './lib/pages/login-page/auth-panel-ui-config';
+export { TelegramAuthAccountComponent } from './lib/components/user-auth-providers/telegram-auth-account.component';

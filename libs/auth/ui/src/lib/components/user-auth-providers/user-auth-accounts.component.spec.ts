@@ -69,6 +69,9 @@ describe('UserAuthAccountsComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).not.toContain('Messaging apps');
     expect(
+      fixture.nativeElement.querySelector('sneat-telegram-auth-account'),
+    ).toBeTruthy();
+    expect(
       fixture.nativeElement.querySelectorAll('sneat-user-auth-provider-status')
         .length,
     ).toBe(4);

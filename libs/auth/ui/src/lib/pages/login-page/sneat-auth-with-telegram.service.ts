@@ -1,13 +1,13 @@
 import { DestroyRef, Injectable, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SneatApiService } from '@sneat/api';
+import { TelegramAuthApi } from './telegram-login-config';
 import {
   AuthStatuses,
   ISneatAuthState,
   SneatAuthStateService,
 } from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
-import { Observable, filter, take, takeUntil } from 'rxjs';
+import { Observable, Subject, filter, take, takeUntil } from 'rxjs';
 
 export interface ITelegramAuthData {
   id: number;
@@ -31,8 +31,11 @@ interface IResponse {
 
 @Injectable()
 export class SneatAuthWithTelegramService {
+  private readonly result = new Subject<boolean>();
+  readonly authenticationResult = this.result.asObservable();
+
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
-  private readonly apiService = inject(SneatApiService);
+  private readonly apiService = inject(TelegramAuthApi);
   private readonly authService = inject(SneatAuthStateService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly linkUserID?: string;
@@ -145,6 +148,7 @@ export class SneatAuthWithTelegramService {
             : 'Your sign-in is refreshing. Try again after your account is ready.',
         ),
       );
+      this.result.next(false);
       return;
     }
     const request = isUserAuthenticated
@@ -162,15 +166,27 @@ export class SneatAuthWithTelegramService {
     guardedRequest.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         if (isUserAuthenticated && !this.linkContextIsReady()) return;
-        this.authService
-          .signInWithToken(response.token)
-          .catch(
+        this.authService.signInWithToken(response.token).then(
+          () => {
+            if (
+              !this.destroyRef.destroyed &&
+              (!isUserAuthenticated || this.linkContextIsReady())
+            ) {
+              this.result.next(true);
+            }
+          },
+          (error) => {
             this.errorLogger.logErrorHandler(
               'Failed to sign-in with custom token',
-            ),
-          );
+            )(error);
+            if (!this.destroyRef.destroyed) this.result.next(false);
+          },
+        );
       },
-      error: this.errorLogger.logErrorHandler('signInWithTelegram() error:'),
+      error: (error) => {
+        this.errorLogger.logErrorHandler('signInWithTelegram() error:')(error);
+        this.result.next(false);
+      },
     });
   }
 }
