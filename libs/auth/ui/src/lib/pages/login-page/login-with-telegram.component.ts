@@ -7,6 +7,7 @@ import {
   OnInit,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,6 +20,8 @@ import {
 } from './sneat-auth-with-telegram.service';
 import {
   TelegramLoginConfig,
+  TelegramAuthApi,
+  telegramAuthApiFactory,
   resolveTelegramBotID,
 } from './telegram-login-config';
 import {
@@ -41,7 +44,10 @@ type LegacyTelegramWindow = Window & {
  * Widget (telegram-widget.js), e.g. the local dev bot.
  */
 @Component({
-  providers: [SneatAuthWithTelegramService],
+  providers: [
+    SneatAuthWithTelegramService,
+    { provide: TelegramAuthApi, useFactory: telegramAuthApiFactory },
+  ],
   selector: 'sneat-login-with-telegram',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -108,6 +114,9 @@ export class LoginWithTelegramComponent implements OnInit {
     });
   }
 
+  public readonly authenticated = output<void>();
+  public readonly authenticationFailed = output<void>();
+
   public readonly isUserAuthenticated = input(false);
 
   public readonly botID = input<string>(
@@ -122,6 +131,12 @@ export class LoginWithTelegramComponent implements OnInit {
   protected readonly oidc = signal<ITelegramOIDCNonce | undefined>(undefined);
 
   ngOnInit() {
+    this.authWithTelegram.authenticationResult
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((success) => {
+        if (success) this.authenticated.emit();
+        else this.authenticationFailed.emit();
+      });
     const botID = this.botID();
     if (!botID) {
       return;

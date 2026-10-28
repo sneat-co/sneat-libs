@@ -3,12 +3,8 @@ import {
   Component,
   input,
   signal,
-  inject,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import {
-  IonButton,
-  IonButtons,
   IonCard,
   IonCardContent,
   IonIcon,
@@ -16,13 +12,10 @@ import {
   IonItemDivider,
   IonLabel,
   IonList,
-  IonText,
 } from '@ionic/angular';
-import { SneatApiService } from '@sneat/api';
-import { AuthProviderID, SneatUserService } from '@sneat/auth-core';
-import { IUserRecord } from '@sneat/auth-models';
+import { AuthProviderID } from '@sneat/auth-core';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
-import { LoginWithTelegramComponent } from '../../pages/login-page/login-with-telegram.component';
+import { TelegramAuthAccountComponent } from './telegram-auth-account.component';
 import { UserAuthAProviderStatusComponent } from './user-auth-provider-status';
 
 @Component({
@@ -30,8 +23,7 @@ import { UserAuthAProviderStatusComponent } from './user-auth-provider-status';
   templateUrl: './user-auth-accounts.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    LoginWithTelegramComponent,
-    FormsModule,
+    TelegramAuthAccountComponent,
     UserAuthAProviderStatusComponent,
     IonCard,
     IonList,
@@ -39,9 +31,6 @@ import { UserAuthAProviderStatusComponent } from './user-auth-provider-status';
     IonLabel,
     IonItem,
     IonIcon,
-    IonText,
-    IonButtons,
-    IonButton,
     IonCardContent,
   ],
   providers: [
@@ -52,67 +41,13 @@ import { UserAuthAProviderStatusComponent } from './user-auth-provider-status';
   ],
 })
 export class UserAuthAccountsComponent extends SneatBaseComponent {
-  private readonly sneatUserService = inject(SneatUserService);
-  private readonly sneatApiService = inject(SneatApiService);
-
   /**
-   * The messaging-apps section (Telegram, WhatsApp, Viber) and its Sneat.app
+   * The messaging-apps section (WhatsApp, Viber) and its Sneat.app
    * copy. Apps that only need sign-in methods turn it off.
    */
   readonly showMessagingApps = input(true);
 
-  protected readonly $userRecord = signal<IUserRecord | undefined>(undefined);
-
   protected readonly signingInWith = signal<AuthProviderID | undefined>(
     undefined,
   );
-
-  constructor() {
-    super();
-    this.sneatUserService.userState.pipe(this.takeUntilDestroyed()).subscribe({
-      next: (user) => {
-        this.$userRecord.set(user.record || undefined);
-      },
-    });
-  }
-
-  protected hasAccount(provider: 'telegram' | 'viber' | 'whatsapp'): boolean {
-    provider = provider + ':';
-    for (const account of this.$userRecord()?.accounts || []) {
-      if (account.startsWith(provider)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  protected getAccountID(provider: 'telegram'): string {
-    const prefix = provider + '::';
-    const a = this.$userRecord()?.accounts?.find((a) => a.startsWith(prefix));
-    return a?.replace(prefix, '') || '';
-  }
-
-  protected readonly disconnecting = signal<
-    'telegram' | 'viber' | 'whatsapp' | undefined
-  >(undefined);
-
-  protected disconnect(provider: 'telegram'): void {
-    if (
-      !confirm(
-        'Are you sure you want to disconnect Telegram login from your account?',
-      )
-    ) {
-      return;
-    }
-    this.disconnecting.set(provider);
-    this.sneatApiService
-      .delete('auth/disconnect?provider=' + provider)
-      .subscribe({
-        next: () => {
-          this.disconnecting.set(undefined);
-          alert('Disconnected!');
-        },
-        error: this.errorLogger.logErrorHandler('Failed to disconnect'),
-      });
-  }
 }
