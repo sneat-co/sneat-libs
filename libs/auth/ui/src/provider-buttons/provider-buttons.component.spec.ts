@@ -44,6 +44,34 @@ describe('AuthProviderButtonsComponent standalone presentation', () => {
     fetch.mockRestore();
     setStorage.mockRestore();
   });
+  it('groups every provider in one contiguous list without layout or empty cells', async () => {
+    await render();
+    const lists = fixture.nativeElement.querySelectorAll('ion-list');
+    expect(lists).toHaveLength(1);
+    expect(Array.from(lists[0].children)).toEqual(items());
+    expect(fixture.nativeElement.querySelector('ion-row, ion-col')).toBeNull();
+    expect(fixture.componentInstance.rows().map((row) => row.length)).toEqual([
+      2, 2, 1,
+    ]);
+  });
+  it('keeps an odd filtered set contiguous and in fixed display order', async () => {
+    fixture.componentRef.setInput('providers', [
+      'github.com',
+      'google.com',
+      'microsoft.com',
+    ]);
+    await render();
+    const list = fixture.nativeElement.querySelector('ion-list');
+    expect(Array.from(list.children)).toEqual(items());
+    expect(items().map((item) => item.dataset['provider'])).toEqual([
+      'google.com',
+      'microsoft.com',
+      'github.com',
+    ]);
+    expect(list.children).toHaveLength(3);
+    items()[2].click();
+    expect(selected).toHaveBeenCalledExactlyOnceWith('github.com');
+  });
   it('emits exactly the selected typed provider without starting login itself', async () => {
     await render();
     for (const item of items()) item.click();
