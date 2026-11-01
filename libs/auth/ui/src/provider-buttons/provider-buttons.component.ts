@@ -6,12 +6,10 @@ import {
   output,
 } from '@angular/core';
 import {
-  IonCol,
   IonIcon,
   IonItem,
   IonLabel,
   IonList,
-  IonRow,
   IonSpinner,
 } from '@ionic/angular';
 import {
@@ -76,9 +74,30 @@ const providers = [
 /** Presentation only: the host owns authentication, readiness, navigation and errors. */
 @Component({
   selector: 'sneat-auth-provider-buttons',
-  imports: [IonCol, IonIcon, IonItem, IonLabel, IonList, IonRow, IonSpinner],
+  imports: [IonIcon, IonItem, IonLabel, IonList, IonSpinner],
   templateUrl: './provider-buttons.component.html',
-  styles: ':host { display: block; }',
+  styles: `
+    :host {
+      display: block;
+    }
+    ion-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-auto-rows: minmax(56px, 1fr);
+      margin: 0;
+      padding: 0;
+    }
+    ion-item {
+      min-width: 0;
+      height: 100%;
+      --min-height: 56px;
+    }
+    @media (min-width: 768px) {
+      ion-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthProviderButtonsComponent {
