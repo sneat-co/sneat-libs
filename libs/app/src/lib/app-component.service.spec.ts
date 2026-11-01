@@ -69,6 +69,23 @@ describe('AppComponentService', () => {
     expect(statusBarMock.styleDefault).toHaveBeenCalled();
   });
 
+  it('initializes when neither optional native integration token is registered', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        AppComponentService,
+        { provide: Platform, useValue: platformMock },
+        { provide: ErrorLogger, useValue: errorLoggerMock },
+      ],
+    });
+    service = TestBed.inject(AppComponentService);
+    service.initializeApp();
+    await platformMock.ready();
+    expect(errorLoggerMock.logError).not.toHaveBeenCalled();
+    expect(splashScreenMock.hide).not.toHaveBeenCalled();
+    expect(statusBarMock.styleDefault).not.toHaveBeenCalled();
+  });
+
   it('should handle errors during platform initialization', async () => {
     service = TestBed.inject(AppComponentService);
     const error = new Error('Test error');
