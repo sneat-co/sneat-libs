@@ -6,13 +6,6 @@ import { captureException, showReportDialog } from '@sentry/angular';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Mock } from 'vitest';
 
-vi.mock('@sentry/angular', () => ({
-  captureException: vi.fn().mockImplementation(() => {
-    return 'event-id';
-  }),
-  showReportDialog: vi.fn(),
-}));
-
 describe('ErrorLoggerService', () => {
   let service: ErrorLoggerService;
   let toastController: { create: Mock; dismiss: Mock };

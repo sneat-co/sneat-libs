@@ -37,3 +37,34 @@ export interface IContactRoleAssignmentSavePort {
     readonly changes: readonly IRelatedItemChange[];
   }): Promise<readonly IContactRoleAssignment[]>;
 }
+
+/** Explicit native root-Space endpoint; product policy still authorizes every save. */
+export interface ISpaceRoleAssignment {
+  readonly spaceID: string;
+  readonly title: string;
+  readonly roleIDs: readonly string[];
+}
+
+export interface ISpaceRoleAssignmentOption {
+  readonly spaceID: string;
+  readonly title: string;
+}
+
+/** Full rows retain the difference between a list-only edge and explicit unlink. */
+export interface IAssignmentRowsSavePort {
+  errorMessage?(error: unknown): string | undefined;
+  save(request: {
+    readonly target: ISpaceModuleItemRef;
+    readonly before: readonly IContactRoleAssignment[];
+    readonly after: readonly IContactRoleAssignment[];
+  }): Promise<readonly IContactRoleAssignment[]>;
+}
+
+export interface ISpaceRoleAssignmentSavePort {
+  errorMessage?(error: unknown): string | undefined;
+  save(request: {
+    readonly target: ISpaceModuleItemRef;
+    readonly before: readonly ISpaceRoleAssignment[];
+    readonly after: readonly ISpaceRoleAssignment[];
+  }): Promise<readonly ISpaceRoleAssignment[]>;
+}
