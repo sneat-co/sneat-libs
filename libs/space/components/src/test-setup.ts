@@ -5,7 +5,7 @@ import { NavController } from '@ionic/angular';
 
 setupTestEnvironment();
 
-try {
+beforeEach(() => {
   TestBed.configureTestingModule({
     providers: [
       { provide: SpaceService, useValue: {} },
@@ -22,6 +22,4 @@ try {
       },
     ],
   });
-} catch {
-  // ignore if configured already
-}
+});

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { beforeEach, afterEach } from 'vitest';
 import {
   setupAngularTestingEnvironment,
   setupGlobalMocks,
@@ -113,5 +114,12 @@ export function configureGlobalTestBed() {
 export function setupTestEnvironment() {
   setupAngularTestingEnvironment();
   setupGlobalMocks();
-  configureGlobalTestBed();
+  // Angular's optional global-runner hooks are not visible to its externalized
+  // module inside Vitest VM workers. Register lifecycle hooks with this runner
+  // explicitly, so each spec gets fresh TestBed state and global providers.
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    configureGlobalTestBed();
+  });
+  afterEach(() => TestBed.resetTestingModule());
 }
