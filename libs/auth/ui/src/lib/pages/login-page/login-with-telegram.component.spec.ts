@@ -1,3 +1,4 @@
+import { Window } from 'happy-dom';
 import { CUSTOM_ELEMENTS_SCHEMA, Provider } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SneatApiService } from '@sneat/api';
@@ -287,4 +288,29 @@ it('unsubscribes a pending nonce request before it can mount a widget', async ()
   expect(nonce.observed).toBe(false);
   nonce.next({ clientID: '6042661328', nonce: 'late' });
   expect(loadTelegramLoginScript).not.toHaveBeenCalled();
+});
+
+it('names a late legacy iframe, preserves an upstream name, and stops after destroy', async () => {
+  // Shared setup stubs MutationObserver for Ionic; use a real observer here.
+  const observerWindow = new Window();
+  vi.stubGlobal('MutationObserver', observerWindow.MutationObserver);
+  try {
+    const fixture = await createComponent([sneatBot], apiMock());
+    const element = fixture.nativeElement as HTMLElement;
+    const unnamed = document.createElement('iframe');
+    const named = document.createElement('iframe');
+    named.title = 'Telegram authorization';
+    element.append(unnamed, named);
+    await settle(fixture);
+    expect(unnamed.title).toBe('Log in with Telegram');
+    expect(named.title).toBe('Telegram authorization');
+    fixture.destroy();
+    const afterDestroy = document.createElement('iframe');
+    element.append(afterDestroy);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(afterDestroy.title).toBe('');
+  } finally {
+    vi.unstubAllGlobals();
+    await observerWindow.happyDOM.close();
+  }
 });
