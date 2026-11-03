@@ -66,7 +66,7 @@ type LegacyTelegramWindow = Window & {
     `
       .tg-oidc-login {
         background: #54a9eb;
-        color: #fff;
+        color: #082f49;
         border: 0;
         border-radius: 20px;
         font-weight: 500;
