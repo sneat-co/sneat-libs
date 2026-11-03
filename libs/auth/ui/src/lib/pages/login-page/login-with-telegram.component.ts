@@ -96,6 +96,7 @@ export class LoginWithTelegramComponent implements OnInit {
   });
 
   private nonceTimer?: ReturnType<typeof setInterval>;
+  private widgetObserver?: MutationObserver;
   private legacyCallback?: (data: ITelegramAuthData) => void;
   private readonly legacyCallbackName = `sneatTelegramAuth_${newRandomId({
     len: 20,
@@ -108,6 +109,7 @@ export class LoginWithTelegramComponent implements OnInit {
     // Register while the view is alive, never from a late loader continuation.
     this.destroyRef.onDestroy(() => {
       clearInterval(this.nonceTimer);
+      this.widgetObserver?.disconnect();
       const host = this.document.defaultView as LegacyTelegramWindow | null;
       if (host && host[this.legacyCallbackName] === this.legacyCallback)
         delete host[this.legacyCallbackName];
@@ -189,6 +191,7 @@ export class LoginWithTelegramComponent implements OnInit {
       if (this.destroyRef.destroyed) return;
       this.oidc.set(cfg);
       clearInterval(this.nonceTimer);
+      this.widgetObserver?.disconnect();
       this.nonceTimer = setInterval(
         () => this.refreshNonce(botID),
         OIDC_NONCE_REFRESH_MS,
@@ -236,6 +239,15 @@ export class LoginWithTelegramComponent implements OnInit {
       script.setAttribute('data-userpic', 'false');
     }
     script.setAttribute('data-onauth', `${this.legacyCallbackName}(user)`);
-    this.el.nativeElement.appendChild(script);
+    // The legacy widget inserts its iframe asynchronously without a title.
+    // Observe only this widget, and leave an upstream accessible name intact.
+    const element = this.el.nativeElement as HTMLElement;
+    this.widgetObserver = new MutationObserver(() => {
+      for (const frame of element.querySelectorAll('iframe')) {
+        if (!frame.title.trim()) frame.title = 'Log in with Telegram';
+      }
+    });
+    this.widgetObserver.observe(element, { childList: true, subtree: true });
+    element.appendChild(script);
   }
 }
