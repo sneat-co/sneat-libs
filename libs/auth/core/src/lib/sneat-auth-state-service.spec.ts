@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import {
   AnalyticsService,
+  EnvConfigToken,
   ErrorLogger,
   SNEAT_FIREBASE_AUTH,
   SneatUrlOperationBlocker,
@@ -17,7 +18,12 @@ import {
   UserCredential,
   linkWithCredential,
   signInWithPopup,
+  signInWithRedirect,
 } from 'firebase/auth';
+import {
+  REDIRECT_SIGN_IN_MARKER_STORAGE_KEY,
+  markRedirectSignInStarted,
+} from './sign-in-failure';
 import {
   credentialOfPendingLink,
   pendingCredentialLinkFromError,
@@ -62,6 +68,7 @@ vi.mock('firebase/auth', () => {
     signInWithEmailLink: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
     signInWithCustomToken: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
     signInWithPopup: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
+    signInWithRedirect: vi.fn(),
     linkWithPopup: vi.fn().mockResolvedValue({ user: { uid: 'test' } }),
     linkWithCredential: vi.fn(),
     unlink: vi.fn().mockResolvedValue({ uid: 'test', providerData: [] }),
@@ -826,6 +833,131 @@ describe('SneatAuthStateService', () => {
 
       expect(linkWithCredential).not.toHaveBeenCalled();
       expect(service.pendingCredentialLink).toEqual(githubLink);
+    });
+  });
+
+  describe('sign-in failure', () => {
+    beforeEach(() => sessionStorage.clear());
+
+    const failure = () => firstValueFrom(service.signInFailureChanges);
+
+    it('explains a rejected redirect with the provider it started with', async () => {
+      markRedirectSignInStarted('google.com');
+      service.onRedirectSignInError({
+        code: 'auth/unauthorized-domain',
+        message: 'Firebase: Error (auth/unauthorized-domain).',
+      });
+      const f = await failure();
+      expect(f?.summary).toBe("Sign-in with Google didn't complete");
+      expect(f?.code).toBe('auth/unauthorized-domain');
+      expect(f?.message).toContain('unauthorized-domain');
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).toBeNull();
+    });
+
+    it('stays quiet about a redirect error explained elsewhere', async () => {
+      markRedirectSignInStarted('github.com');
+      service.onRedirectSignInError(new Error('x'), true);
+      expect(await failure()).toBeUndefined();
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).toBeNull();
+    });
+
+    it('detects an empty redirect result after a redirect this app started', async () => {
+      markRedirectSignInStarted('google.com');
+      service.onRedirectSignInResult(null);
+      const f = await failure();
+      expect(f?.code).toBe('redirect-result-empty');
+      expect(f?.providerId).toBe('google.com');
+      // Handled once: a reload does not show it again.
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).toBeNull();
+    });
+
+    it('reports no failure for an empty result without a marker', async () => {
+      service.onRedirectSignInResult(null);
+      expect(await failure()).toBeUndefined();
+    });
+
+    it('reports no failure when the redirect returned a credential or a user is signed in', async () => {
+      markRedirectSignInStarted('google.com');
+      service.onRedirectSignInResult({ user: { uid: 'u' } } as UserCredential);
+      expect(await failure()).toBeUndefined();
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).toBeNull();
+
+      markRedirectSignInStarted('google.com');
+      authMock.currentUser = { uid: 'u' } as User;
+      service.onRedirectSignInResult(null);
+      expect(await failure()).toBeUndefined();
+    });
+
+    it('reports, dismisses, and clears a failure on a later sign-in', async () => {
+      service.reportSignInFailure({ code: 'auth/popup-blocked' }, 'google.com');
+      expect((await failure())?.code).toBe('auth/popup-blocked');
+      service.dismissSignInFailure();
+      expect(await failure()).toBeUndefined();
+
+      service.reportSignInFailure({ code: 'auth/network-request-failed' });
+      onAuthStateChangedCallback.next({
+        uid: 'u1',
+        isAnonymous: false,
+        emailVerified: true,
+        providerId: 'google.com',
+        providerData: [],
+      } as unknown as User);
+      expect(await failure()).toBeUndefined();
+    });
+
+    describe('with redirect sign-in', () => {
+      beforeEach(() => {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            SneatAuthStateService,
+            {
+              provide: ErrorLogger,
+              useValue: { logError: vi.fn(), logErrorHandler: () => vi.fn() },
+            },
+            {
+              provide: AnalyticsService,
+              useValue: { identify: vi.fn(), logEvent: vi.fn() },
+            },
+            { provide: SNEAT_FIREBASE_AUTH, useValue: authMock },
+            {
+              provide: SneatUrlOperationBlocker,
+              useValue: operationBlockerMock,
+            },
+            { provide: EnvConfigToken, useValue: { signInMethod: 'redirect' } },
+          ],
+        });
+        service = TestBed.inject(SneatAuthStateService);
+      });
+
+      it('records a marker right before redirecting', async () => {
+        vi.mocked(signInWithRedirect).mockImplementationOnce(async () => {
+          const raw = sessionStorage.getItem(
+            REDIRECT_SIGN_IN_MARKER_STORAGE_KEY,
+          );
+          expect(JSON.parse(raw ?? '{}').providerId).toBe('google.com');
+          return undefined as never;
+        });
+        await expect(service.signInWith('google.com')).resolves.toBeUndefined();
+        expect(signInWithRedirect).toHaveBeenCalled();
+      });
+
+      it('drops the marker when the redirect cannot start', async () => {
+        const error = { code: 'auth/operation-not-allowed' };
+        vi.mocked(signInWithRedirect).mockRejectedValueOnce(error);
+        await expect(service.signInWith('google.com')).rejects.toBe(error);
+        expect(
+          sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+        ).toBeNull();
+      });
     });
   });
 });

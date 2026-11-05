@@ -5,6 +5,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   IPendingCredentialLink,
+  ISignInFailure,
   ISneatAuthState,
   ISneatUserState,
   SneatAuthStateService,
@@ -24,6 +25,9 @@ describe('AuthPanelComponent', () => {
   let pendingCredentialLink: IPendingCredentialLink | undefined;
   let pendingCredentialLinkChanges: Subject<IPendingCredentialLink | undefined>;
   const logError = vi.fn();
+  let signInFailureChanges: BehaviorSubject<ISignInFailure | undefined>;
+  const reportSignInFailure = vi.fn();
+  const dismissSignInFailure = vi.fn();
 
   beforeEach(async () => {
     // The host app already registers the panel's company-SSO icon.
@@ -34,6 +38,11 @@ describe('AuthPanelComponent', () => {
     logError.mockReset();
     pendingCredentialLink = undefined;
     pendingCredentialLinkChanges = new Subject();
+    signInFailureChanges = new BehaviorSubject<ISignInFailure | undefined>(
+      undefined,
+    );
+    reportSignInFailure.mockReset();
+    dismissSignInFailure.mockReset();
     states = new BehaviorSubject<ISneatUserState>({ status: 'authenticating' });
     authStates = new BehaviorSubject<ISneatAuthState>({
       status: 'authenticating',
@@ -52,6 +61,11 @@ describe('AuthPanelComponent', () => {
             get pendingCredentialLinkChanges() {
               return pendingCredentialLinkChanges.asObservable();
             },
+            get signInFailureChanges() {
+              return signInFailureChanges.asObservable();
+            },
+            reportSignInFailure,
+            dismissSignInFailure,
           },
         },
         {
@@ -543,6 +557,71 @@ describe('AuthPanelComponent', () => {
     ).loginWith('github.com');
 
     expect(logError).toHaveBeenCalled();
+    // ...and explains them on the page, not only in the console.
+    expect(reportSignInFailure).toHaveBeenCalledWith(
+      expect.any(Error),
+      'github.com',
+    );
+  });
+
+  it('does not explain a sign-in the user cancelled', async () => {
+    signInWith.mockRejectedValue({ code: 'auth/popup-closed-by-user' });
+    const component = create();
+    fixture.detectChanges();
+
+    await (
+      component as unknown as { loginWith(provider: string): Promise<void> }
+    ).loginWith('google.com');
+
+    expect(reportSignInFailure).not.toHaveBeenCalled();
+    expect(logError).not.toHaveBeenCalled();
+  });
+
+  it('passes a sign-in failure to the notice and retries or dismisses it', () => {
+    authStates.next({ status: 'notAuthenticated' });
+    signInWith.mockReturnValue(new Promise(() => undefined));
+    create();
+    fixture.detectChanges();
+    const failure: ISignInFailure = {
+      summary: "Sign-in with Google didn't complete",
+      providerId: 'google.com',
+      code: 'redirect-result-empty',
+      host: 'example.app',
+      hints: ['Try again.'],
+    };
+    signInFailureChanges.next(failure);
+    fixture.detectChanges();
+    const notice = fixture.debugElement.query(
+      (de) => de.name === 'sneat-sign-in-failure-notice',
+    );
+    expect(notice.properties['failure']).toEqual(failure);
+    expect(notice.properties['canRetry']).toBe(true);
+
+    notice.triggerEventHandler('dismiss');
+    expect(dismissSignInFailure).toHaveBeenCalledOnce();
+
+    notice.triggerEventHandler('retry');
+    expect(signInWith).toHaveBeenCalledWith('google.com');
+    // Starting the retry clears the old notice.
+    expect(dismissSignInFailure).toHaveBeenCalledTimes(2);
+  });
+
+  it('offers no retry for a provider this panel does not show', () => {
+    authStates.next({ status: 'notAuthenticated' });
+    create();
+    fixture.detectChanges();
+    signInFailureChanges.next({
+      summary: "Sign-in didn't complete",
+      host: 'example.app',
+      hints: [],
+    });
+    fixture.detectChanges();
+    const notice = fixture.debugElement.query(
+      (de) => de.name === 'sneat-sign-in-failure-notice',
+    );
+    expect(notice.properties['canRetry']).toBe(false);
+    notice.triggerEventHandler('retry');
+    expect(signInWith).not.toHaveBeenCalled();
   });
 
   it('shows auth recovery controls when the wrapper hides normal credentials', () => {

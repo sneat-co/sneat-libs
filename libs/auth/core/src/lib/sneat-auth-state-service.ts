@@ -50,6 +50,13 @@ import {
   pendingCredentialLinkFromError,
   savePendingCredentialLink,
 } from './pending-credential-link';
+import {
+  ISignInFailure,
+  consumeRedirectSignInMarker,
+  markRedirectSignInStarted,
+  signInFailureFromError,
+  silentRedirectSignInFailure,
+} from './sign-in-failure';
 
 export enum AuthStatuses {
   authenticating = 'authenticating',
@@ -237,6 +244,8 @@ export class SneatAuthStateService {
           this.publishSignedOutState();
           return;
         }
+        // A later successful sign-in supersedes an earlier failure notice.
+        if (!authUser.isAnonymous) this.dismissSignInFailure();
         const status = AuthStatuses.authenticated;
         if (fbUser && !fbUser.isAnonymous) {
           void this.linkPendingCredential(fbUser);
@@ -391,8 +400,16 @@ export class SneatAuthStateService {
     const authProvider = getAuthProvider(authProviderID);
     if (this.signInMethod === 'redirect') {
       // Full-page redirect; this navigates away and never resolves. The sign-in
-      // is completed on return by BaseAppComponent's getRedirectResult() call.
-      await signInWithRedirect(this.fbAuth, authProvider);
+      // is completed on return by SneatAuthenticatedLifecycle's
+      // getRedirectResult() call, which reads this marker to tell a silently
+      // failed return from an ordinary visit.
+      markRedirectSignInStarted(authProviderID);
+      try {
+        await signInWithRedirect(this.fbAuth, authProvider);
+      } catch (err) {
+        consumeRedirectSignInMarker();
+        throw err;
+      }
       return undefined;
     }
     try {
@@ -421,6 +438,54 @@ export class SneatAuthStateService {
       });
     }
     return link;
+  }
+
+  private readonly signInFailure$ = new BehaviorSubject<
+    ISignInFailure | undefined
+  >(undefined);
+
+  /**
+   * The last sign-in that did not complete, for the login page to explain.
+   * Undefined once dismissed or after a successful sign-in.
+   */
+  public readonly signInFailureChanges = this.signInFailure$.asObservable();
+
+  /** Explains a failed sign-in attempt (popup or redirect) on the login page. */
+  public reportSignInFailure(err: unknown, providerId?: string): void {
+    this.signInFailure$.next(signInFailureFromError(err, providerId));
+    this.analyticsService.logEvent('signInFailed', {
+      provider: providerId ?? '',
+      code: this.signInFailure$.value?.code ?? '',
+    });
+  }
+
+  public dismissSignInFailure(): void {
+    if (this.signInFailure$.value) this.signInFailure$.next(undefined);
+  }
+
+  /**
+   * Call with what `getRedirectResult()` resolved. A redirect that this app
+   * started, that came back with no result while nobody is signed in, did not
+   * complete — usually because the browser blocked the storage Firebase needs
+   * or the site's sign-in handler is misconfigured.
+   */
+  public onRedirectSignInResult(credential: UserCredential | null): void {
+    const marker = consumeRedirectSignInMarker();
+    if (credential || !marker || this.fbAuth.currentUser) return;
+    this.signInFailure$.next(silentRedirectSignInFailure(marker.providerId));
+    this.analyticsService.logEvent('signInFailed', {
+      provider: marker.providerId,
+      code: 'redirect-result-empty',
+    });
+  }
+
+  /**
+   * Call when `getRedirectResult()` rejects. Pass `handled` when the error is
+   * already explained elsewhere (e.g. a pending credential link).
+   */
+  public onRedirectSignInError(err: unknown, handled = false): void {
+    const marker = consumeRedirectSignInMarker();
+    if (!handled) this.reportSignInFailure(err, marker?.providerId);
   }
 
   /** The provider waiting to be linked on next sign-in, if any. */
