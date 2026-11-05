@@ -1,3 +1,13 @@
+## 0.27.51 (2026-11-05)
+
+### 🩹 Fixes
+
+- Explain a sign-in that did not complete on the login page: a failed or silently empty redirect sign-in (and popup errors) now show a summary, the Firebase error code and host, and short hints, with Try again and Dismiss. An unreachable Telegram login server shows an inline message instead of failing silently. ([51841f5](https://github.com/sneat-co/sneat-libs/commit/51841f5))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.50 (2026-11-03)
 
 This was a version bump only, there were no code changes.

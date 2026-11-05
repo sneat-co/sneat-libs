@@ -1,6 +1,6 @@
 {
   "name": "@sneat/data",
-  "version": "0.27.50",
+  "version": "0.27.51",
   "publishConfig": {
     "access": "public"
   },
