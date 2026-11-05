@@ -606,6 +606,14 @@ describe('AuthPanelComponent', () => {
     expect(dismissSignInFailure).toHaveBeenCalledTimes(2);
   });
 
+  it('clears the failure notice when the panel is destroyed', () => {
+    create();
+    fixture.detectChanges();
+    expect(dismissSignInFailure).not.toHaveBeenCalled();
+    fixture.destroy();
+    expect(dismissSignInFailure).toHaveBeenCalledOnce();
+  });
+
   it('offers no retry for a provider this panel does not show', () => {
     authStates.next({ status: 'notAuthenticated' });
     create();

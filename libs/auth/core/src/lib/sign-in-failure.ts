@@ -8,8 +8,12 @@ import { authProviderTitle } from './pending-credential-link';
 export const REDIRECT_SIGN_IN_MARKER_STORAGE_KEY =
   'sneat:auth:redirect-sign-in-started';
 
-/** A marker older than this is from an abandoned attempt, not this return. */
-export const REDIRECT_SIGN_IN_MARKER_TTL_MS = 15 * 60 * 1000;
+/**
+ * A marker older than this is from an abandoned attempt (e.g. the user pressed
+ * Back on the provider's page), not this return. A real round-trip takes
+ * seconds plus the time on the provider's screen.
+ */
+export const REDIRECT_SIGN_IN_MARKER_TTL_MS = 3 * 60 * 1000;
 
 /** The code used when a redirect came back with no result and no user. */
 export const REDIRECT_RESULT_EMPTY = 'redirect-result-empty';
@@ -54,6 +58,24 @@ export function markRedirectSignInStarted(
   } catch {
     // Without storage the silent case can't be detected; errors still are.
   }
+}
+
+/**
+ * Drops the marker when the browser restores this page from its back/forward
+ * cache: the user came Back from the provider, nothing failed. Returns the
+ * cleanup function.
+ */
+export function clearRedirectSignInMarkerOnBackForward(
+  target:
+    | Pick<Window, 'addEventListener' | 'removeEventListener'>
+    | undefined = globalThis.window,
+): () => void {
+  if (!target?.addEventListener) return () => undefined;
+  const listener = (event: Event) => {
+    if ((event as PageTransitionEvent).persisted) consumeRedirectSignInMarker();
+  };
+  target.addEventListener('pageshow', listener);
+  return () => target.removeEventListener('pageshow', listener);
 }
 
 /** Reads and removes the marker; undefined when absent, stale or invalid. */
@@ -128,7 +150,7 @@ function hintsFor(code: string | undefined, host: string): string[] {
       ];
     case REDIRECT_RESULT_EMPTY:
       return [
-        'Your browser may block third-party cookies or site storage (e.g. Safari, private mode). Allow them for this site and try again.',
+        "If you didn't cancel it, your browser may be blocking third-party cookies or site storage (e.g. Safari, private mode). Allow them for this site and try again.",
         TRY_ANOTHER_METHOD,
         CONTACT_SUPPORT,
       ];

@@ -149,6 +149,14 @@ export class AuthPanelComponent implements OnInit {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly destroyRef = inject(DestroyRef);
 
+  constructor() {
+    // The notice is about this visit to the sign-in form: don't replay it
+    // when the user comes back to it later.
+    this.destroyRef.onDestroy(() =>
+      this.authStateService.dismissSignInFailure(),
+    );
+  }
+
   ngOnInit(): void {
     // A failed redirect sign-in is detected after this panel renders.
     this.authStateService.signInFailureChanges

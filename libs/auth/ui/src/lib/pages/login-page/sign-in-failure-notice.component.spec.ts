@@ -37,15 +37,20 @@ describe('SignInFailureNoticeComponent', () => {
       silentRedirectSignInFailure('google.com', 'intouchkeeper.app'),
       true,
     );
-    // happy-dom's textContent skips text inside upgraded Ionic elements.
-    const text = el.innerHTML.replace(/<[^>]+>/g, '');
+    // Read each part directly: happy-dom's root textContent skips text
+    // inside upgraded Ionic elements.
+    const textOf = (selector: string) =>
+      Array.from(el.querySelectorAll(selector))
+        .map((node) => node.textContent ?? '')
+        .join(' ');
     expect(el.querySelector('[role="alert"]')).not.toBeNull();
-    expect(text).toContain("Sign-in with Google didn't complete");
-    expect(text).toContain('third-party cookies');
-    expect(el.querySelector('code')?.textContent).toBe('redirect-result-empty');
-    expect(text).toContain('no sign-in result was received');
-    expect(text).toContain('(on intouchkeeper.app)');
+    expect(textOf('h2 ion-text')).toBe("Sign-in with Google didn't complete");
     expect(el.querySelectorAll('.sign-in-failure-hint')).toHaveLength(3);
+    expect(textOf('.sign-in-failure-hint')).toContain('third-party cookies');
+    expect(el.querySelector('code')?.textContent).toBe('redirect-result-empty');
+    const details = textOf('.sign-in-failure-details');
+    expect(details).toContain('no sign-in result was received');
+    expect(details).toContain('(on intouchkeeper.app)');
   });
 
   it('emits retry and dismiss', () => {

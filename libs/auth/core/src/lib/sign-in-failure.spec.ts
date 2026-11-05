@@ -1,5 +1,6 @@
 import {
   REDIRECT_RESULT_EMPTY,
+  clearRedirectSignInMarkerOnBackForward,
   REDIRECT_SIGN_IN_MARKER_STORAGE_KEY,
   REDIRECT_SIGN_IN_MARKER_TTL_MS,
   consumeRedirectSignInMarker,
@@ -103,11 +104,52 @@ describe('sign-in failure', () => {
     });
   });
 
+  describe('back/forward cache restore', () => {
+    const pageshow = (persisted: boolean) => {
+      const event = new Event('pageshow') as Event & { persisted: boolean };
+      Object.defineProperty(event, 'persisted', { value: persisted });
+      return event;
+    };
+
+    it('drops the marker when the page is restored from bfcache', () => {
+      const stop = clearRedirectSignInMarkerOnBackForward(window);
+      markRedirectSignInStarted('google.com');
+      window.dispatchEvent(pageshow(false));
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).not.toBeNull();
+      window.dispatchEvent(pageshow(true));
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).toBeNull();
+
+      stop();
+      markRedirectSignInStarted('google.com');
+      window.dispatchEvent(pageshow(true));
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).not.toBeNull();
+    });
+
+    it('is a no-op without a window', () => {
+      expect(() =>
+        clearRedirectSignInMarkerOnBackForward(undefined)(),
+      ).not.toThrow();
+    });
+  });
+
+  it('keeps the marker TTL short enough that a Back press expires it', () => {
+    expect(REDIRECT_SIGN_IN_MARKER_TTL_MS).toBeLessThanOrEqual(3 * 60 * 1000);
+  });
+
   it('explains a silent empty redirect result', () => {
     const f = silentRedirectSignInFailure('google.com', 'intouchkeeper.app');
     expect(f.code).toBe(REDIRECT_RESULT_EMPTY);
     expect(f.hints).toHaveLength(3);
-    expect(f.hints.join(' ')).toContain('third-party cookies');
+    // Neutral: the user may simply have pressed Back on the provider's page.
+    expect(f.hints[0]).toMatch(
+      /^If you didn't cancel it, .*third-party cookies/,
+    );
     expect(f.hints.join(' ')).toContain('contact support');
   });
 

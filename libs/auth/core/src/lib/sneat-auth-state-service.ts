@@ -52,6 +52,7 @@ import {
 } from './pending-credential-link';
 import {
   ISignInFailure,
+  clearRedirectSignInMarkerOnBackForward,
   consumeRedirectSignInMarker,
   markRedirectSignInStarted,
   signInFailureFromError,
@@ -144,6 +145,9 @@ export class SneatAuthStateService {
   // private readonly fbAuth: Auth;
 
   constructor() {
+    // Back from the provider restores this page from bfcache without an app
+    // boot: drop the marker so a later reload is not taken for a failure.
+    clearRedirectSignInMarkerOnBackForward();
     const errorLogger = this.errorLogger;
     this.fbAuth.onIdTokenChanged({
       next: (firebaseUser) => {
@@ -471,7 +475,8 @@ export class SneatAuthStateService {
    */
   public onRedirectSignInResult(credential: UserCredential | null): void {
     const marker = consumeRedirectSignInMarker();
-    if (credential || !marker || this.fbAuth.currentUser) return;
+    const user = this.fbAuth.currentUser;
+    if (credential || !marker || (user && !user.isAnonymous)) return;
     this.signInFailure$.next(silentRedirectSignInFailure(marker.providerId));
     this.analyticsService.logEvent('signInFailed', {
       provider: marker.providerId,

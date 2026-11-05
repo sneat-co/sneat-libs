@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { IonNote } from '@ionic/angular';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { newRandomId } from '@sneat/random';
 import {
@@ -30,16 +31,21 @@ import {
   telegramLoginApi,
 } from './telegram-login-js';
 
+/** fetch()'s rejection messages for a request that got no response. */
+const FETCH_FAILURE = /Failed to fetch|NetworkError|Load failed/;
+
 /**
  * A request that got no HTTP response at all: blocked by CORS, offline, or
- * DNS. Angular reports these as status 0; fetch rejects with a TypeError.
+ * DNS. Angular reports these as status 0; fetch rejects with a TypeError
+ * whose message is browser-specific. Any other TypeError is a bug, not a
+ * network failure, and keeps the legacy-widget fallback.
  */
 export function isNetworkError(err: unknown): boolean {
+  if (err instanceof TypeError) return FETCH_FAILURE.test(err.message);
   return (
-    err instanceof TypeError ||
-    (typeof err === 'object' &&
-      err !== null &&
-      (err as { status?: unknown }).status === 0)
+    typeof err === 'object' &&
+    err !== null &&
+    (err as { status?: unknown }).status === 0
   );
 }
 
@@ -63,13 +69,14 @@ type LegacyTelegramWindow = Window & {
   ],
   selector: 'sneat-login-with-telegram',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IonNote],
   template: `
     @if (unreachable()) {
-      <p class="tg-unreachable" role="status">
+      <ion-note class="tg-unreachable" color="danger" role="status">
         Telegram login is unavailable: we couldn't reach the sign-in server
         (network or site configuration problem). Please use another method or
         try again later.
-      </p>
+      </ion-note>
     }
     @if (oidc(); as cfg) {
       <button
@@ -84,11 +91,6 @@ type LegacyTelegramWindow = Window & {
   `,
   styles: [
     `
-      .tg-unreachable {
-        color: var(--ion-color-danger, #c5000f);
-        font-size: smaller;
-        margin: 0;
-      }
       .tg-oidc-login {
         background: #54a9eb;
         color: #082f49;

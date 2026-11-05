@@ -896,6 +896,23 @@ describe('SneatAuthStateService', () => {
       expect(await failure()).toBeUndefined();
     });
 
+    it('treats an anonymous current user as not signed in', async () => {
+      markRedirectSignInStarted('google.com');
+      authMock.currentUser = { uid: 'anon', isAnonymous: true } as User;
+      service.onRedirectSignInResult(null);
+      expect((await failure())?.code).toBe('redirect-result-empty');
+    });
+
+    it('drops the marker when the page comes back from bfcache', () => {
+      markRedirectSignInStarted('google.com');
+      const event = new Event('pageshow');
+      Object.defineProperty(event, 'persisted', { value: true });
+      window.dispatchEvent(event);
+      expect(
+        sessionStorage.getItem(REDIRECT_SIGN_IN_MARKER_STORAGE_KEY),
+      ).toBeNull();
+    });
+
     it('reports, dismisses, and clears a failure on a later sign-in', async () => {
       service.reportSignInFailure({ code: 'auth/popup-blocked' }, 'google.com');
       expect((await failure())?.code).toBe('auth/popup-blocked');

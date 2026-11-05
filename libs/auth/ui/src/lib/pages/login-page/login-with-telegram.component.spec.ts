@@ -163,9 +163,34 @@ describe('LoginWithTelegramComponent', () => {
     },
   );
 
+  it('keeps the legacy widget fallback for a TypeError that is a bug', async () => {
+    const api = apiMock();
+    api.postAsAnonymous.mockImplementation(() =>
+      throwError(() => new TypeError('x is not a function')),
+    );
+    fixture = await createComponent([sneatBot], api);
+    await settle(fixture);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.tg-unreachable'),
+    ).toBeNull();
+    expect(legacyWidget(fixture)?.getAttribute('data-telegram-login')).toBe(
+      'SneatBot',
+    );
+  });
+
   it('classifies only response-less failures as network errors', () => {
     expect(isNetworkError(new HttpErrorResponse({ status: 0 }))).toBe(true);
-    expect(isNetworkError(new TypeError('x'))).toBe(true);
+    expect(isNetworkError(new TypeError('Failed to fetch'))).toBe(true);
+    expect(
+      isNetworkError(
+        new TypeError('NetworkError when attempting to fetch resource.'),
+      ),
+    ).toBe(true);
+    expect(isNetworkError(new TypeError('Load failed'))).toBe(true);
+    // A TypeError from a bug is not a network failure.
+    expect(
+      isNetworkError(new TypeError('Cannot read properties of undefined')),
+    ).toBe(false);
     expect(isNetworkError(new HttpErrorResponse({ status: 400 }))).toBe(false);
     expect(isNetworkError(new Error('400'))).toBe(false);
     expect(isNetworkError(null)).toBe(false);
