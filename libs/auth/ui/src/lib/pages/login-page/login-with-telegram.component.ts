@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { IonNote } from '@ionic/angular';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { newRandomId } from '@sneat/random';
 import {
@@ -29,6 +30,24 @@ import {
   loadTelegramLoginScript,
   telegramLoginApi,
 } from './telegram-login-js';
+
+/** fetch()'s rejection messages for a request that got no response. */
+const FETCH_FAILURE = /Failed to fetch|NetworkError|Load failed/;
+
+/**
+ * A request that got no HTTP response at all: blocked by CORS, offline, or
+ * DNS. Angular reports these as status 0; fetch rejects with a TypeError
+ * whose message is browser-specific. Any other TypeError is a bug, not a
+ * network failure, and keeps the legacy-widget fallback.
+ */
+export function isNetworkError(err: unknown): boolean {
+  if (err instanceof TypeError) return FETCH_FAILURE.test(err.message);
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    (err as { status?: unknown }).status === 0
+  );
+}
 
 /** Server nonces live 10 minutes; refresh well inside that. */
 const OIDC_NONCE_REFRESH_MS = 8 * 60 * 1000;
@@ -50,7 +69,15 @@ type LegacyTelegramWindow = Window & {
   ],
   selector: 'sneat-login-with-telegram',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IonNote],
   template: `
+    @if (unreachable()) {
+      <ion-note class="tg-unreachable" color="danger" role="status">
+        Telegram login is unavailable: we couldn't reach the sign-in server
+        (network or site configuration problem). Please use another method or
+        try again later.
+      </ion-note>
+    }
     @if (oidc(); as cfg) {
       <button
         type="button"
@@ -129,6 +156,9 @@ export class LoginWithTelegramComponent implements OnInit {
   public readonly requestAccess = input<'write' | 'read'>('write');
   public readonly userPic = input(true);
 
+  /** Set when the nonce request never reached the server (CORS, offline). */
+  protected readonly unreachable = signal(false);
+
   /** Set once the OpenID popup can be offered: Client ID plus a live nonce. */
   protected readonly oidc = signal<ITelegramOIDCNonce | undefined>(undefined);
 
@@ -148,8 +178,24 @@ export class LoginWithTelegramComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (cfg) => this.startOIDC(botID, cfg),
-        // The server answers 400 for a bot without OpenID login configured.
-        error: () => this.startLegacyWidget(botID),
+        error: (err: unknown) => {
+          if (isNetworkError(err)) {
+            // CORS or offline: the legacy widget would need the same server
+            // to finish sign-in, so explain instead of failing silently.
+            // Shown inline below; still reported, a CORS misconfig is ours.
+            this.errorLogger.logError(
+              err,
+              'Telegram login server unreachable',
+              {
+                show: false,
+              },
+            );
+            this.unreachable.set(true);
+            return;
+          }
+          // The server answers 400 for a bot without OpenID login configured.
+          this.startLegacyWidget(botID);
+        },
       });
   }
 

@@ -57,13 +57,18 @@ export class SneatAuthenticatedLifecycle {
     if (this.started) return;
     this.started = true;
     this.telegram.authenticateIfTelegramWebApp();
-    getRedirectResult(this.authState.fbAuth).catch((error) => {
-      // An email that already has an account surfaces here after a redirect
-      // sign-in: keep the credential so it links on the next sign-in.
-      if (!this.authState.rememberPendingCredentialLink(error)) {
-        console.error('getRedirectResult failed', error);
-      }
-    });
+    getRedirectResult(this.authState.fbAuth).then(
+      // An empty result after a redirect this app started is a silent
+      // failure; the auth state service tells the login page.
+      (credential) => this.authState.onRedirectSignInResult(credential),
+      (error) => {
+        // An email that already has an account surfaces here after a redirect
+        // sign-in: keep the credential so it links on the next sign-in.
+        const handled = !!this.authState.rememberPendingCredentialLink(error);
+        if (!handled) console.error('getRedirectResult failed', error);
+        this.authState.onRedirectSignInError(error, handled);
+      },
+    );
     this.authState.authState
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((state) => (this.authStatus = state.status));
