@@ -6,10 +6,10 @@ import { join } from 'node:path';
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const destination = join(root, 'libs/structured-data/src/assets');
 const assets = [
-  { packageName: 'web-tree-sitter', version: '0.27.0', file: 'web-tree-sitter.js',
+  { packageName: 'web-tree-sitter', version: '0.27.1', file: 'web-tree-sitter.js',
     sha256: '7c49e3c1d87e24e0bb4c2def909d17154dfde281f5f8280225450090bb4b8110' },
-  { packageName: 'web-tree-sitter', version: '0.27.0', file: 'web-tree-sitter.wasm',
-    sha256: 'c03bccdc3b448a32848f5ae327e209c982bbb0840d43eec8bc2d5759544a1ed3' },
+  { packageName: 'web-tree-sitter', version: '0.27.1', file: 'web-tree-sitter.wasm',
+    sha256: 'beca80e44cccbf2299ed4d1e3fa6462a9a6fe818aeebf847547a392227ce4acc' },
   { packageName: '@tree-sitter-grammars/tree-sitter-hcl', version: '1.2.0', file: 'tree-sitter-hcl.wasm',
     sha256: '86bb80cd151bd3ab1e44ed431a9c1874978db31519c62055efb50f028a1d0118' },
 ];
