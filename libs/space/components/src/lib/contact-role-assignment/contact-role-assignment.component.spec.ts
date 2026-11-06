@@ -293,4 +293,56 @@ describe('ContactRoleAssignmentComponent product-neutral workflow', () => {
     expect(component.error()).not.toContain('Sensitive');
     expect(component.changed()).toBe(true);
   });
+  it('requires an explicit Space rows adapter and preserves empty-role association versus unlink', async () => {
+    const rootSpace = {
+      spaceID: 'team-1',
+      module: 'spaceus',
+      collection: 'spaces',
+      itemID: 'team-1',
+    };
+    const listOnly = { contact: rootSpace, title: 'Team', roleIDs: [] };
+    const saveRows = vi.fn().mockResolvedValue([listOnly]);
+    fixture.componentRef.setInput('endpointKind', 'space');
+    fixture.componentRef.setInput('assignments', [
+      { ...listOnly, roleIDs: ['test-read'] },
+    ]);
+    fixture.componentRef.setInput('assignmentRowsPort', { save: saveRows });
+    await fixture.whenStable();
+    expect(component.configured()).toBe(true);
+    component.setRole(component.draft()[0], 'test-read', false);
+    await component.save();
+    expect(saveRows).toHaveBeenCalledWith({
+      target,
+      before: [{ ...listOnly, roleIDs: ['test-read'] }],
+      after: [listOnly],
+    });
+    expect(component.draft()).toEqual([listOnly]);
+    saveRows.mockResolvedValueOnce([]);
+    component.remove(component.draft()[0]);
+    await component.save();
+    expect(saveRows).toHaveBeenLastCalledWith({
+      target,
+      before: [listOnly],
+      after: [],
+    });
+  });
+
+  it('keeps foreign Space endpoints rejected by the default contact guard', async () => {
+    fixture.componentRef.setInput('assignments', [
+      {
+        contact: {
+          spaceID: 'foreign',
+          module: 'spaceus',
+          collection: 'spaces',
+          itemID: 'foreign',
+        },
+        title: 'Other Space',
+        roleIDs: [],
+      },
+    ]);
+    await fixture.whenStable();
+    expect(component.configured()).toBe(false);
+    await component.save();
+    expect(save).not.toHaveBeenCalled();
+  });
 });

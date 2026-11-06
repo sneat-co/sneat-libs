@@ -8,6 +8,7 @@ export class SneatSelectAllOnFocusDirective {
 
   @HostListener('focus', ['$event.target'])
   public selectAll(_target?: EventTarget | null) {
+    void _target; // Retain the public handler signature; selection uses the owned element.
     const nativeElement = this.el.nativeElement;
     const input =
       nativeElement instanceof HTMLInputElement ||

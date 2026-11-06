@@ -58,6 +58,7 @@ export class DeferredPosthogAnalyticsService implements IAnalyticsService {
     eventParams?: Readonly<Record<string, unknown>>,
     _options?: IAnalyticsCallOptions,
   ): void {
+    void _options; // This provider retains the shared call signature without provider-specific options.
     this.send((client) => client.capture(eventName, eventParams));
   }
 
@@ -65,6 +66,7 @@ export class DeferredPosthogAnalyticsService implements IAnalyticsService {
     screenName: string,
     _options?: IAnalyticsCallOptions,
   ): void {
+    void _options; // This provider retains the shared call signature without provider-specific options.
     this.send((client) => client.capture('$screen_view', { screen_name: screenName }));
   }
 

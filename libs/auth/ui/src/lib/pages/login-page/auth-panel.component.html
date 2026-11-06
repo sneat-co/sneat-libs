@@ -1,3 +1,10 @@
+<sneat-sign-in-failure-notice
+  [failure]="signInFailure()"
+  [canRetry]="canRetrySignIn() && !signingWith()"
+  (retry)="retrySignIn()"
+  (dismiss)="dismissSignInFailure()"
+/>
+
 @if (authRecoveryNeeded()) {
   <div class="ion-padding ion-text-center" role="alert">
     <p>
@@ -60,7 +67,7 @@
         [queryParams]="ssoQueryParams()"
         [disabled]="!!signingWith()"
       >
-        <ion-icon name="business-outline" slot="start" />
+        <ion-icon aria-hidden="true" name="business-outline" slot="start" />
         Sign in with company SSO
       </ion-button>
     </div>
