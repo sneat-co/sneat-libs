@@ -12,6 +12,9 @@ const workspaceRoot = process.cwd();
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'sneat-auth-consumer-'));
 const artifacts = join(temporaryRoot, 'artifacts');
 const consumer = join(temporaryRoot, 'consumer');
+const pnpmExecPath = process.env.npm_execpath?.includes('pnpm')
+  ? process.env.npm_execpath
+  : null;
 mkdirSync(artifacts);
 mkdirSync(join(consumer, 'src'), { recursive: true });
 
@@ -24,16 +27,23 @@ function run(command, args, cwd) {
   if (result.status !== 0) {
     throw new Error(
       `${command} ${args.join(' ')} failed in ${cwd}\n` +
-        `${result.stdout ?? ''}${result.stderr ?? ''}`,
+        `${result.stdout ?? ''}${result.stderr ?? ''}${result.error ? `${result.error.message}\n` : ''}`,
     );
   }
   return result.stdout;
 }
 
+function runPnpm(args, cwd) {
+  if (pnpmExecPath) {
+    return run(process.execPath, [pnpmExecPath, ...args], cwd);
+  }
+  return run('pnpm', args, cwd);
+}
+
 function pack(project, archive) {
   const packageDirectory = join(workspaceRoot, 'dist', 'libs', project);
   const destination = join(artifacts, archive);
-  run('pnpm', ['pack', '--out', destination], packageDirectory);
+  runPnpm(['pack', '--out', destination], packageDirectory);
   return `file:${destination}`;
 }
 
@@ -150,8 +160,7 @@ void bootstrapApplication(AuthenticatedConsumerComponent, {
 `,
   );
 
-  run(
-    'pnpm',
+  runPnpm(
     [
       'install',
       '--prefer-offline',
@@ -160,7 +169,7 @@ void bootstrapApplication(AuthenticatedConsumerComponent, {
     ],
     consumer,
   );
-  run('pnpm', ['exec', 'ngc', '-p', 'tsconfig.json'], consumer);
+  runPnpm(['exec', 'ngc', '-p', 'tsconfig.json'], consumer);
   console.log(
     'Packed, installed, and Angular-compiled a clean temporary authenticated consumer.',
   );
