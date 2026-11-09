@@ -1,9 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 describe('Sneat shared styles', () => {
+  const projectRelative = resolve(process.cwd(), 'src/sneat-styles.scss');
+  const workspaceRelative = resolve(process.cwd(), 'libs/components/src/sneat-styles.scss');
   const styles = readFileSync(
-    resolve(process.cwd(), 'libs/components/src/sneat-styles.scss'),
+    existsSync(projectRelative) ? projectRelative : workspaceRelative,
     'utf8',
   );
 
