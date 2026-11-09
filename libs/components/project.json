@@ -4,12 +4,16 @@
   "projectType": "library",
   "sourceRoot": "libs/components/src",
   "prefix": "sneat",
+  "tags": [
+    "scope:foundation"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/angular:ng-packagr-lite",
       "outputs": [
         "{workspaceRoot}/dist/libs/components"
       ],
+      "defaultConfiguration": "production",
       "options": {
         "project": "libs/components/ng-package.json",
         "tsConfig": "libs/components/tsconfig.lib.json"
@@ -19,23 +23,7 @@
           "tsConfig": "libs/components/tsconfig.lib.prod.json"
         },
         "development": {}
-      },
-      "defaultConfiguration": "production"
-    },
-    "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": [
-        "{workspaceRoot}/coverage/libs/components"
-      ],
-      "options": {
-        "tsConfig": "libs/components/tsconfig.spec.json"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
-  },
-  "tags": [
-    "scope:foundation"
-  ]
+  }
 }

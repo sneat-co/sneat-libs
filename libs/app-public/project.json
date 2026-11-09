@@ -3,10 +3,21 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "libs/app-public/src",
+  "tags": [
+    "scope:app",
+    "runtime:public"
+  ],
   "targets": {
-    "build": { "executor": "@nx/angular:ng-packagr-lite", "outputs": ["{workspaceRoot}/dist/libs/app-public"], "options": { "project": "libs/app-public/ng-package.json", "tsConfig": "libs/app-public/tsconfig.lib.json" } },
-    "test": { "executor": "@nx/vitest:test", "outputs": ["{workspaceRoot}/coverage/libs/app-public"], "options": { "tsConfig": "libs/app-public/tsconfig.spec.json" } },
-    "lint": { "executor": "@nx/eslint:lint" },
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": [
+        "{workspaceRoot}/dist/libs/app-public"
+      ],
+      "options": {
+        "project": "libs/app-public/ng-package.json",
+        "tsConfig": "libs/app-public/tsconfig.lib.json"
+      }
+    },
     "verify-bootstrap-boundaries": {
       "executor": "nx:run-commands",
       "dependsOn": [
@@ -38,6 +49,5 @@
         "parallel": false
       }
     }
-  },
-  "tags": ["scope:app", "runtime:public"]
+  }
 }

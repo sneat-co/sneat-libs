@@ -10,7 +10,9 @@
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
-      "dependsOn": ["prepare-assets"],
+      "dependsOn": [
+        "prepare-assets"
+      ],
       "outputs": [
         "{workspaceRoot}/dist/{projectRoot}"
       ],
@@ -34,16 +36,13 @@
       }
     },
     "test": {
-      "executor": "@nx/vitest:test",
       "outputs": [
-        "{options.reportsDirectory}"
+        "{projectRoot}/{options.coverage.reportsDirectory}",
+        "{workspaceRoot}/coverage/libs/structured-data"
       ],
       "options": {
-        "reportsDirectory": "coverage/libs/structured-data"
+        "coverage.reportsDirectory": "../../coverage/libs/structured-data"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }

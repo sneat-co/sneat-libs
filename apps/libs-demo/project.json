@@ -4,11 +4,16 @@
   "projectType": "application",
   "sourceRoot": "apps/libs-demo/src",
   "prefix": "sneat",
-  "tags": ["scope:app"],
+  "tags": [
+    "scope:app"
+  ],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/libs-demo",
         "index": "apps/libs-demo/src/index.html",
@@ -38,11 +43,11 @@
           "extractLicenses": false,
           "sourceMap": true
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "serve": {
       "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
       "options": {
         "buildTarget": "libs-demo:build"
       },
@@ -53,18 +58,7 @@
         "development": {
           "buildTarget": "libs-demo:build:development"
         }
-      },
-      "defaultConfiguration": "development"
-    },
-    "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/apps/libs-demo"],
-      "options": {
-        "tsConfig": "apps/libs-demo/tsconfig.spec.json"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }
