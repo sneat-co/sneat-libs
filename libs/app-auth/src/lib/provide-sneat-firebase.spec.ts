@@ -12,8 +12,8 @@ import {
   SNEAT_FIREBASE_AUTH,
   provideSneatFirebaseAuth,
   provideSneatFirestore,
-  provideSneatFirebase,
 } from './provide-sneat-firebase';
+import { provideSneatFirebase } from './provide-sneat-firebase-analytics';
 
 const mocks = vi.hoisted(() => ({
   app: { name: 'test-app' },
