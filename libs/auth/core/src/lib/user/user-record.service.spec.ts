@@ -146,43 +146,52 @@ describe('UserRecordService', () => {
     expect(sneatApiServiceMock.post).toHaveBeenCalledTimes(1);
   });
 
-  it('sends no appId when the app does not provide INIT_USER_RECORD_APP_ID', async () => {
+  it('posts to the unbound path with no appId when the app does not provide INIT_USER_RECORD_APP_ID', async () => {
     sneatApiServiceMock.post.mockReturnValue(of({ id: 'u1', title: 'U' }));
     await firstValueFrom(service.initUserRecord({ email: 'test@example.com' }));
-    const callArgs = sneatApiServiceMock.post.mock.calls[0][1];
-    expect('appId' in callArgs).toBe(false);
+    expect(sneatApiServiceMock.post.mock.calls[0][0]).toBe(
+      'users/init_user_record',
+    );
+    expect('appId' in sneatApiServiceMock.post.mock.calls[0][1]).toBe(false);
   });
 });
 
 describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
-  let service: UserRecordService;
   let post: ReturnType<typeof vi.fn>;
 
-  beforeEach(() => {
+  const serviceFor = (appId: string): UserRecordService => {
     post = vi.fn().mockReturnValue(of({ id: 'u1', title: 'U' }));
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         UserRecordService,
         { provide: SneatApiService, useValue: { post } },
-        { provide: INIT_USER_RECORD_APP_ID, useValue: 'askstage' },
+        { provide: INIT_USER_RECORD_APP_ID, useValue: appId },
       ],
     });
-    service = TestBed.inject(UserRecordService);
-  });
+    return TestBed.inject(UserRecordService);
+  };
 
-  it('fills appId from the app config', async () => {
-    await firstValueFrom(service.initUserRecord({ email: 'test@example.com' }));
-    expect(post).toHaveBeenCalledWith(
-      'users/init_user_record',
-      expect.objectContaining({ appId: 'askstage', email: 'test@example.com' }),
-    );
-  });
+  it.each(['askstage', 'app-2'])(
+    'posts to the host-bound path users/%s/init_user_record with no appId in the body',
+    async (appId) => {
+      const service = serviceFor(appId);
+      await firstValueFrom(service.initUserRecord({ email: 'test@example.com' }));
+      expect(post).toHaveBeenCalledTimes(1);
+      expect(post.mock.calls[0][0]).toBe(`users/${appId}/init_user_record`);
+      expect(post.mock.calls[0][1]).toMatchObject({ email: 'test@example.com' });
+      expect('appId' in post.mock.calls[0][1]).toBe(false);
+    },
+  );
 
-  it('keeps an appId the caller set explicitly', async () => {
-    await firstValueFrom(
-      service.initUserRecord({ email: 'test@example.com', appId: 'sneat' }),
-    );
-    expect(post.mock.calls[0][1].appId).toBe('sneat');
-  });
+  it.each(['', 'AskStage', 'ask/stage', '../admin', 'a?b=c', 'ask stage', 'a%2f'])(
+    'rejects the invalid app ID %j without any request',
+    async (appId) => {
+      const service = serviceFor(appId);
+      await expect(
+        firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
+      ).rejects.toThrow('invalid INIT_USER_RECORD_APP_ID');
+      expect(post).not.toHaveBeenCalled();
+    },
+  );
 });
