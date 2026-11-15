@@ -6,12 +6,10 @@ import {
 import { Capacitor } from '@capacitor/core';
 import {
   IFirebaseConfig,
-  SNEAT_FIREBASE_ANALYTICS,
   SNEAT_FIREBASE_APP,
   SNEAT_FIREBASE_AUTH,
 } from '@sneat/core';
 import { FirebaseApp, initializeApp } from 'firebase/app';
-import { Analytics, getAnalytics } from 'firebase/analytics';
 import {
   Auth,
   connectAuthEmulator,
@@ -132,47 +130,5 @@ export function provideSneatFirestore(
         return firestore;
       },
     },
-  ]);
-}
-
-/** Install only in the route that has elected to send Firebase Analytics. */
-export function provideSneatFirebaseAnalytics(
-  firebaseConfig: IFirebaseConfig,
-): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    {
-      provide: SNEAT_FIREBASE_ANALYTICS,
-      useFactory: (): Analytics | null => {
-        if (
-          !firebaseConfig.measurementId ||
-          firebaseConfig.measurementId === 'G-PROVIDE_IF_NEEDED'
-        ) {
-          return null;
-        }
-        try {
-          const app = inject(SNEAT_FIREBASE_APP);
-          return getAnalytics(app);
-        } catch (error) {
-          console.error(
-            '[provideSneatFirebase] getAnalytics() failed — continuing without analytics.',
-            error,
-          );
-          return null;
-        }
-      },
-    },
-  ]);
-}
-
-/** Compatibility bootstrap for existing app roots. New apps should compose
- * `provideSneatFirebaseAuth()` at the shell and add Firestore/Analytics only
- * to their lazy authenticated routes. */
-export function provideSneatFirebase(
-  firebaseConfig: IFirebaseConfig,
-): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    provideSneatFirebaseAuth(firebaseConfig),
-    provideSneatFirestore(firebaseConfig),
-    provideSneatFirebaseAnalytics(firebaseConfig),
   ]);
 }
