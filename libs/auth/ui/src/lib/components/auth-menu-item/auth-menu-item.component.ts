@@ -28,6 +28,8 @@ import {
 import { clearCurrentSpace, ErrorLogger, IErrorLogger } from '@sneat/core';
 import { Subject, takeUntil } from 'rxjs';
 import { PersonNamesPipe, personNames } from '../../pipes/person-names.pipe';
+import { AUTH_UI_LABELS } from '../../i18n/auth-ui-labels';
+
 @Component({
   selector: 'sneat-auth-menu-item',
   templateUrl: './auth-menu-item.component.html',
@@ -46,6 +48,7 @@ import { PersonNamesPipe, personNames } from '../../pipes/person-names.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthMenuItemComponent implements OnDestroy {
+  protected readonly L = inject(AUTH_UI_LABELS);
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly navCtrl = inject(NavController);
   private readonly authStateService = inject(SneatAuthStateService);

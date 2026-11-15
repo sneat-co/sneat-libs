@@ -38,6 +38,7 @@ import { RandomIdService } from '@sneat/random';
 import { ClassName, SneatBaseComponent } from '@sneat/ui';
 import { combineLatest } from 'rxjs';
 import { AuthPanelComponent } from './auth-panel.component';
+import { AUTH_UI_LABELS } from '../../i18n/auth-ui-labels';
 import { safeAuthReturnPath } from './safe-auth-return-path';
 import {
   clearLoginRedirectIntent,
@@ -82,6 +83,7 @@ export class LoginPageComponent extends SneatBaseComponent {
   private readonly userService = inject(SneatUserService);
   private readonly authStateService = inject(SneatAuthStateService);
   private appInfo = inject<IAppInfo>(APP_INFO);
+  protected readonly L = inject(AUTH_UI_LABELS);
   private readonly loginEventsHandler = inject<ILoginEventsHandler>(
     LoginEventsHandler,
     { optional: true },
@@ -166,8 +168,8 @@ export class LoginPageComponent extends SneatBaseComponent {
       case 'github.com': return 'GitHub';
       case 'apple.com': return 'Apple';
       case 'facebook.com': return 'Facebook';
-      case 'password': return 'email and password';
-      case 'phone': return 'phone';
+      case 'password': return this.L().providerPassword;
+      case 'phone': return this.L().providerPhone;
       default: return undefined;
     }
   });

@@ -8,7 +8,8 @@
     "@angular/common": ">=22.0.0 <23.0.0",
     "@angular/core": ">=22.0.0 <23.0.0",
     "@ionic/angular": ">=9.0.0 <10.0.0",
-    "@sneat/logging": ">=0.1.0"
+    "@sneat/logging": ">=0.1.0",
+    "@sneat/core": "^0.27.0"
   },
   "dependencies": {
     "tslib": "2.9.1"

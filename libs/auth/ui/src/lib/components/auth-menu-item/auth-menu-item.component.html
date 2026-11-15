@@ -1,34 +1,34 @@
 <ion-item-divider color="header">
-  @if ($authStatus() === "authenticated") {
-    <ion-label>Signed in as</ion-label>
+  @if ($authStatus() === 'authenticated') {
+    <ion-label>{{ L().menuSignedInAs }}</ion-label>
   } @else {
-    <ion-label>Authentication</ion-label>
+    <ion-label>{{ L().menuAuthentication }}</ion-label>
   }
 </ion-item-divider>
 @if (!$authState()) {
   <ion-item>
-    <ion-label>Loading....</ion-label>
+    <ion-label>{{ L().loading }}</ion-label>
   </ion-item>
 } @else if ($isAuthenticating()) {
   <ion-item data-testid="authenticating" routerLink="login">
     <ion-icon slot="start" name="person-circle-outline" />
-    <ion-label>Authenticating...</ion-label>
+    <ion-label>{{ L().authenticating }}</ion-label>
     <ion-buttons slot="end">
       <ion-spinner
         name="lines-small"
         color="medium"
-        aria-label="Authenticating"
+        [attr.aria-label]="L().authenticating"
       />
     </ion-buttons>
   </ion-item>
 }
-@if ($authStatus() === "notAuthenticated") {
+@if ($authStatus() === 'notAuthenticated') {
   <ion-item routerLink="/login" tappable="true">
     <ion-icon slot="start" name="person-circle-outline" />
-    <ion-label color="primary"> Please sign in</ion-label>
+    <ion-label color="primary"> {{ L().pleaseSignIn }}</ion-label>
   </ion-item>
 }
-@if ($authStatus() === "authenticated") {
+@if ($authStatus() === 'authenticated') {
   <ion-item
     tappable="true"
     routerLink="/my"
@@ -56,7 +56,7 @@
       <!--		<ion-button color="medium" title="Settings">-->
       <!--			<ion-icon name="settings-outline"></ion-icon>-->
       <!--		</ion-button>-->
-      <ion-button color="medium" title="Sign-out" (click)="logout($event)">
+      <ion-button color="medium" [title]="L().signOut" (click)="logout($event)">
         <ion-icon name="log-out-outline" />
       </ion-button>
     </ion-buttons>

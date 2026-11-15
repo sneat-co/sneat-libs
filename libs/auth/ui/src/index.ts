@@ -8,3 +8,8 @@ export * from './lib/pipes/person-names.pipe';
 export * from './lib/sso';
 export * from './lib/pages/login-page/auth-panel-ui-config';
 export { TelegramAuthAccountComponent } from './lib/components/user-auth-providers/telegram-auth-account.component';
+export * from './lib/i18n/auth-ui-labels';
+export {
+  pseudoLocalize,
+  pseudoLocalizeLabels,
+} from './lib/i18n/auth-ui-labels.pseudo';

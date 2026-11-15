@@ -27,6 +27,8 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { SsoApiService } from './sso-api.service';
 import { ssoErrorMessage } from './sso-errors';
+import { AUTH_UI_LABELS } from '../i18n/auth-ui-labels';
+
 import {
   applicationBaseURL,
   emailDomain,
@@ -58,6 +60,7 @@ import { safeAuthReturnPath } from '../pages/login-page/safe-auth-return-path';
   ],
 })
 export class SsoLoginPageComponent implements OnInit {
+  protected readonly L = inject(AUTH_UI_LABELS);
   private readonly route = inject(ActivatedRoute);
   private readonly sso = inject(SsoApiService);
 

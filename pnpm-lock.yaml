@@ -1025,6 +1025,9 @@ importers:
       '@ionic/angular':
         specifier: '>=9.0.0 <10.0.0'
         version: 9.0.10(985ba166444e88913ecd24b644752ff2)
+      '@sneat/core':
+        specifier: ^0.27.0
+        version: 0.27.51(7514d93c9e0703358ecd0a469d60bc33)
       '@sneat/logging':
         specifier: '>=0.1.0'
         version: 0.27.51(5c45eb5403ed95865c30df3aa79ed16b)
@@ -1175,6 +1178,7 @@ packages:
   '@angular/animations@22.2.5':
     resolution: {integrity: sha512-ezoKEndTK4F7qmKfmuUFaBrJ1YKd/YwLFBVCdGWld3jKcIvsm+hB9J6wl8kc+PAg/XWet9L+0ZITAa5+J5U3Fg==}
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0}
+    deprecated: '@angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.'
     peerDependencies:
       '@angular/core': 22.2.5
 
@@ -1286,6 +1290,7 @@ packages:
   '@angular/platform-browser-dynamic@22.2.5':
     resolution: {integrity: sha512-PkGRpia8wPzuPT+P0X6YknU1DmdN96nECwpgWXqAWT+B2/nXpgfUDRkRRWxbMLZt6JnFd1b8KJJ3SP/Izp2qVg==}
     engines: {node: ^22.22.3 || ^24.15.0 || >=26.0.0}
+    deprecated: '@angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.'
     peerDependencies:
       '@angular/common': 22.2.5
       '@angular/compiler': 22.2.5

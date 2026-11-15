@@ -13,6 +13,8 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IonNote } from '@ionic/angular';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
+import { AUTH_UI_LABELS } from '../../i18n/auth-ui-labels';
+
 import { newRandomId } from '@sneat/random';
 import {
   ITelegramAuthData,
@@ -73,9 +75,7 @@ type LegacyTelegramWindow = Window & {
   template: `
     @if (unreachable()) {
       <ion-note class="tg-unreachable" color="danger" role="status">
-        Telegram login is unavailable: we couldn't reach the sign-in server
-        (network or site configuration problem). Please use another method or
-        try again later.
+        {{ L().telegramUnreachable }}
       </ion-note>
     }
     @if (oidc(); as cfg) {
@@ -85,7 +85,7 @@ type LegacyTelegramWindow = Window & {
         [attr.data-size]="size()"
         (click)="loginWithOIDC(cfg)"
       >
-        Log in with Telegram
+        {{ L().telegramLogIn }}
       </button>
     }
   `,
@@ -113,6 +113,7 @@ type LegacyTelegramWindow = Window & {
   ],
 })
 export class LoginWithTelegramComponent implements OnInit {
+  protected readonly L = inject(AUTH_UI_LABELS);
   private readonly el = inject(ElementRef);
   private readonly document = inject<Document>(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
@@ -290,7 +291,7 @@ export class LoginWithTelegramComponent implements OnInit {
     const element = this.el.nativeElement as HTMLElement;
     this.widgetObserver = new MutationObserver(() => {
       for (const frame of element.querySelectorAll('iframe')) {
-        if (!frame.title.trim()) frame.title = 'Log in with Telegram';
+        if (!frame.title.trim()) frame.title = this.L().telegramLogIn;
       }
     });
     this.widgetObserver.observe(element, { childList: true, subtree: true });

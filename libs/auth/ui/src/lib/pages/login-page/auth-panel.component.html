@@ -7,48 +7,41 @@
 
 @if (authRecoveryNeeded()) {
   <div class="ion-padding ion-text-center" role="alert">
-    <p>
-      We couldn't complete sign-in. Try again with email or another sign-in
-      method.
-    </p>
+    <p>{{ L().authRecovery }}</p>
   </div>
 }
 
 @if (pendingLink(); as link) {
   <div class="ion-padding ion-text-center" role="alert">
     <p>
-      @if (link.email) {
-        <b>{{ link.email }}</b> already has an account.
-      } @else {
-        This email already has an account.
-      }
-      Sign in the way you did before — with email or another sign-in method —
-      @if (link.autoLink) {
-        and we'll connect {{ link.provider }} to it automatically.
-      } @else {
-        then connect {{ link.provider }} from your account page.
-      }
+      {{
+        L().pendingLink({
+          email: link.email,
+          provider: link.provider,
+          autoLink: link.autoLink,
+        })
+      }}
     </p>
   </div>
 }
 
 @if (recordState() === 'failed') {
   <div class="ion-padding ion-text-center" role="alert">
-    <p>Your account is still being prepared. Retry before continuing.</p>
+    <p>{{ L().accountSetupFailed }}</p>
     <ion-button fill="outline" (click)="retryUserRecordInitialization()">
-      Retry account setup
+      {{ L().retryAccountSetup }}
     </ion-button>
   </div>
 } @else if (recordState() === 'loading') {
   <div class="ion-padding ion-text-center" role="status" aria-live="polite">
     <ion-spinner name="lines-small" />
-    <p>Preparing your account…</p>
+    <p>{{ L().preparingAccount }}</p>
   </div>
 } @else {
   @if (showCredentials() || authRecoveryNeeded()) {
     @if (showIntro()) {
       <p style="text-align: center; font-size: smaller">
-        <ion-text color="medium">Sign in with your Sneat account.</ion-text>
+        <ion-text color="medium">{{ L().signInWithSneatAccount }}</ion-text>
       </p>
     }
 
@@ -68,7 +61,7 @@
         [disabled]="!!signingWith()"
       >
         <ion-icon aria-hidden="true" name="business-outline" slot="start" />
-        Sign in with company SSO
+        {{ L().signInWithCompanySso }}
       </ion-button>
     </div>
 
@@ -80,7 +73,7 @@
               color="medium"
               style="text-align: center; width: 100%; font-weight: bold"
             >
-              Quick login
+              {{ L().quickLogin }}
             </ion-label>
           </ion-item-divider>
         }
@@ -96,6 +89,7 @@
           }
           <sneat-auth-provider-buttons
             [providers]="oauthProviders"
+            [labels]="oauthLabels()"
             [busy]="oauthSigningWith()"
             [disabled]="!!signingWith()"
             (providerSelected)="loginWith($event)"
