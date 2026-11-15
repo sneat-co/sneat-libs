@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/" />
     </ion-buttons>
-    <ion-title>Login &#64; {{ appTitle }}</ion-title>
+    <ion-title>{{ L().loginTitle(appTitle) }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -20,14 +20,14 @@
   } @else if (to) {
     <ion-card color="tertiary">
       <ion-card-content>
-        <p>Please sign in to join a team</p>
+        <p>{{ L().joinTeamPrompt }}</p>
       </ion-card-content>
     </ion-card>
   }
 
   @if (!showAccountChoice()) {
     <p style="text-align: center; font-size: smaller">
-      <ion-text color="medium">Sign in with your Sneat account.</ion-text>
+      <ion-text color="medium">{{ L().signInWithSneatAccount }}</ion-text>
     </p>
   }
 
@@ -39,7 +39,7 @@
     <ion-card>
       <ion-card-content class="ion-text-center ion-padding">
         <ion-spinner name="lines" />
-        <p class="ion-no-margin ion-padding-top">Signing you in…</p>
+        <p class="ion-no-margin ion-padding-top">{{ L().signingYouIn }}</p>
       </ion-card-content>
     </ion-card>
   } @else if (showAccountChoice()) {
@@ -47,16 +47,20 @@
       <ion-card-content class="ion-text-center ion-padding">
         <h2 class="ion-no-margin">
           @if (signedInAs()) {
-            You’re signed in as <strong>{{ signedInAs() }}</strong>
+            {{ L().signedInAsLead }} <strong>{{ signedInAs() }}</strong>
           } @else {
-            You’re already signed in
+            {{ L().alreadySignedIn }}
           }
         </h2>
         @if (signedInWith(); as provider) {
-          <p class="ion-margin-top ion-margin-bottom">Signed in with {{ provider }}</p>
+          <p class="ion-margin-top ion-margin-bottom">
+            {{ L().signedInWith(provider) }}
+          </p>
         }
         @if (isAccountReady()) {
-          <ion-button expand="block" (click)="continueToApp()">Continue to {{ appTitle }}</ion-button>
+          <ion-button expand="block" (click)="continueToApp()">{{
+            L().continueTo(appTitle)
+          }}</ion-button>
         }
         <ion-button
           expand="block"
@@ -64,7 +68,7 @@
           color="medium"
           (click)="reLogin()"
         >
-          Use another account
+          {{ L().useAnotherAccount }}
         </ion-button>
       </ion-card-content>
     </ion-card>
@@ -85,7 +89,7 @@
 
   <p style="text-align: center; font-size: smaller">
     <ion-text color="medium">
-      If any issues get
+      {{ L().helpLead }}
       <a href="mailto:help@sneat.app?subject=Problem+with+login+at+Sneat.app"
         >help&#64;sneat.app</a
       >

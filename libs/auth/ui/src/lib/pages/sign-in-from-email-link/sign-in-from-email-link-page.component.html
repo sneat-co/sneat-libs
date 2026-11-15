@@ -3,21 +3,18 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/login" />
     </ion-buttons>
-    <ion-title>Signing in with email link</ion-title>
+    <ion-title>{{ L().emailLinkTitle }}</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
   <ion-card>
     @if (!emailFromStorage()) {
-      <p>
-        Welcome to our app! For your safety please re-type your email address to
-        sign-in.
-      </p>
+      <p>{{ L().emailLinkRetype }}</p>
     }
     <ion-item>
       <ion-icon name="mail-outline" slot="start" />
       <ion-input
-        label="Email"
+        [label]="L().email"
         [required]="true"
         [readonly]="isSigning()"
         [value]="email()"
@@ -28,9 +25,9 @@
     <ion-button [disabled]="isSigning()" (click)="signIn()">
       <ion-label>
         @if (isSigning()) {
-          Signing in...
+          {{ L().signingIn }}
         } @else {
-          Sign in
+          {{ L().signIn }}
         }
       </ion-label>
     </ion-button>

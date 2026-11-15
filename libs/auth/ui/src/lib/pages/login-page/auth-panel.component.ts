@@ -1,6 +1,8 @@
 import {
   AuthProviderButtonsComponent,
   OAUTH_PROVIDER_IDS,
+  OAuthProviderId,
+  OAuthProviderLabels,
 } from '@sneat/auth-ui/provider-buttons';
 import {
   ChangeDetectionStrategy,
@@ -57,6 +59,8 @@ import {
 } from './login-redirect-intent';
 import { combineLatest } from 'rxjs';
 import { AUTH_PANEL_UI_CONFIG } from './auth-panel-ui-config';
+import { AUTH_UI_LABELS } from '../../i18n/auth-ui-labels';
+
 import { RandomIdService } from '@sneat/random';
 
 export interface AuthPanelAccountReadyChange {
@@ -65,6 +69,14 @@ export interface AuthPanelAccountReadyChange {
 }
 
 /** Shared auth methods without page-shell or navigation side effects. */
+const OAUTH_PROVIDER_NAMES: Readonly<Record<OAuthProviderId, string>> = {
+  'google.com': 'Google',
+  'apple.com': 'Apple',
+  'microsoft.com': 'Microsoft',
+  'facebook.com': 'Facebook',
+  'github.com': 'GitHub',
+};
+
 @Component({
   selector: 'sneat-auth-panel',
   templateUrl: './auth-panel.component.html',
@@ -90,6 +102,7 @@ export interface AuthPanelAccountReadyChange {
 })
 export class AuthPanelComponent implements OnInit {
   protected readonly uiConfig = inject(AUTH_PANEL_UI_CONFIG);
+  protected readonly L = inject(AUTH_UI_LABELS);
   protected providerVisible(provider: AuthProviderID | 'telegram'): boolean {
     return this.uiConfig.quickLoginProviders?.includes(provider) ?? true;
   }
@@ -107,6 +120,27 @@ export class AuthPanelComponent implements OnInit {
   protected readonly oauthProviders = OAUTH_PROVIDER_IDS.filter((provider) =>
     this.providerVisible(provider),
   );
+  /** "Login with Google" etc. in the current language (brand names stay). */
+  protected readonly oauthLabels = computed<OAuthProviderLabels>(() => {
+    const L = this.L();
+    return Object.fromEntries(
+      OAUTH_PROVIDER_IDS.map((id) => [
+        id,
+        L.loginWith(OAUTH_PROVIDER_NAMES[id]),
+      ]),
+    );
+  });
+  /**
+   * "<b>me@example.com</b> already has an account." in the current language:
+   * the text before and after the bold email.
+   */
+  protected readonly pendingLinkEmailParts = computed(() => {
+    const marker = '\u0000';
+    const [before, after = ''] = this.L()
+      .pendingLinkHasAccount(marker)
+      .split(marker);
+    return { before, after };
+  });
   protected readonly oauthSigningWith = computed(() =>
     OAUTH_PROVIDER_IDS.find((provider) => provider === this.signingWith()),
   );

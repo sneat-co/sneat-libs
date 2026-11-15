@@ -3,27 +3,25 @@
     <ion-buttons slot="start"
       ><ion-back-button defaultHref="/login"
     /></ion-buttons>
-    <ion-title>Company SSO</ion-title>
+    <ion-title>{{ L().ssoTitle }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <ion-card>
     <ion-card-content>
-      <h1>Sign in with company SSO</h1>
+      <h1>{{ L().signInWithCompanySso }}</h1>
       @if (fixedDomain()) {
         <p>
-          Use your company email ending in
+          {{ L().ssoUseCompanyEmailLead }}
           <strong>&#64;{{ fixedDomain() }}</strong
           >.
         </p>
       } @else {
-        <p>
-          Enter your work email to find your organisation’s identity provider.
-        </p>
+        <p>{{ L().ssoEnterWorkEmail }}</p>
       }
       <ion-item>
-        <ion-label position="stacked">Work email</ion-label>
+        <ion-label position="stacked">{{ L().ssoWorkEmail }}</ion-label>
         <ion-input
           name="work-email"
           type="email"
@@ -49,7 +47,7 @@
         @if (busy()) {
           <ion-spinner name="lines-small" slot="start" />
         }
-        Continue with SSO
+        {{ L().ssoContinue }}
       </ion-button>
     </ion-card-content>
   </ion-card>
@@ -57,17 +55,14 @@
   @if (unknownDomain()) {
     <ion-card color="light">
       <ion-card-content>
-        <h2>SSO is not configured for {{ unknownDomain() }} yet.</h2>
+        <h2>{{ L().ssoNotConfigured(unknownDomain() ?? '') }}</h2>
         @if (returnTo) {
-          <p>Sign in or create your regular Sneat account, then we’ll return you to where you started.</p>
+          <p>{{ L().ssoRegularReturn }}</p>
         } @else {
-          <p>
-            Sign in or create your regular Sneat account, then we’ll continue
-            with company setup.
-          </p>
+          <p>{{ L().ssoRegularSetup }}</p>
         }
         <ion-button expand="block" (click)="continueWithRegularLogin()">
-          Continue with regular sign up
+          {{ L().ssoContinueRegular }}
         </ion-button>
       </ion-card-content>
     </ion-card>

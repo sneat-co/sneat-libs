@@ -23,6 +23,7 @@ import {
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
 import { safeAuthReturnPath } from '../login-page/safe-auth-return-path';
+import { AUTH_UI_LABELS } from '../../i18n/auth-ui-labels';
 
 @Component({
   selector: 'sneat-sign-in-from-email-link-page',
@@ -44,6 +45,7 @@ import { safeAuthReturnPath } from '../login-page/safe-auth-return-path';
   ],
 })
 export class SignInFromEmailLinkPageComponent {
+  protected readonly L = inject(AUTH_UI_LABELS);
   private readonly route = inject(ActivatedRoute);
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly authStateService = inject(SneatAuthStateService);

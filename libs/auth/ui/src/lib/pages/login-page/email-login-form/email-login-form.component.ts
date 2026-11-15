@@ -9,10 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import {
-  Auth,
-  sendSignInLinkToEmail,
-} from 'firebase/auth';
+import { Auth, sendSignInLinkToEmail } from 'firebase/auth';
 import { SNEAT_FIREBASE_AUTH } from '@sneat/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -49,6 +46,7 @@ import { RandomIdService } from '@sneat/random';
 import { UserCredential, sendEmailVerification } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { safeAuthReturnPath } from '../safe-auth-return-path';
+import { AUTH_UI_LABELS } from '../../../i18n/auth-ui-labels';
 
 export type EmailFormSigningWith = 'email' | 'emailLink' | 'resetPassword';
 export type AuthPanelInitialMode = 'sign-in' | 'sign-up';
@@ -87,6 +85,7 @@ export class EmailLoginFormComponent implements OnInit {
    */
   readonly initialMode = input<AuthPanelInitialMode | undefined>();
   readonly appInfo = inject<IAppInfo>(APP_INFO);
+  protected readonly L = inject(AUTH_UI_LABELS);
   private readonly analyticsService =
     inject<IAnalyticsService>(AnalyticsService);
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
@@ -169,21 +168,21 @@ export class EmailLoginFormComponent implements OnInit {
     const firstName = this.firstName().trim();
     const lastName = this.lastName().trim();
     if (!email) {
-      alert('Email is a required field');
+      alert(this.L().emailRequired);
       return;
     }
     if (!firstName) {
-      alert('First name is a required field');
+      alert(this.L().firstNameRequired);
       return;
     }
     if (!lastName) {
-      alert('Last name is a required field');
+      alert(this.L().lastNameRequired);
       return;
     }
     const spaceTitle = this.spaceTitle().trim();
     this.spaceTitle.set(spaceTitle);
     if (this.appInfo.requiredSpaceType && !spaceTitle) {
-      alert('Company title is a required field');
+      alert(this.L().companyRequired);
       this.setFocusToSpaceTitle();
       return;
     }
@@ -301,7 +300,7 @@ export class EmailLoginFormComponent implements OnInit {
       handleCodeInApp: true,
     })
       .then(() => {
-        this.showToast(`Sign-in link has been sent to email: ${this.email()}`);
+        this.showToast(this.L().signInLinkSent(this.email()));
         this.setSigningWith(undefined);
       })
       .catch(
@@ -345,9 +344,7 @@ export class EmailLoginFormComponent implements OnInit {
       .subscribe({
         next: () => {
           this.setSigningWith(undefined);
-          this.showToast(
-            'If an account exists for this email, password reset instructions will be sent.',
-          );
+          this.showToast(this.L().passwordResetSent);
         },
         error: this.errorHandler(
           'Failed to send password reset email',

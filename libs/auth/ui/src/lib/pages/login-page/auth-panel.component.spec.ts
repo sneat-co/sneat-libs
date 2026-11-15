@@ -495,6 +495,10 @@ describe('AuthPanelComponent', () => {
 
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('me@example.com already has an account.');
+    // The email stays bold, as before the labels moved into label sets.
+    expect(
+      fixture.nativeElement.querySelector('[role="alert"] p b')?.textContent,
+    ).toBe('me@example.com');
     expect(text).toContain("we'll connect GitHub to it automatically");
     expect(logError).not.toHaveBeenCalled();
     expect(
