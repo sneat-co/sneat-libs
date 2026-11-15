@@ -42,9 +42,16 @@ export interface IAuthUiLabels {
 
   // Auth panel
   readonly authRecovery: string;
-  /** An OAuth sign-in hit an email that already has an account. */
-  readonly pendingLink: (args: {
-    email?: string;
+  /**
+   * An OAuth sign-in hit an email that already has an account. The template
+   * bolds the email: it calls this with a marker and splits on it, so each
+   * language still orders its own sentence.
+   */
+  readonly pendingLinkHasAccount: (email: string) => string;
+  /** The same notice when the provider gave no email. */
+  readonly pendingLinkNoEmail: string;
+  /** The sentence after `pendingLinkHasAccount` / `pendingLinkNoEmail`. */
+  readonly pendingLinkNext: (args: {
     provider: string;
     autoLink: boolean;
   }) => string;
@@ -119,6 +126,8 @@ export interface IAuthUiLabels {
   readonly menuAuthentication: string;
   readonly loading: string;
   readonly authenticating: string;
+  /** Spinner `aria-label` (no ellipsis). */
+  readonly authenticatingAria: string;
   readonly pleaseSignIn: string;
   readonly signOut: string;
 }
@@ -139,8 +148,9 @@ export const AUTH_UI_LABELS_EN: IAuthUiLabels = {
   helpLead: 'If any issues get',
   authRecovery:
     "We couldn't complete sign-in. Try again with email or another sign-in method.",
-  pendingLink: ({ email, provider, autoLink }) =>
-    `${email ? `${email} already has an account.` : 'This email already has an account.'} ` +
+  pendingLinkHasAccount: (e) => `${e} already has an account.`,
+  pendingLinkNoEmail: 'This email already has an account.',
+  pendingLinkNext: ({ provider, autoLink }) =>
     'Sign in the way you did before — with email or another sign-in method — ' +
     (autoLink
       ? `and we'll connect ${provider} to it automatically.`
@@ -162,7 +172,7 @@ export const AUTH_UI_LABELS_EN: IAuthUiLabels = {
   existingAccountHint:
     'This email already has an account. Enter your password to sign in, or get a sign-in link by email.',
   password: 'Password',
-  resetPasswordTitle: 'Send email with a link to reset password',
+  resetPasswordTitle: 'Send email with a link to reset password ',
   forgotReset: 'Forgot? Reset!',
   wrongPassword: 'Wrong password',
   signingUp: 'Signing up...',
@@ -182,7 +192,7 @@ export const AUTH_UI_LABELS_EN: IAuthUiLabels = {
     'Welcome to our app! For your safety please re-type your email address to sign-in.',
   telegramLogIn: 'Log in with Telegram',
   telegramUnreachable:
-    'Telegram login is unavailable: we couldn’t reach the sign-in server (network or site configuration problem). Please use another method or try again later.',
+    "Telegram login is unavailable: we couldn't reach the sign-in server (network or site configuration problem). Please use another method or try again later.",
   ssoTitle: 'Company SSO',
   ssoUseCompanyEmailLead: 'Use your company email ending in',
   ssoEnterWorkEmail:
@@ -203,6 +213,7 @@ export const AUTH_UI_LABELS_EN: IAuthUiLabels = {
   menuAuthentication: 'Authentication',
   loading: 'Loading....',
   authenticating: 'Authenticating...',
+  authenticatingAria: 'Authenticating',
   pleaseSignIn: 'Please sign in',
   signOut: 'Sign-out',
 };
@@ -224,8 +235,9 @@ export const AUTH_UI_LABELS_ES: IAuthUiLabels = {
   helpLead: '¿Algún problema? Escríbenos a',
   authRecovery:
     'No pudimos completar el inicio de sesión. Inténtalo de nuevo con el correo u otro método.',
-  pendingLink: ({ email, provider, autoLink }) =>
-    `${email ? `${email} ya tiene una cuenta.` : 'Este correo ya tiene una cuenta.'} ` +
+  pendingLinkHasAccount: (e) => `${e} ya tiene una cuenta.`,
+  pendingLinkNoEmail: 'Este correo ya tiene una cuenta.',
+  pendingLinkNext: ({ provider, autoLink }) =>
     'Inicia sesión como lo hiciste antes —con el correo u otro método— ' +
     (autoLink
       ? `y conectaremos ${provider} automáticamente.`
@@ -289,6 +301,7 @@ export const AUTH_UI_LABELS_ES: IAuthUiLabels = {
   menuAuthentication: 'Autenticación',
   loading: 'Cargando…',
   authenticating: 'Autenticando…',
+  authenticatingAria: 'Autenticando',
   pleaseSignIn: 'Inicia sesión',
   signOut: 'Cerrar sesión',
 };
@@ -310,8 +323,9 @@ export const AUTH_UI_LABELS_DE: IAuthUiLabels = {
   helpLead: 'Probleme? Schreib uns an',
   authRecovery:
     'Die Anmeldung konnte nicht abgeschlossen werden. Versuch es erneut per E-Mail oder mit einer anderen Methode.',
-  pendingLink: ({ email, provider, autoLink }) =>
-    `${email ? `Für ${email} gibt es bereits ein Konto.` : 'Für diese E-Mail gibt es bereits ein Konto.'} ` +
+  pendingLinkHasAccount: (e) => `Für ${e} gibt es bereits ein Konto.`,
+  pendingLinkNoEmail: 'Für diese E-Mail gibt es bereits ein Konto.',
+  pendingLinkNext: ({ provider, autoLink }) =>
     'Melde dich so an wie beim letzten Mal – per E-Mail oder mit einer anderen Methode – ' +
     (autoLink
       ? `und wir verknüpfen ${provider} automatisch damit.`
@@ -375,6 +389,7 @@ export const AUTH_UI_LABELS_DE: IAuthUiLabels = {
   menuAuthentication: 'Anmeldung',
   loading: 'Wird geladen…',
   authenticating: 'Anmeldung läuft…',
+  authenticatingAria: 'Anmeldung läuft',
   pleaseSignIn: 'Bitte anmelden',
   signOut: 'Abmelden',
 };
@@ -396,8 +411,9 @@ export const AUTH_UI_LABELS_FR: IAuthUiLabels = {
   helpLead: 'Un problème ? Écrivez-nous à',
   authRecovery:
     'Nous n’avons pas pu finaliser la connexion. Réessayez par e-mail ou avec une autre méthode.',
-  pendingLink: ({ email, provider, autoLink }) =>
-    `${email ? `${email} a déjà un compte.` : 'Cet e-mail a déjà un compte.'} ` +
+  pendingLinkHasAccount: (e) => `${e} a déjà un compte.`,
+  pendingLinkNoEmail: 'Cet e-mail a déjà un compte.',
+  pendingLinkNext: ({ provider, autoLink }) =>
     'Connectez-vous comme la dernière fois — par e-mail ou avec une autre méthode — ' +
     (autoLink
       ? `et nous y associerons ${provider} automatiquement.`
@@ -462,6 +478,7 @@ export const AUTH_UI_LABELS_FR: IAuthUiLabels = {
   menuAuthentication: 'Authentification',
   loading: 'Chargement…',
   authenticating: 'Authentification…',
+  authenticatingAria: 'Authentification',
   pleaseSignIn: 'Connectez-vous',
   signOut: 'Se déconnecter',
 };
@@ -483,8 +500,9 @@ export const AUTH_UI_LABELS_PT_BR: IAuthUiLabels = {
   helpLead: 'Algum problema? Escreva para',
   authRecovery:
     'Não foi possível concluir o login. Tente de novo com e-mail ou outro método.',
-  pendingLink: ({ email, provider, autoLink }) =>
-    `${email ? `${email} já tem uma conta.` : 'Este e-mail já tem uma conta.'} ` +
+  pendingLinkHasAccount: (e) => `${e} já tem uma conta.`,
+  pendingLinkNoEmail: 'Este e-mail já tem uma conta.',
+  pendingLinkNext: ({ provider, autoLink }) =>
     'Entre do mesmo jeito que da última vez — com e-mail ou outro método — ' +
     (autoLink
       ? `e vamos conectar o ${provider} a ela automaticamente.`
@@ -547,6 +565,7 @@ export const AUTH_UI_LABELS_PT_BR: IAuthUiLabels = {
   menuAuthentication: 'Autenticação',
   loading: 'Carregando…',
   authenticating: 'Autenticando…',
+  authenticatingAria: 'Autenticando',
   pleaseSignIn: 'Entre na sua conta',
   signOut: 'Sair',
 };
@@ -568,8 +587,9 @@ export const AUTH_UI_LABELS_RU: IAuthUiLabels = {
   helpLead: 'Если что-то не работает, пишите на',
   authRecovery:
     'Не удалось завершить вход. Попробуйте ещё раз через почту или другим способом.',
-  pendingLink: ({ email, provider, autoLink }) =>
-    `${email ? `Для ${email} уже есть аккаунт.` : 'Для этой почты уже есть аккаунт.'} ` +
+  pendingLinkHasAccount: (e) => `Для ${e} уже есть аккаунт.`,
+  pendingLinkNoEmail: 'Для этой почты уже есть аккаунт.',
+  pendingLinkNext: ({ provider, autoLink }) =>
     'Войдите так же, как в прошлый раз, — через почту или другим способом, — ' +
     (autoLink
       ? `и мы автоматически привяжем к нему ${provider}.`
@@ -632,6 +652,7 @@ export const AUTH_UI_LABELS_RU: IAuthUiLabels = {
   menuAuthentication: 'Вход',
   loading: 'Загрузка…',
   authenticating: 'Выполняем вход…',
+  authenticatingAria: 'Выполняем вход',
   pleaseSignIn: 'Войдите в аккаунт',
   signOut: 'Выйти',
 };

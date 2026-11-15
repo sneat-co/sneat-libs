@@ -87,7 +87,13 @@ export class SneatLanguageService {
   readonly locale = computed(() => this.language().locale);
   readonly ionicTexts = computed(() => SNEAT_IONIC_TEXTS[this.$lang()]);
 
-  /** Resolves the start-up language: `?lang` → `sneat.lang` → browser → English. */
+  /**
+   * Resolves the start-up language: `?lang` → `sneat.lang` → browser →
+   * English. Applies it for this visit only and never writes `sneat.lang`:
+   * only an explicit choice (`setLang()`, from the selector) is remembered,
+   * so the browser language keeps being consulted and a one-off `?lang` link
+   * does not stick.
+   */
   init(): SneatLang {
     const win = this.document.defaultView;
     const lang = resolveSneatLang({
@@ -98,19 +104,18 @@ export class SneatLanguageService {
       stored: this.readStored(),
       browser: win?.navigator?.languages,
     });
-    this.setLang(lang);
+    this.apply(lang);
     return lang;
   }
 
-  /** Switches the language in place; ignores codes Sneat does not ship. */
+  /**
+   * Switches the language in place and remembers it in `sneat.lang` (the
+   * user's explicit choice); ignores codes Sneat does not ship.
+   */
   setLang(code: SneatLang | string): void {
     const lang = normalizeSneatLang(code);
     if (!lang) return;
-    this.$lang.set(lang);
-    this.document.documentElement?.setAttribute(
-      'lang',
-      sneatLanguage(lang).locale,
-    );
+    this.apply(lang);
     try {
       this.document.defaultView?.localStorage.setItem(
         SNEAT_LANG_STORAGE_KEY,
@@ -119,6 +124,14 @@ export class SneatLanguageService {
     } catch {
       // Storage may be disabled (private mode); the choice then lasts the session.
     }
+  }
+
+  private apply(lang: SneatLang): void {
+    this.$lang.set(lang);
+    this.document.documentElement?.setAttribute(
+      'lang',
+      sneatLanguage(lang).locale,
+    );
   }
 
   private readStored(): string | null {

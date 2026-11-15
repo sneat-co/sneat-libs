@@ -88,7 +88,7 @@ describe('LanguageSelectorComponent', () => {
       (b) => b.getAttribute('aria-checked') === 'true',
     );
     expect(active.map((b) => b.textContent?.trim())).toEqual(['Deutsch']);
-    expect(active[0]?.getAttribute('aria-current')).toBe('true');
+    expect(active[0]?.hasAttribute('aria-current')).toBe(false);
     expect(document.activeElement).toBe(active[0]);
   });
 

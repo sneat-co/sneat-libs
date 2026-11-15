@@ -16,13 +16,11 @@ const keys = Object.keys(AUTH_UI_LABELS_EN).sort() as Key[];
 function render(set: IAuthUiLabels, key: Key): string[] {
   const v = set[key] as unknown;
   if (typeof v === 'string') return [v];
-  if (key === 'pendingLink') {
-    const f = set.pendingLink;
+  if (key === 'pendingLinkNext') {
+    const f = set.pendingLinkNext;
     return [
-      f({ email: 'ana@example.com', provider: 'Google', autoLink: true }),
-      f({ email: 'ana@example.com', provider: 'Google', autoLink: false }),
-      f({ provider: 'GitHub', autoLink: true }),
-      f({ provider: 'GitHub', autoLink: false }),
+      f({ provider: 'Sample', autoLink: true }),
+      f({ provider: 'Sample', autoLink: false }),
     ];
   }
   return [(v as (s: string) => string)('Sample')];
@@ -77,13 +75,18 @@ describe('auth-ui label sets', () => {
           expect(text.trim().length, `${code}.${k}`).toBeGreaterThan(0);
           expect(text, `${code}.${k}`).not.toMatch(/undefined|\$\{/);
         }
-        if (typeof set[k] === 'function' && k !== 'pendingLink') {
+        if (typeof set[k] === 'function') {
           expect(render(set, k)[0], `${code}.${k}`).toContain('Sample');
         }
       }
-      expect(render(set, 'pendingLink')[0]).toContain('ana@example.com');
-      expect(render(set, 'pendingLink')[0]).toContain('Google');
-      expect(render(set, 'pendingLink')[2]).toContain('GitHub');
+      for (const text of render(set, 'pendingLinkNext')) {
+        expect(text, `${code}.pendingLinkNext`).toContain('Sample');
+      }
+      // The template splits on the email to bold it: exactly one occurrence.
+      expect(
+        set.pendingLinkHasAccount('\u0000').split('\u0000'),
+        `${code}.pendingLinkHasAccount`,
+      ).toHaveLength(2);
     },
   );
 
@@ -137,12 +140,9 @@ describe('pseudo-locale', () => {
     expect(Object.keys(pseudo).sort()).toEqual(keys);
     expect(pseudo.continueTo('Sneat.app')).toContain('Sneat.app');
     expect(
-      pseudo.pendingLink({
-        email: 'a@b.co',
-        provider: 'Google',
-        autoLink: true,
-      }),
-    ).toContain('a@b.co');
+      pseudo.pendingLinkNext({ provider: 'Google', autoLink: true }),
+    ).toContain('Google');
+    expect(pseudo.pendingLinkHasAccount('a@b.co')).toContain('a@b.co');
     expect(pseudo.lang).toBe('en');
   });
 });

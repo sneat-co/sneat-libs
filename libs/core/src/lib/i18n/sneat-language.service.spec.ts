@@ -132,7 +132,7 @@ describe('SneatLanguageService', () => {
     expect(attrs.size).toBe(0);
   });
 
-  it('init() takes ?lang, writes it back and sets <html lang>', () => {
+  it('init() takes ?lang and sets <html lang> without storing it', () => {
     const { svc, store, attrs } = service({
       search: '?x=1&lang=pt',
       stored: 'ru',
@@ -141,8 +141,30 @@ describe('SneatLanguageService', () => {
     expect(svc.init()).toBe('pt-BR');
     expect(svc.lang()).toBe('pt-BR');
     expect(svc.locale()).toBe('pt-BR');
-    expect(store.get(SNEAT_LANG_STORAGE_KEY)).toBe('pt-BR');
+    // A one-off ?lang link applies to this visit only.
+    expect(store.get(SNEAT_LANG_STORAGE_KEY)).toBe('ru');
     expect(attrs.get('lang')).toBe('pt-BR');
+  });
+
+  it('init() never persists a browser or default language', () => {
+    for (const languages of [['fr-BE', 'en'], []]) {
+      const { svc, store } = service({ languages });
+      svc.init();
+      expect(store.has(SNEAT_LANG_STORAGE_KEY), String(languages)).toBe(false);
+    }
+  });
+
+  it('only an explicit setLang() choice persists across visits', () => {
+    const first = service({ search: '?lang=de', languages: ['fr'] });
+    expect(first.svc.init()).toBe('de');
+    expect(first.store.has(SNEAT_LANG_STORAGE_KEY)).toBe(false);
+    // Next visit without ?lang: the browser language is consulted again.
+    expect(service({ languages: ['fr'] }).svc.init()).toBe('fr');
+
+    first.svc.setLang('ru');
+    const stored = first.store.get(SNEAT_LANG_STORAGE_KEY);
+    expect(stored).toBe('ru');
+    expect(service({ stored, languages: ['fr'] }).svc.init()).toBe('ru');
   });
 
   it('init() falls back to sneat.lang, then the browser', () => {
@@ -186,7 +208,7 @@ describe('SneatLanguageService', () => {
     TestBed.inject(ApplicationInitStatus);
     const child = createEnvironmentInjector([provideSneatLanguage()], parent);
     expect(child.get(SneatLanguageService).lang()).toBe('de');
-    expect(store.get(SNEAT_LANG_STORAGE_KEY)).toBe('de');
+    expect(store.has(SNEAT_LANG_STORAGE_KEY)).toBe(false);
   });
 
   it('has Ionic texts for every shipped language', () => {

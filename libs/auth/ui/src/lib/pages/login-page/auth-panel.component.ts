@@ -130,6 +130,17 @@ export class AuthPanelComponent implements OnInit {
       ]),
     );
   });
+  /**
+   * "<b>me@example.com</b> already has an account." in the current language:
+   * the text before and after the bold email.
+   */
+  protected readonly pendingLinkEmailParts = computed(() => {
+    const marker = '\u0000';
+    const [before, after = ''] = this.L()
+      .pendingLinkHasAccount(marker)
+      .split(marker);
+    return { before, after };
+  });
   protected readonly oauthSigningWith = computed(() =>
     OAUTH_PROVIDER_IDS.find((provider) => provider === this.signingWith()),
   );

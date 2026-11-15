@@ -74,7 +74,6 @@ let nextId = 0;
               type="button"
               role="menuitemradio"
               [attr.aria-checked]="l.code === current().code"
-              [attr.aria-current]="l.code === current().code ? 'true' : null"
               [attr.lang]="l.locale"
               [attr.tabindex]="i === focusIndex() ? 0 : -1"
               (click)="pick(l.code)"

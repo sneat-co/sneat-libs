@@ -14,9 +14,14 @@
 @if (pendingLink(); as link) {
   <div class="ion-padding ion-text-center" role="alert">
     <p>
+      @if (link.email) {
+        {{ pendingLinkEmailParts().before }}<b>{{ link.email }}</b
+        >{{ pendingLinkEmailParts().after }}
+      } @else {
+        {{ L().pendingLinkNoEmail }}
+      }
       {{
-        L().pendingLink({
-          email: link.email,
+        L().pendingLinkNext({
           provider: link.provider,
           autoLink: link.autoLink,
         })
