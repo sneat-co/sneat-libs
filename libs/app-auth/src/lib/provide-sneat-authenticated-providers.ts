@@ -41,7 +41,7 @@ import {
 } from '@sneat/logging';
 import { getRedirectResult } from 'firebase/auth';
 import { filter } from 'rxjs';
-import { provideSneatFirebase } from './provide-sneat-firebase';
+import { provideSneatFirebase } from './provide-sneat-firebase-analytics';
 
 @Injectable()
 export class SneatAuthenticatedLifecycle {
