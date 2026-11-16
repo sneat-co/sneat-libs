@@ -2,20 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { ErrorLogger } from '@sneat/core';
 import { ToastController } from '@ionic/angular';
 import { captureException, showReportDialog } from '@sentry/angular';
-import {
-  provideErrorLogger,
-  SneatLoggingModule,
-} from './sneat-logging.module';
+import { provideErrorLogger, SneatLoggingModule } from './sneat-logging.module';
 import {
   ERROR_LOGGER_DEFAULTS,
   provideErrorLoggerDefaults,
 } from './error-logger-defaults';
 import { ErrorLoggerService } from './error-logger.service';
-
-vi.mock('@sentry/angular', () => ({
-  captureException: vi.fn().mockImplementation(() => 'event-id'),
-  showReportDialog: vi.fn(),
-}));
 
 describe('provideErrorLogger', () => {
   it('registers ErrorLogger and nothing else when called with no defaults', () => {

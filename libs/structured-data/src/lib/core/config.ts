@@ -208,7 +208,7 @@ function matchGlob(glob: string, path: string): boolean {
     for (let position = path.length; position >= 0; position--) {
       const character = glob[pattern];
       const remaining = position < path.length;
-      let matches = false;
+      let matches: boolean;
       if (character === '*' && glob[pattern + 1] === '*' && glob[pattern + 2] === '/') {
         consumedDirectory = remaining && ((path[position] === '/' && !!at(pattern + 3, position + 1)) || consumedDirectory);
         matches = !!at(pattern + 3, position) || consumedDirectory;

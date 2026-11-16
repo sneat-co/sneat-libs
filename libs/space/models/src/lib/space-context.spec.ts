@@ -35,8 +35,8 @@ describe('space context helpers', () => {
   });
 
   it('creates contexts and short space info', () => {
-    const brief = { title: 'Home', type: 'family' } as ISpaceContext['brief'];
-    const context = spaceContextFromBrief('space-1', brief!);
+    const brief: NonNullable<ISpaceContext['brief']> = { title: 'Home', type: 'family' };
+    const context = spaceContextFromBrief('space-1', brief);
     expect(context).toEqual({ id: 'space-1', type: 'family', brief });
     expect(createShortSpaceInfoFromDbo(context)).toEqual({
       id: 'space-1',

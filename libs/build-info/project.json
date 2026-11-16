@@ -2,12 +2,16 @@
   "name": "build-info",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
-  "root": "libs/build-info",
   "sourceRoot": "libs/build-info/bin",
+  "tags": [
+    "scope:foundation"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/dist/libs/build-info"],
+      "outputs": [
+        "{workspaceRoot}/dist/libs/build-info"
+      ],
       "options": {
         "parallel": false,
         "commands": [
@@ -19,14 +23,6 @@
           "chmod +x dist/libs/build-info/bin/stamp-build-info.mjs"
         ]
       }
-    },
-    "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{workspaceRoot}/coverage/libs/build-info"]
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
-  },
-  "tags": ["scope:foundation"]
+  }
 }

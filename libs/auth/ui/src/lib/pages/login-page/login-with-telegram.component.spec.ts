@@ -1,10 +1,13 @@
+import { Window } from 'happy-dom';
 import { CUSTOM_ELEMENTS_SCHEMA, Provider } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SneatApiService } from '@sneat/api';
 import { SneatAuthStateService } from '@sneat/auth-core';
 import { ErrorLogger } from '@sneat/core';
 import { Observable, Subject, of, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { LoginWithTelegramComponent } from '../../../index';
+import { isNetworkError } from './login-with-telegram.component';
 import { ITelegramOIDCNonce } from './sneat-auth-with-telegram.service';
 import { TelegramLoginConfig } from './telegram-login-config';
 import { loadTelegramLoginScript } from './telegram-login-js';
@@ -136,6 +139,61 @@ describe('LoginWithTelegramComponent', () => {
     );
     expect(loadTelegramLoginScript).not.toHaveBeenCalled();
     expect(oidcButton(fixture)).toBeNull();
+  });
+
+  it.each([
+    [
+      'a CORS/offline HttpErrorResponse',
+      () => new HttpErrorResponse({ status: 0 }),
+    ],
+    ['a fetch TypeError', () => new TypeError('Failed to fetch')],
+  ])(
+    'explains inline when the nonce request gets no response (%s)',
+    async (_, error) => {
+      const api = apiMock();
+      api.postAsAnonymous.mockImplementation(() => throwError(error));
+      fixture = await createComponent([sneatBot], api);
+      await settle(fixture);
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.tg-unreachable')?.textContent).toContain(
+        'Telegram login is unavailable',
+      );
+      expect(legacyWidget(fixture)).toBeNull();
+      expect(oidcButton(fixture)).toBeNull();
+    },
+  );
+
+  it('keeps the legacy widget fallback for a TypeError that is a bug', async () => {
+    const api = apiMock();
+    api.postAsAnonymous.mockImplementation(() =>
+      throwError(() => new TypeError('x is not a function')),
+    );
+    fixture = await createComponent([sneatBot], api);
+    await settle(fixture);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.tg-unreachable'),
+    ).toBeNull();
+    expect(legacyWidget(fixture)?.getAttribute('data-telegram-login')).toBe(
+      'SneatBot',
+    );
+  });
+
+  it('classifies only response-less failures as network errors', () => {
+    expect(isNetworkError(new HttpErrorResponse({ status: 0 }))).toBe(true);
+    expect(isNetworkError(new TypeError('Failed to fetch'))).toBe(true);
+    expect(
+      isNetworkError(
+        new TypeError('NetworkError when attempting to fetch resource.'),
+      ),
+    ).toBe(true);
+    expect(isNetworkError(new TypeError('Load failed'))).toBe(true);
+    // A TypeError from a bug is not a network failure.
+    expect(
+      isNetworkError(new TypeError('Cannot read properties of undefined')),
+    ).toBe(false);
+    expect(isNetworkError(new HttpErrorResponse({ status: 400 }))).toBe(false);
+    expect(isNetworkError(new Error('400'))).toBe(false);
+    expect(isNetworkError(null)).toBe(false);
   });
 
   it('offers the OpenID popup and signs in with the id_token it returns', async () => {
@@ -287,4 +345,29 @@ it('unsubscribes a pending nonce request before it can mount a widget', async ()
   expect(nonce.observed).toBe(false);
   nonce.next({ clientID: '6042661328', nonce: 'late' });
   expect(loadTelegramLoginScript).not.toHaveBeenCalled();
+});
+
+it('names a late legacy iframe, preserves an upstream name, and stops after destroy', async () => {
+  // Shared setup stubs MutationObserver for Ionic; use a real observer here.
+  const observerWindow = new Window();
+  vi.stubGlobal('MutationObserver', observerWindow.MutationObserver);
+  try {
+    const fixture = await createComponent([sneatBot], apiMock());
+    const element = fixture.nativeElement as HTMLElement;
+    const unnamed = document.createElement('iframe');
+    const named = document.createElement('iframe');
+    named.title = 'Telegram authorization';
+    element.append(unnamed, named);
+    await settle(fixture);
+    expect(unnamed.title).toBe('Log in with Telegram');
+    expect(named.title).toBe('Telegram authorization');
+    fixture.destroy();
+    const afterDestroy = document.createElement('iframe');
+    element.append(afterDestroy);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(afterDestroy.title).toBe('');
+  } finally {
+    vi.unstubAllGlobals();
+    await observerWindow.happyDOM.close();
+  }
 });

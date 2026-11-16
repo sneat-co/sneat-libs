@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { beforeEach, afterEach } from 'vitest';
 import {
   setupAngularTestingEnvironment,
   setupGlobalMocks,
@@ -8,19 +9,28 @@ import { Firestore } from 'firebase/firestore';
 import { SNEAT_FIREBASE_AUTH } from '../firebase.tokens';
 import { AnalyticsService } from '../analytics.interface';
 
-export function configureGlobalTestBed() {
+export interface TestEnvironmentOptions {
+  /** Provider-contract suites opt out so a default root mock cannot shadow the imported module under test. */
+  readonly mockErrorLogger?: boolean;
+}
+
+export function configureGlobalTestBed(options: TestEnvironmentOptions = {}) {
   try {
     TestBed.configureTestingModule({
       providers: [
-        {
-          provide: ErrorLogger,
-          useValue: {
-            logError: vi.fn(),
-            logErrorHandler: () => {
-              return vi.fn();
-            },
-          },
-        },
+        ...(options.mockErrorLogger === false
+          ? []
+          : [
+              {
+                provide: ErrorLogger,
+                useValue: {
+                  logError: vi.fn(),
+                  logErrorHandler: () => {
+                    return vi.fn();
+                  },
+                },
+              },
+            ]),
         {
           provide: Firestore,
           useValue: {
@@ -110,8 +120,15 @@ export function configureGlobalTestBed() {
  *
  * @see setupAngularTestingEnvironment for the zoneless change-detection wiring.
  */
-export function setupTestEnvironment() {
+export function setupTestEnvironment(options: TestEnvironmentOptions = {}) {
   setupAngularTestingEnvironment();
   setupGlobalMocks();
-  configureGlobalTestBed();
+  // Angular's optional global-runner hooks are not visible to its externalized
+  // module inside Vitest VM workers. Register lifecycle hooks with this runner
+  // explicitly, so each spec gets fresh TestBed state and global providers.
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    configureGlobalTestBed(options);
+  });
+  afterEach(() => TestBed.resetTestingModule());
 }

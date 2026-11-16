@@ -1,6 +1,6 @@
 {
   "name": "@sneat/space-nav-ionic",
-  "version": "0.27.48",
+  "version": "0.27.51",
   "publishConfig": {
     "access": "public"
   },
@@ -17,7 +17,7 @@
     "@sneat/extension-contactus-contract": "^0.12.0"
   },
   "dependencies": {
-    "tslib": "2.8.1"
+    "tslib": "2.9.1"
   },
   "sideEffects": false
 }

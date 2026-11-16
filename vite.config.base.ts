@@ -1,6 +1,5 @@
 import { ViteUserConfig } from 'vitest/config';
 import angular from '@analogjs/vite-plugin-angular';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { join } from 'path';
 
 export interface BaseViteConfigOptions {
@@ -37,6 +36,7 @@ export function createBaseViteConfig(
     root: dirname,
     cacheDir: relativeToRoot,
     resolve: {
+      tsconfigPaths: true,
       dedupe: [
         '@angular/core',
         '@angular/common',
@@ -65,7 +65,6 @@ export function createBaseViteConfig(
         jit: false,
         tsconfig: './tsconfig.spec.json',
       }),
-      nxViteTsPaths(),
     ],
     test: {
       name,
@@ -111,7 +110,7 @@ export function createBaseViteConfig(
             /@stencil\//,
             /tslib/,
             // Inline the precompiled @sneat/extension-contactus-* packages
-            // consumed from npm so Vite (via nxViteTsPaths) resolves their
+            // consumed from npm so Vite (via tsconfig paths resolution) resolves their
             // `@sneat/*` workspace imports; otherwise Node's resolver fails on
             // the externalized .mjs ("Cannot find package '@sneat/core'").
             /@sneat\/extension-contactus-/,

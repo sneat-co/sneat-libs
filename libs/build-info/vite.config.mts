@@ -7,12 +7,14 @@
 // src/**/*.spec.ts because the thing under test is the published .mjs bin
 // itself, not a TypeScript source that gets compiled away.
 import { defineConfig } from 'vitest/config';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   root: __dirname,
   cacheDir: '../../node_modules/.vite/libs/build-info',
-  plugins: [nxViteTsPaths()],
+  plugins: [],
   test: {
     name: 'build-info',
     watch: false,

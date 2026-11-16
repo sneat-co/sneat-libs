@@ -21,6 +21,7 @@ import {
 import { ISpaceModuleItemRef } from '@sneat/dto';
 import {
   CONTACT_ROLE_ASSIGNMENT_PICKER,
+  IAssignmentRowsSavePort,
   IContactAssignmentRoleOption,
   IContactRoleAssignment,
   IContactRoleAssignmentPicker,
@@ -59,6 +60,10 @@ const copyAssignments = (rows: readonly IContactRoleAssignment[]) =>
   imports: [IonButton, IonCheckbox, IonItem, IonLabel, IonList, IonSpinner],
 })
 export class ContactRoleAssignmentComponent {
+  /** Space mode is opt-in; existing contact consumers retain same-Space and nonempty-role guards. */
+  readonly endpointKind = input<'contact' | 'space'>('contact');
+  readonly assignmentRowsPort = input<IAssignmentRowsSavePort>();
+  readonly defaultRoleIDs = input<readonly string[]>([]);
   readonly target = input<ISpaceModuleItemRef>();
   readonly space = input<ISpaceContext>();
   readonly assignments = input<readonly IContactRoleAssignment[]>([]);
@@ -89,14 +94,16 @@ export class ContactRoleAssignmentComponent {
       !target.subPath &&
       target.spaceID === this.space()?.id &&
       !!this.roleDirection() &&
-      !!this.savePort() &&
+      (this.endpointKind() === 'space'
+        ? !!this.assignmentRowsPort()
+        : !!this.savePort()) &&
       !!(this.picker() || this.injectedPicker) &&
       options.length > 0 &&
       options.every((role) => !!role.id.trim() && !!role.label.trim()) &&
       new Set(options.map((role) => role.id)).size === options.length &&
       this.assignments().every(
         (row) =>
-          validContact(row.contact, target.spaceID || '') &&
+          this.validEndpoint(row.contact, target.spaceID || '') &&
           new Set(row.roleIDs).size === row.roleIDs.length,
       ) &&
       new Set(this.assignments().map((row) => refKey(row.contact))).size ===
@@ -109,6 +116,10 @@ export class ContactRoleAssignmentComponent {
   readonly changed = computed(
     () =>
       this.changes().length > 0 ||
+      this.baseline.some(
+        (row) =>
+          !this.draft().some((after) => this.key(after) === this.key(row)),
+      ) ||
       this.draft().some(
         (row) =>
           !this.baseline.some((before) => this.key(before) === this.key(row)),
@@ -127,6 +138,9 @@ export class ContactRoleAssignmentComponent {
       this.savePort();
       this.picker();
       this.roleDirection();
+      this.endpointKind();
+      this.assignmentRowsPort();
+      this.defaultRoleIDs();
       untracked(() => {
         this.epoch++;
         this.baseline = copyAssignments(rows);
@@ -145,6 +159,8 @@ export class ContactRoleAssignmentComponent {
       this.assignments(),
       this.readonly(),
       this.roleDirection(),
+      this.endpointKind(),
+      this.defaultRoleIDs(),
     ]);
   }
   private captureContext(): () => boolean {
@@ -152,14 +168,29 @@ export class ContactRoleAssignmentComponent {
     const signature = this.contextSignature();
     const port = this.savePort();
     const picker = this.picker();
+    const rowsPort = this.assignmentRowsPort();
     // Compare immediately too: an Angular effect can run after a Promise continuation.
     return () =>
       epoch === this.epoch &&
       signature === this.contextSignature() &&
       port === this.savePort() &&
-      picker === this.picker();
+      picker === this.picker() &&
+      rowsPort === this.assignmentRowsPort();
   }
 
+  private validEndpoint(
+    ref: ISpaceModuleItemRef,
+    targetSpaceID: string,
+  ): boolean {
+    return this.endpointKind() === 'contact'
+      ? validContact(ref, targetSpaceID)
+      : !!ref.spaceID &&
+          /^[A-Za-z0-9_-]{1,128}$/.test(ref.spaceID) &&
+          ref.module === 'spaceus' &&
+          ref.collection === 'spaces' &&
+          ref.itemID === ref.spaceID &&
+          !ref.subPath;
+  }
   key(row: IContactRoleAssignment): string {
     return refKey(row.contact);
   }
@@ -212,7 +243,7 @@ export class ContactRoleAssignmentComponent {
         exclude: this.draft().map((r) => ({ ...r.contact })),
       });
       if (!current() || !row) return;
-      if (!validContact(row.contact, space.id))
+      if (!this.validEndpoint(row.contact, space.id))
         throw new Error('The selected contact does not belong to this Space.');
       if (
         !this.draft().some(
@@ -221,7 +252,11 @@ export class ContactRoleAssignmentComponent {
       )
         this.draft.update((rows) => [
           ...rows,
-          { ...row, contact: { ...row.contact }, roleIDs: [] },
+          {
+            ...row,
+            contact: { ...row.contact },
+            roleIDs: [...this.defaultRoleIDs()],
+          },
         ]);
     } catch {
       if (current())
@@ -260,27 +295,42 @@ export class ContactRoleAssignmentComponent {
     );
   }
   async save(): Promise<void> {
-    const port = this.savePort();
+    const port = this.assignmentRowsPort() || this.savePort();
     const target = this.target();
     const changes = this.changes();
     if (!this.canEdit() || !port || !target) return;
-    if (this.draft().some((row) => !row.roleIDs.length)) {
+    if (
+      this.endpointKind() === 'contact' &&
+      this.draft().some((row) => !row.roleIDs.length)
+    ) {
       this.error.set('Choose at least one role for each contact.');
       return;
     }
-    if (!changes.length) return;
+    if (!this.changed()) return;
     const current = this.captureContext();
     this.pending.set(true);
     this.error.set('');
     try {
-      const rows = await port.save({ target: { ...target }, changes });
+      const rowsPort = this.assignmentRowsPort();
+      let rows: readonly IContactRoleAssignment[];
+      if (rowsPort) {
+        rows = await rowsPort.save({
+          target: { ...target },
+          before: copyAssignments(this.baseline),
+          after: copyAssignments(this.draft()),
+        });
+      } else {
+        const contactPort = this.savePort();
+        if (!contactPort) return;
+        rows = await contactPort.save({ target: { ...target }, changes });
+      }
       if (!current()) return;
       if (
         new Set(rows.map((row) => refKey(row.contact))).size !== rows.length ||
         rows.some(
           (row) =>
-            !validContact(row.contact, target.spaceID || '') ||
-            !row.roleIDs.length ||
+            !this.validEndpoint(row.contact, target.spaceID || '') ||
+            (this.endpointKind() === 'contact' && !row.roleIDs.length) ||
             new Set(row.roleIDs).size !== row.roleIDs.length,
         )
       )

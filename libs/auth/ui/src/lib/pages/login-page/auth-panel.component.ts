@@ -20,11 +20,13 @@ import { Capacitor } from '@capacitor/core';
 import {
   AuthProviderID,
   AuthStatuses,
+  ISignInFailure,
   ISneatAuthState,
   SneatAuthStateService,
   SneatUserService,
   authProviderTitle,
   isAccountExistsWithDifferentCredential,
+  isSignInCancelled,
   isSneatAccountReady,
 } from '@sneat/auth-core';
 import { ErrorLogger, IErrorLogger } from '@sneat/core';
@@ -48,6 +50,7 @@ import {
 } from './email-login-form/email-login-form.component';
 import { LoginWithTelegramComponent } from './login-with-telegram.component';
 import { safeAuthReturnPath } from './safe-auth-return-path';
+import { SignInFailureNoticeComponent } from './sign-in-failure-notice.component';
 import {
   clearLoginRedirectIntent,
   markLoginRedirectIntent,
@@ -71,6 +74,7 @@ export interface AuthPanelAccountReadyChange {
     AuthProviderButtonsComponent,
     EmailLoginFormComponent,
     LoginWithTelegramComponent,
+    SignInFailureNoticeComponent,
     IonButton,
     IonCard,
     IonCol,
@@ -107,6 +111,14 @@ export class AuthPanelComponent implements OnInit {
     OAUTH_PROVIDER_IDS.find((provider) => provider === this.signingWith()),
   );
   protected readonly authRecoveryNeeded = signal(false);
+  /** A sign-in that did not complete, explained above the sign-in methods. */
+  protected readonly signInFailure = signal<ISignInFailure | undefined>(
+    undefined,
+  );
+  protected readonly canRetrySignIn = computed(() => {
+    const providerId = this.signInFailure()?.providerId;
+    return this.oauthProviders.some((p) => p === providerId);
+  });
   /**
    * Set when sign-in hit an email that already has an account: names the
    * provider that will be connected once the user signs in the usual way.
@@ -137,7 +149,19 @@ export class AuthPanelComponent implements OnInit {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly destroyRef = inject(DestroyRef);
 
+  constructor() {
+    // The notice is about this visit to the sign-in form: don't replay it
+    // when the user comes back to it later.
+    this.destroyRef.onDestroy(() =>
+      this.authStateService.dismissSignInFailure(),
+    );
+  }
+
   ngOnInit(): void {
+    // A failed redirect sign-in is detected after this panel renders.
+    this.authStateService.signInFailureChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((failure) => this.signInFailure.set(failure));
     // A redirect sign-in that hit an existing account is read after this
     // page renders, so follow the pending link rather than reading it once.
     this.authStateService.pendingCredentialLinkChanges
@@ -198,6 +222,16 @@ export class AuthPanelComponent implements OnInit {
       });
   }
 
+  protected retrySignIn(): void {
+    const providerId = this.signInFailure()?.providerId;
+    const provider = this.oauthProviders.find((p) => p === providerId);
+    if (provider) void this.loginWith(provider);
+  }
+
+  protected dismissSignInFailure(): void {
+    this.authStateService.dismissSignInFailure();
+  }
+
   protected retryUserRecordInitialization(): void {
     this.userService.retryUserRecordInitialization();
   }
@@ -208,6 +242,7 @@ export class AuthPanelComponent implements OnInit {
 
   protected async loginWith(provider: AuthProviderID): Promise<void> {
     this.signingWith.set(provider);
+    this.authStateService.dismissSignInFailure();
     markLoginRedirectIntent(this.safeReturnTo());
     try {
       await this.authStateService.signInWith(provider);
@@ -233,9 +268,12 @@ export class AuthPanelComponent implements OnInit {
         message !== 'The user canceled the sign-in flow.' &&
         !message?.includes(
           'com.apple.AuthenticationServices.AuthorizationError error 1001.',
-        )
+        ) &&
+        !isSignInCancelled(error)
       ) {
         this.errorLogger.logError(error, `Failed to sign-in with ${provider}`);
+        // Say why the user is still here, not only in the console.
+        this.authStateService.reportSignInFailure(error, provider);
       }
       this.signingWith.set(undefined);
     }

@@ -401,6 +401,7 @@ describe('authenticated bootstrap providers', () => {
 describe('SneatAuthenticatedLifecycle', () => {
   it('starts once, logs navigation, and clears stale space context', async () => {
     const authState = new Subject<ISneatAuthState>();
+    const onRedirectSignInResult = vi.fn();
     const routerEvents = new Subject<NavigationEnd>();
     const telegram = { authenticateIfTelegramWebApp: vi.fn() };
     const analytics: Pick<IAnalyticsService, 'logEvent'> = {
@@ -412,7 +413,7 @@ describe('SneatAuthenticatedLifecycle', () => {
         { provide: TelegramAuthService, useValue: telegram },
         {
           provide: SneatAuthStateService,
-          useValue: { authState, fbAuth: {} },
+          useValue: { authState, fbAuth: {}, onRedirectSignInResult },
         },
         {
           provide: Router,
@@ -434,6 +435,7 @@ describe('SneatAuthenticatedLifecycle', () => {
     });
     const lifecycle = TestBed.inject(SneatAuthenticatedLifecycle);
     mocks.getRedirectResult.mockClear();
+    mocks.getRedirectResult.mockResolvedValue(null);
     lifecycle.start();
     lifecycle.start();
     expect(telegram.authenticateIfTelegramWebApp).toHaveBeenCalledOnce();
@@ -452,6 +454,8 @@ describe('SneatAuthenticatedLifecycle', () => {
     routerEvents.next(new NavigationEnd(2, '/old', '/space/team/demo'));
     expect(localStorage.getItem('sneat.currentSpace')).toBe('current');
     await Promise.resolve();
+    // The empty result is handed over so a silent redirect failure shows.
+    expect(onRedirectSignInResult).toHaveBeenCalledWith(null);
   });
 
   it.each([
@@ -464,6 +468,7 @@ describe('SneatAuthenticatedLifecycle', () => {
     const error = new Error('redirect failed');
     mocks.getRedirectResult.mockRejectedValue(error);
     const rememberPendingCredentialLink = vi.fn().mockReturnValue(pendingLink);
+    const onRedirectSignInError = vi.fn();
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
@@ -481,6 +486,7 @@ describe('SneatAuthenticatedLifecycle', () => {
             authState: new Subject<ISneatAuthState>(),
             fbAuth: {},
             rememberPendingCredentialLink,
+            onRedirectSignInError,
           },
         },
         {
@@ -504,6 +510,8 @@ describe('SneatAuthenticatedLifecycle', () => {
     TestBed.inject(SneatAuthenticatedLifecycle).start();
     await Promise.resolve();
     expect(rememberPendingCredentialLink).toHaveBeenCalledWith(error);
+    // Explained on the login page unless the pending link already explains it.
+    expect(onRedirectSignInError).toHaveBeenCalledWith(error, !!pendingLink);
     if (pendingLink) {
       expect(consoleError).not.toHaveBeenCalled();
     } else {

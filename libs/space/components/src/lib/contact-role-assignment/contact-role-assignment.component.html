@@ -1,4 +1,10 @@
-<ion-list aria-label="Contact role assignments">
+<ion-list
+  [attr.aria-label]="
+    endpointKind() === 'space'
+      ? 'Space role assignments'
+      : 'Contact role assignments'
+  "
+>
   @for (row of draft(); track key(row)) {
     <ion-item>
       <ion-label>{{ row.title || row.contact.itemID }}</ion-label>
@@ -21,13 +27,31 @@
       }
     </ion-item>
   } @empty {
-    <ion-item><ion-label>No contacts assigned.</ion-label></ion-item>
+    <ion-item
+      ><ion-label>{{
+        endpointKind() === 'space'
+          ? 'No spaces assigned.'
+          : 'No contacts assigned.'
+      }}</ion-label></ion-item
+    >
   }
 </ion-list>
 @if (!configured()) {
-  <p>Contact assignment is unavailable for this item.</p>
+  <p>
+    {{
+      endpointKind() === 'space'
+        ? 'Space assignment is unavailable for this item.'
+        : 'Contact assignment is unavailable for this item.'
+    }}
+  </p>
 } @else if (readonly()) {
-  <p>Contact assignments are read-only.</p>
+  <p>
+    {{
+      endpointKind() === 'space'
+        ? 'Space assignments are read-only.'
+        : 'Contact assignments are read-only.'
+    }}
+  </p>
 }
 @if (error()) {
   <p role="alert">{{ error() }}</p>
@@ -35,9 +59,9 @@
 @if (pending()) {
   <ion-spinner aria-label="Updating contact assignments" />
 }
-<ion-button [disabled]="!canEdit()" (click)="addContact()"
-  >Add contact</ion-button
->
+<ion-button [disabled]="!canEdit()" (click)="addContact()">{{
+  endpointKind() === 'space' ? 'Add space' : 'Add contact'
+}}</ion-button>
 <ion-button [disabled]="!canEdit() || !changed()" (click)="save()"
   >Save</ion-button
 >

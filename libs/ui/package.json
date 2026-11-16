@@ -1,6 +1,6 @@
 {
   "name": "@sneat/ui",
-  "version": "0.27.48",
+  "version": "0.27.51",
   "publishConfig": {
     "access": "public"
   },
@@ -11,6 +11,6 @@
     "@sneat/logging": ">=0.1.0"
   },
   "dependencies": {
-    "tslib": "2.8.1"
+    "tslib": "2.9.1"
   }
 }

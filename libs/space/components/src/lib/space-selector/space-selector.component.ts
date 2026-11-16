@@ -2,6 +2,7 @@ import { TitleCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   output,
@@ -42,7 +43,7 @@ import { SpaceComponentBaseParams } from '../space-component-base-params.service
       (ionChange)="onSpaceSelected($event)"
       style="font-weight: bold"
     >
-      @for (userSpace of $spaces(); track userSpace.id) {
+      @for (userSpace of $selectableSpaces(); track userSpace.id) {
         <ion-select-option [value]="userSpace.id">
           {{
             userSpace.brief.title ||
@@ -51,14 +52,18 @@ import { SpaceComponentBaseParams } from '../space-component-base-params.service
           }}
         </ion-select-option>
       } @empty {
-        @let space = $space();
-        <ion-select-option [value]="$safeNavigationMigration(space?.id)">
-          @if (!space || (!space?.id && !space?.type)) {
-            Loading...
-          } @else {
-            {{ space.brief?.title || (space.type | titlecase) || space.id }}
-          }
-        </ion-select-option>
+        @if (allowedSpaceIDs() !== undefined) {
+          <ion-select-option disabled>No eligible spaces</ion-select-option>
+        } @else {
+          @let space = $space();
+          <ion-select-option [value]="$safeNavigationMigration(space?.id)">
+            @if (!space || (!space?.id && !space?.type)) {
+              Loading...
+            } @else {
+              {{ space.brief?.title || (space.type | titlecase) || space.id }}
+            }
+          </ion-select-option>
+        }
       }
     </ion-select>
   `,
@@ -71,6 +76,14 @@ import { SpaceComponentBaseParams } from '../space-component-base-params.service
 })
 export class SpaceSelectorComponent extends SpaceBaseComponent {
   /** Whether a containing Ionic menu should close after a space is selected. */
+  /** Optional host eligibility filter; omitted preserves the existing all-membership selector. */
+  readonly allowedSpaceIDs = input<readonly string[]>();
+  protected readonly $selectableSpaces = computed(() => {
+    const allowed = this.allowedSpaceIDs();
+    return this.$spaces()?.filter(
+      (space) => allowed === undefined || allowed.includes(space.id),
+    );
+  });
   readonly closeMenuOnSelection = input(false);
   /** Align the label and selected space within the enclosing item. */
   readonly justify = input<'start' | 'end' | 'space-between'>('start');
@@ -105,7 +118,9 @@ export class SpaceSelectorComponent extends SpaceBaseComponent {
     if (spaceID === this.space?.id) {
       return;
     }
-    const space = this.$spaces()?.find((candidate) => candidate.id === spaceID);
+    const space = this.$selectableSpaces()?.find(
+      (candidate) => candidate.id === spaceID,
+    );
     if (space) {
       this.setSpaceRef(space);
       this.spaceSelected.emit(space);

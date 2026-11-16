@@ -13,3 +13,4 @@ export * from './spaces-card';
 export * from './space-module-base.component';
 export * from './space-base-component.directive';
 export * from './contact-role-assignment/contact-role-assignment.component';
+export * from './space-role-assignment/space-role-assignment.component';
