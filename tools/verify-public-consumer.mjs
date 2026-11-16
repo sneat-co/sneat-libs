@@ -35,7 +35,10 @@ function run(command, args, cwd) {
 
 function runPnpm(args, cwd) {
   if (pnpmExecPath) {
-    return run(process.execPath, [pnpmExecPath, ...args], cwd);
+    if (/\.(?:[cm]?js)$/.test(pnpmExecPath)) {
+      return run(process.execPath, [pnpmExecPath, ...args], cwd);
+    }
+    return run(pnpmExecPath, args, cwd);
   }
   return run('pnpm', args, cwd);
 }
