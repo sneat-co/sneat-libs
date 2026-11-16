@@ -2,9 +2,11 @@
  * Device list of public referral codes (backstage spec videoroomius-referrals).
  *
  * A referral code is a public Invitus invite ID that grants nothing and has no
- * PIN. Before sign-up the device keeps at most MAX_REFERRAL_CODES of them, each
- * with the channel it came through and when it was opened; the server credits
- * the last valid one at the first registration in the app.
+ * PIN. The device keeps at most MAX_REFERRAL_CODES of them, each with the
+ * channel it came through and when it was opened. The product sends them with
+ * its fix-point request (AskStage: create_show, the creator's first "New
+ * show"), where the server fixes the last valid one; the caller then clears
+ * the list with clearReferralCodes once that request succeeds.
  *
  * This list NEVER holds a join invite (an invite ID with a PIN) or any other
  * security code: a join invite is acted on only on the page its link opens, or

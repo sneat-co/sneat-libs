@@ -2,11 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { SneatApiService } from '@sneat/api';
 import { UserRecordService } from './user-record.service';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of, firstValueFrom, throwError } from 'rxjs';
-import {
-  readReferralCodes,
-  rememberReferralCode,
-} from '../referral/referral-codes';
+import { of, firstValueFrom } from 'rxjs';
 import { IUserDbo } from '@sneat/dto';
 
 describe('UserRecordService', () => {
@@ -145,51 +141,5 @@ describe('UserRecordService', () => {
     await Promise.all([firstValueFrom(obs), firstValueFrom(obs)]);
 
     expect(sneatApiServiceMock.post).toHaveBeenCalledTimes(1);
-  });
-  describe('referral codes', () => {
-    const code = `mi_${'a'.repeat(32)}`;
-    beforeEach(() => localStorage.clear());
-
-    it('sends the device referral codes and clears them after the answer', async () => {
-      rememberReferralCode(code, 'x');
-      sneatApiServiceMock.post.mockReturnValue(of({ id: 'u1', title: 'U' }));
-      await firstValueFrom(service.initUserRecord({ email: 'a@example.com' }));
-      const sent = sneatApiServiceMock.post.mock.calls[0][1];
-      expect(sent.referralCodes).toEqual([
-        expect.objectContaining({ code, source: 'x' }),
-      ]);
-      expect(JSON.stringify(sent.referralCodes)).not.toMatch(/pin/i);
-      expect(readReferralCodes()).toEqual([]);
-    });
-
-    it('clears the codes after an error answer too', async () => {
-      rememberReferralCode(code, 'x');
-      sneatApiServiceMock.post.mockReturnValue(
-        throwError(() => new Error('400')),
-      );
-      await expect(firstValueFrom(service.initUserRecord({}))).rejects.toThrow(
-        '400',
-      );
-      expect(readReferralCodes()).toEqual([]);
-    });
-
-    it('sends no referralCodes field when the device has none', async () => {
-      sneatApiServiceMock.post.mockReturnValue(of({ id: 'u1', title: 'U' }));
-      await firstValueFrom(service.initUserRecord({}));
-      expect('referralCodes' in sneatApiServiceMock.post.mock.calls[0][1]).toBe(
-        false,
-      );
-    });
-
-    it('leaves the device list alone when the caller passes its own codes list', async () => {
-      rememberReferralCode(code, 'x');
-      sneatApiServiceMock.post.mockReturnValue(
-        throwError(() => new Error('500')),
-      );
-      await expect(
-        firstValueFrom(service.initUserRecord({ referralCodes: [] })),
-      ).rejects.toThrow('500');
-      expect(readReferralCodes()).toHaveLength(1);
-    });
   });
 });
