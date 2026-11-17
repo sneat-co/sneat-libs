@@ -159,7 +159,7 @@ describe('UserRecordService', () => {
 describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
   let post: ReturnType<typeof vi.fn>;
 
-  const serviceFor = (appId: string): UserRecordService => {
+  const serviceFor = (appId: unknown): UserRecordService => {
     post = vi.fn().mockReturnValue(of({ id: 'u1', title: 'U' }));
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -183,6 +183,37 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
       expect('appId' in post.mock.calls[0][1]).toBe(false);
     },
   );
+
+  it('preserves the unbound path when the optional token is explicitly null', async () => {
+    const service = serviceFor(null);
+    await firstValueFrom(service.initUserRecord({ email: 'test@example.com' }));
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(post.mock.calls[0][0]).toBe('users/init_user_record');
+    expect('appId' in post.mock.calls[0][1]).toBe(false);
+  });
+
+  it.each([
+    { name: 'number', value: 123 },
+    { name: 'boolean', value: true },
+    { name: 'undefined', value: undefined },
+    { name: 'array', value: ['askstage'] },
+  ])('rejects an injected $name without any request', async ({ value }) => {
+    const service = serviceFor(value);
+    await expect(
+      firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
+    ).rejects.toThrow('invalid INIT_USER_RECORD_APP_ID');
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('rejects an injected object without coercion or any request', async () => {
+    const toString = vi.fn(() => 'askstage');
+    const service = serviceFor({ toString });
+    await expect(
+      firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
+    ).rejects.toThrow('invalid INIT_USER_RECORD_APP_ID');
+    expect(toString).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
+  });
 
   it.each(['', 'AskStage', 'ask/stage', '../admin', 'a?b=c', 'ask stage', 'a%2f'])(
     'rejects the invalid app ID %j without any request',

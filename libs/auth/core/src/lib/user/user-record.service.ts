@@ -39,7 +39,10 @@ export class UserRecordService {
     }
     let path = 'users/init_user_record';
     if (this.appId !== null) {
-      if (!UserRecordService.validAppID.test(this.appId)) {
+      if (
+        typeof this.appId !== 'string' ||
+        !UserRecordService.validAppID.test(this.appId)
+      ) {
         return throwError(
           () =>
             new Error(
