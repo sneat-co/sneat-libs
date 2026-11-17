@@ -1,3 +1,4 @@
+import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -15,7 +16,11 @@ describe('SsoLoginPageComponent', () => {
 
   beforeEach(() => sessionStorage.clear());
 
-  async function create(returnTo?: string): Promise<SsoLoginPageComponent> {
+  async function create(
+    returnTo?: string,
+    htmlBase = '/',
+    appBase?: string,
+  ): Promise<SsoLoginPageComponent> {
     sso = {
       discover: vi.fn(() => of({ configured: false, domain: '' })),
       startLogin: vi.fn(() =>
@@ -25,6 +30,13 @@ describe('SsoLoginPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SsoLoginPageComponent],
       providers: [
+        {
+          provide: PlatformLocation,
+          useValue: { getBaseHrefFromDOM: () => htmlBase },
+        },
+        ...(appBase === undefined
+          ? []
+          : [{ provide: APP_BASE_HREF, useValue: appBase }]),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -47,30 +59,56 @@ describe('SsoLoginPageComponent', () => {
     return fixture.componentInstance;
   }
 
-  it('returns regular sign-in to an explicit checkout continuation', async () => {
-    const component = await create(
-      '/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1',
-    );
+  it.each([
+    {
+      name: 'returns regular sign-in to the explicit checkout under the subpath',
+      htmlBase: '/app/',
+      returnTo: '/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1',
+      expected: '/app/login#/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1',
+    },
+    {
+      name: 'keeps the root login entry with a root navigation and subpath asset base',
+      htmlBase: '/app/',
+      appBase: '/',
+      returnTo: '/checkout?plan=pro',
+      expected: '/login#/checkout?plan=pro',
+    },
+    {
+      name: 'keeps the legacy setup route without an explicit continuation',
+      htmlBase: '/',
+      domain: 'company.example',
+      expected: '/login#/sso/setup?domain=company.example',
+    },
+    {
+      name: 'uses subpath setup after discarding an unsafe continuation',
+      htmlBase: '/app/',
+      returnTo: '/checkout?access_token=fixture',
+      domain: 'company.example',
+      expected: '/app/login#/sso/setup?domain=company.example',
+    },
+    {
+      name: 'keeps navigation on the page origin with an incompatible navigation base',
+      htmlBase: '/',
+      appBase: 'https://assets.example.test/app/',
+      expected: '/login#/sso/setup',
+    },
+  ])('$name', async ({ htmlBase, appBase, returnTo, domain, expected }) => {
+    const component = await create(returnTo, htmlBase, appBase);
     const state = component as unknown as {
-      regularLoginURL: () => string;
+      continueWithRegularLogin: () => void;
+      unknownDomain: { set: (value: string) => void };
     };
+    if (domain) state.unknownDomain.set(domain);
+    const origin = 'https://app.example.test';
+    const assign = vi.fn();
+    vi.stubGlobal('location', { origin, assign });
+    try {
+      state.continueWithRegularLogin();
 
-    expect(state.regularLoginURL()).toBe(
-      '/login#/business/checkout?planID=datatug-business-usage-annual&spaceID=space_1',
-    );
-  });
-
-  it('keeps the legacy SSO setup route when there is no continuation', async () => {
-    const component = await create();
-    const state = component as unknown as {
-      regularLoginURL: () => string;
-      unknownDomain: { set: (domain: string) => void };
-    };
-    state.unknownDomain.set('company.example');
-
-    expect(state.regularLoginURL()).toBe(
-      '/login#/sso/setup?domain=company.example',
-    );
+      expect(assign).toHaveBeenCalledExactlyOnceWith(`${origin}${expected}`);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('explains that regular login returns to the caller when a continuation exists', async () => {

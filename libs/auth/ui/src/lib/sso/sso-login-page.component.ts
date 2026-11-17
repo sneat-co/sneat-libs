@@ -1,3 +1,4 @@
+import { LocationStrategy } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -59,6 +60,7 @@ import { safeAuthReturnPath } from '../pages/login-page/safe-auth-return-path';
 })
 export class SsoLoginPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly locationStrategy = inject(LocationStrategy);
   private readonly sso = inject(SsoApiService);
 
   protected readonly workEmail = signal('');
@@ -73,18 +75,16 @@ export class SsoLoginPageComponent implements OnInit {
     const domain = emailDomain(this.workEmail());
     return !!domain && (!this.fixedDomain() || domain === this.fixedDomain());
   });
-  protected readonly regularLoginURL = computed(() => {
+  private readonly regularLoginContinuation = computed(() => {
     if (this.returnTo) {
       // The inline caller already has an explicit continuation; send regular
       // sign-in back there rather than diverting checkout into SSO setup.
-      return `/login#${this.returnTo}`;
+      return this.returnTo;
     }
     const domain = this.unknownDomain();
     const query = new URLSearchParams();
     if (domain) query.set('domain', domain);
-    if (this.returnTo) query.set('returnTo', this.returnTo);
-    const next = `/sso/setup${query.size ? `?${query.toString()}` : ''}`;
-    return `/login#${next}`;
+    return `/sso/setup${query.size ? `?${query.toString()}` : ''}`;
   });
 
   ngOnInit(): void {
@@ -103,7 +103,27 @@ export class SsoLoginPageComponent implements OnInit {
     // `/login` is a separate application entry point in consuming Sneat apps.
     // Force a document navigation so Ionic does not treat it as an in-app
     // route and leave an empty router outlet.
-    location.assign(this.regularLoginURL());
+    const login = new URL('/login', location.origin);
+    try {
+      const target = new URL(
+        this.locationStrategy.prepareExternalUrl('/login'),
+        login.origin,
+      );
+      if (
+        target.origin === login.origin &&
+        target.protocol === login.protocol &&
+        !target.username &&
+        !target.password &&
+        !target.search &&
+        !target.hash
+      ) {
+        login.pathname = target.pathname;
+      }
+    } catch {
+      // Retain the origin-root document entry if the navigation base is invalid.
+    }
+    login.hash = this.regularLoginContinuation();
+    location.assign(login.href);
   }
 
   protected async continue(): Promise<void> {
