@@ -46,7 +46,7 @@ export class UserRecordService {
         return throwError(
           () =>
             new Error(
-              `invalid INIT_USER_RECORD_APP_ID ${JSON.stringify(this.appId)}: use [a-z0-9-] only`,
+              'invalid INIT_USER_RECORD_APP_ID: use a string containing [a-z0-9-] only',
             ),
         );
       }

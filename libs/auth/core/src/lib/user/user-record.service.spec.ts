@@ -215,6 +215,64 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
     expect(post).not.toHaveBeenCalled();
   });
 
+  it('rejects a BigInt with the stable validation error and no request', async () => {
+    const service = serviceFor(BigInt(123));
+    await expect(
+      firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
+    ).rejects.toEqual(
+      new Error(
+        'invalid INIT_USER_RECORD_APP_ID: use a string containing [a-z0-9-] only',
+      ),
+    );
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('rejects a circular object with the stable validation error and no request', async () => {
+    const appId: { self?: unknown } = {};
+    appId.self = appId;
+    const service = serviceFor(appId);
+    await expect(
+      firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
+    ).rejects.toEqual(
+      new Error(
+        'invalid INIT_USER_RECORD_APP_ID: use a string containing [a-z0-9-] only',
+      ),
+    );
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('rejects an object without executing toJSON or making a request', async () => {
+    const toJSON = vi.fn(() => 'askstage');
+    const service = serviceFor({ toJSON });
+    await expect(
+      firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
+    ).rejects.toEqual(
+      new Error(
+        'invalid INIT_USER_RECORD_APP_ID: use a string containing [a-z0-9-] only',
+      ),
+    );
+    expect(toJSON).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('rejects an object without reading its properties or making a request', async () => {
+    const getter = vi.fn(() => 'askstage');
+    const appId = Object.defineProperty({}, 'value', {
+      enumerable: true,
+      get: getter,
+    });
+    const service = serviceFor(appId);
+    await expect(
+      firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
+    ).rejects.toEqual(
+      new Error(
+        'invalid INIT_USER_RECORD_APP_ID: use a string containing [a-z0-9-] only',
+      ),
+    );
+    expect(getter).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
+  });
+
   it.each(['', 'AskStage', 'ask/stage', '../admin', 'a?b=c', 'ask stage', 'a%2f'])(
     'rejects the invalid app ID %j without any request',
     async (appId) => {
