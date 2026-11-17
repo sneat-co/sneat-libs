@@ -124,7 +124,10 @@ export function captureReferralFromUrl(
   } catch {
     return false;
   }
-  if (joinInviteParams.some((p) => parsed.searchParams.has(p))) return false;
+  // URLSearchParams decodes names; credential keys are refused in any case.
+  for (const name of parsed.searchParams.keys()) {
+    if (joinInviteParams.includes(name.toLowerCase())) return false;
+  }
   const code = parsed.searchParams.get('ref');
   return (
     code !== null &&

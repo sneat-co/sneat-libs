@@ -121,6 +121,45 @@ describe('referral codes on the device', () => {
     expect(localStorage.getItem(REFERRAL_CODES_STORAGE_KEY)).toBeNull();
   });
 
+  it.each([
+    'PIN', 'Pin', 'pIn', '%50IN',
+    'INVITE', 'Invite', 'inVite', '%49nvite',
+  ])(
+    'refuses decoded join credential parameter %s without writing storage',
+    (parameter) => {
+      rememberReferralCode(code(2), 'existing', now);
+      const before = localStorage.getItem(REFERRAL_CODES_STORAGE_KEY);
+      const write = vi.spyOn(localStorage, 'setItem');
+      try {
+        expect(
+          captureReferralFromUrl(`/join?ref=${code(1)}&${parameter}=4821`, now),
+        ).toBe(false);
+        expect(write).not.toHaveBeenCalled();
+        expect(localStorage.getItem(REFERRAL_CODES_STORAGE_KEY)).toBe(before);
+      } finally {
+        write.mockRestore();
+      }
+    },
+  );
+
+  it('refuses empty or duplicate mixed-credential keys on URL objects', () => {
+    const write = vi.spyOn(localStorage, 'setItem');
+    try {
+      for (const query of ['PIN=', 'src=x&Pin=&src=y', 'invite=&INVITE=4821']) {
+        expect(
+          captureReferralFromUrl(
+            new URL(`https://example.test/?ref=${code(1)}&${query}`),
+            now,
+          ),
+        ).toBe(false);
+      }
+      expect(write).not.toHaveBeenCalled();
+      expect(localStorage.getItem(REFERRAL_CODES_STORAGE_KEY)).toBeNull();
+    } finally {
+      write.mockRestore();
+    }
+  });
+
   it('refuses an unparseable URL', () => {
     const unparseable = {
       toString: () => {
