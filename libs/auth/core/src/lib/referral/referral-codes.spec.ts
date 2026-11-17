@@ -122,8 +122,14 @@ describe('referral codes on the device', () => {
   });
 
   it.each([
-    'PIN', 'Pin', 'pIn', '%50IN',
-    'INVITE', 'Invite', 'inVite', '%49nvite',
+    'PIN',
+    'Pin',
+    'pIn',
+    '%50IN',
+    'INVITE',
+    'Invite',
+    'inVite',
+    '%49nvite',
   ])(
     'refuses decoded join credential parameter %s without writing storage',
     (parameter) => {
