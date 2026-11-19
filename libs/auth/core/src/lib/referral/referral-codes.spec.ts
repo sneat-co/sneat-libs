@@ -130,6 +130,10 @@ describe('referral codes on the device', () => {
     'Invite',
     'inVite',
     '%49nvite',
+    'amp;pin',
+    'pin%5B%5D',
+    'join.pin',
+    'invite_id',
   ])(
     'refuses decoded join credential parameter %s without writing storage',
     (parameter) => {
@@ -164,6 +168,31 @@ describe('referral codes on the device', () => {
     } finally {
       write.mockRestore();
     }
+  });
+
+  it('ignores referral links that also contain a fragment or user credentials', () => {
+    const before = localStorage.getItem(REFERRAL_CODES_STORAGE_KEY);
+    for (const url of [
+      `/join?ref=${code(1)}#pin=4821`,
+      `/join?ref=${code(1)}#/join?invite=synthetic`,
+      `https://user@example.test/join?ref=${code(1)}`,
+      `https://:pass@example.test/join?ref=${code(1)}`,
+    ]) {
+      expect(captureReferralFromUrl(url, now)).toBe(false);
+    }
+    expect(localStorage.getItem(REFERRAL_CODES_STORAGE_KEY)).toBe(before);
+  });
+
+  it('returns stored observation times as canonical ISO timestamps', () => {
+    localStorage.setItem(
+      REFERRAL_CODES_STORAGE_KEY,
+      JSON.stringify([
+        { code: code(1), at: now.toUTCString() + ' (annotation)' },
+      ]),
+    );
+    expect(readReferralCodes(now)).toEqual([
+      { code: code(1), at: now.toISOString() },
+    ]);
   });
 
   it('refuses an unparseable URL', () => {

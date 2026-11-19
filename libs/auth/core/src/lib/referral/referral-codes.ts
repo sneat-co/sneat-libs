@@ -18,13 +18,14 @@
 
 export const MAX_REFERRAL_CODES = 10;
 export const REFERRAL_CODE_MAX_AGE_DAYS = 30;
+/** Browser storage is scoped to the current origin; the server validates the product. */
 export const REFERRAL_CODES_STORAGE_KEY = 'sneat.referral-codes';
 
 const referralCodePattern = /^mi_[A-Za-z0-9_-]{32}$/;
 const referralSourcePattern = /^[a-z0-9_-]{1,32}$/;
 const maxAgeMs = REFERRAL_CODE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
-/** Query parameters of a join invite: their presence means "not a referral". */
-const joinInviteParams = ['invite', 'pin'];
+/** Recognize decoded credential keys, including namespaced and bracketed form fields. */
+const joinCredentialKey = /(?:^|[^a-z0-9])(?:invite|pin)(?:$|[^a-z0-9])/i;
 
 export interface IReferralCode {
   readonly code: string;
@@ -60,12 +61,13 @@ function sanitize(value: unknown, now: Date): IReferralCode[] {
     ) {
       continue;
     }
+    const at = new Date(entry.at).toISOString();
     byCode.delete(entry.code);
     byCode.set(
       entry.code,
       isReferralSource(entry.source)
-        ? { code: entry.code, source: entry.source, at: entry.at }
-        : { code: entry.code, at: entry.at },
+        ? { code: entry.code, source: entry.source, at }
+        : { code: entry.code, at },
     );
   }
   return [...byCode.values()].slice(-MAX_REFERRAL_CODES);
@@ -124,9 +126,11 @@ export function captureReferralFromUrl(
   } catch {
     return false;
   }
-  // URLSearchParams decodes names; credential keys are refused in any case.
+  // A public referral uses the query. The fragment may contain private login
+  // return paths or hash-router parameters that the URL parser does not split.
+  if (parsed.hash || parsed.username || parsed.password) return false;
   for (const name of parsed.searchParams.keys()) {
-    if (joinInviteParams.includes(name.toLowerCase())) return false;
+    if (joinCredentialKey.test(name)) return false;
   }
   const code = parsed.searchParams.get('ref');
   return (
