@@ -1,4 +1,3 @@
-import { AUTH_PANEL_UI_CONFIG } from './auth-panel-ui-config';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { NavController, ToastController } from '@ionic/angular';
@@ -53,10 +52,6 @@ describe('LoginPageComponent persisted record readiness', () => {
       imports: [LoginPageComponent],
       providers: [
         provideRouter([]),
-        {
-          provide: AUTH_PANEL_UI_CONFIG,
-          useValue: { showCompanySso: true },
-        },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParams } },
@@ -535,7 +530,7 @@ describe('LoginPageComponent persisted record readiness', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-email-login-form'),
     ).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(fixture.nativeElement.textContent).not.toContain(
       'Sign in with company SSO',
     );
   });
