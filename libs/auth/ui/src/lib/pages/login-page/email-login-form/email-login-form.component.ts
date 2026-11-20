@@ -357,8 +357,20 @@ export class EmailLoginFormComponent implements OnInit {
   }
 
   private passwordResetReturnUrl(): string {
-    const safeReturnTo = safeAuthReturnPath(this.returnTo());
-    return new URL(safeReturnTo ?? '/login', window.location.origin).toString();
+    const { origin, protocol } = window.location;
+    // Without an explicit base, document.baseURI follows the current route.
+    const appBase = document.querySelector('base[href]')
+      ? new URL(document.baseURI)
+      : undefined;
+    const returnBase =
+      appBase?.origin === origin &&
+      appBase.protocol === protocol &&
+      !appBase.username &&
+      !appBase.password
+        ? appBase
+        : origin;
+    const returnPath = safeAuthReturnPath(this.returnTo()) ?? '/login';
+    return new URL(`./${returnPath.slice(1)}`, returnBase).toString();
   }
 
   private sendVerificationEmail(userCredential: UserCredential): void {

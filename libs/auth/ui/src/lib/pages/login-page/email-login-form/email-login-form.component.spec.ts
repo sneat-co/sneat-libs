@@ -106,6 +106,21 @@ describe('EmailLoginFormComponent', () => {
   }
 
   describe('password reset requests', () => {
+    let baseElement: HTMLBaseElement | undefined;
+
+    afterEach(() => {
+      baseElement?.remove();
+      baseElement = undefined;
+    });
+
+    function setAppBase(href: string): void {
+      baseElement = document.createElement('base');
+      baseElement.href = href;
+      document.head.prepend(baseElement);
+      // The shared Ionic test setup fixes baseURI instead of following the DOM.
+      vi.spyOn(document, 'baseURI', 'get').mockReturnValue(baseElement.href);
+    }
+
     function setEmail(component: EmailLoginFormComponent, email: string): void {
       (component as unknown as { email: { set(value: string): void } }).email.set(
         email,
@@ -119,6 +134,7 @@ describe('EmailLoginFormComponent', () => {
     }
 
     it('sends an anonymous request with a same-origin return URL', () => {
+      setAppBase('/');
       const component = create();
       fixture.componentRef.setInput('returnTo', '/dashboard?tab=activity');
       setEmail(component, 'person@example.test');
@@ -139,6 +155,91 @@ describe('EmailLoginFormComponent', () => {
       );
       expect(postAsAnonymous).toHaveBeenCalledTimes(1);
       expect(signingWith(component)).toBe('resetPassword');
+    });
+
+    it('keeps the return route under the application base path', () => {
+      setAppBase('/app/');
+      const component = create();
+      fixture.componentRef.setInput('returnTo', '/dashboard?tab=activity');
+      setEmail(component, 'person@example.test');
+      postAsAnonymous.mockReturnValue(NEVER);
+
+      component.resetPassword();
+
+      expect(postAsAnonymous).toHaveBeenCalledExactlyOnceWith(
+        'auth/request-password-reset',
+        {
+          email: 'person@example.test',
+          returnUrl: `${window.location.origin}/app/dashboard?tab=activity`,
+        },
+      );
+    });
+
+    it.each([
+      { returnTo: undefined, path: '/app/login' },
+      { returnTo: '/', path: '/app/' },
+      {
+        returnTo: '/docs:today?tab=activity',
+        path: '/app/docs:today?tab=activity',
+      },
+      { returnTo: '/dashboard?access%5Ftoken=fixture', path: '/app/login' },
+      { returnTo: '/dashboard#activity', path: '/app/login' },
+    ])(
+      'resolves $returnTo to $path under the application base',
+      ({ returnTo, path }) => {
+        setAppBase('/app/');
+        const component = create();
+        fixture.componentRef.setInput('returnTo', returnTo);
+        setEmail(component, 'person@example.test');
+        postAsAnonymous.mockReturnValue(NEVER);
+
+        component.resetPassword();
+
+        expect(postAsAnonymous).toHaveBeenCalledExactlyOnceWith(
+          'auth/request-password-reset',
+          {
+            email: 'person@example.test',
+            returnUrl: `${window.location.origin}${path}`,
+          },
+        );
+      },
+    );
+
+    it.each([
+      ['for cross-origin assets', () => 'https://assets.example.test/static/'],
+      ['a same-origin blob URL', () => `blob:${window.location.origin}/fixture`],
+      [
+        'configured with a username',
+        () => {
+          const base = new URL('/app/', window.location.origin);
+          base.username = 'fixture';
+          return base.href;
+        },
+      ],
+      [
+        'configured with a password',
+        () => {
+          const base = new URL('/app/', window.location.origin);
+          base.password = 'fixture';
+          return base.href;
+        },
+      ],
+    ])('uses the page origin when the base URL is %s', (_description, href) => {
+      setAppBase(href());
+      const component = create();
+      fixture.componentRef.setInput('returnTo', '/home');
+      setEmail(component, 'person@example.test');
+      postAsAnonymous.mockReturnValue(NEVER);
+
+      component.resetPassword();
+
+      expect(postAsAnonymous).toHaveBeenCalledExactlyOnceWith(
+        'auth/request-password-reset',
+        {
+          email: 'person@example.test',
+          returnUrl: `${window.location.origin}/home`,
+        },
+      );
     });
 
     it('uses the app login URL when returnTo attempts an open redirect', () => {
