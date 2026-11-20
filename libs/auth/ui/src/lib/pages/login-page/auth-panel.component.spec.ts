@@ -158,15 +158,9 @@ describe('AuthPanelComponent', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-login-with-telegram'),
     ).not.toBeNull();
-    expect(
-      fixture.nativeElement.querySelector('[routerLink="/sso"]'),
-    ).not.toBeNull();
   });
 
-  it('hides the company SSO button when showCompanySso is false', () => {
-    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
-      useValue: { showCompanySso: false },
-    });
+  it('hides the company SSO button by default', () => {
     authStates.next({ status: 'notAuthenticated' });
     create();
     fixture.detectChanges();
@@ -179,6 +173,21 @@ describe('AuthPanelComponent', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-email-login-form'),
     ).not.toBeNull();
+  });
+
+  it('shows the company SSO button when a website opts in', () => {
+    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
+      useValue: { showCompanySso: true },
+    });
+    authStates.next({ status: 'notAuthenticated' });
+    create();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[routerLink="/sso"]'),
+    ).not.toBeNull();
+    expect(fixture.nativeElement.innerHTML).toContain(
+      'Sign in with company SSO',
+    );
   });
 
   it('hides the quick login card for an empty allowlist', () => {
@@ -243,6 +252,9 @@ describe('AuthPanelComponent', () => {
   });
 
   it('reports a preloaded account after the continuation input is bound', () => {
+    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
+      useValue: { showCompanySso: true },
+    });
     states.next({
       status: 'authenticated',
       user: { uid: 'buyer', isAnonymous: false } as ISneatUserState['user'],
@@ -363,6 +375,9 @@ describe('AuthPanelComponent', () => {
   });
 
   it('keeps checkout unready and restores existing sign-in controls after token failure', () => {
+    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
+      useValue: { showCompanySso: true },
+    });
     const component = create('/subscribe?plan=pro&period=monthly');
     const ready: Array<{ uid?: string; ready: boolean }> = [];
     component.accountReadyChange.subscribe((value) => ready.push(value));
@@ -651,6 +666,9 @@ describe('AuthPanelComponent', () => {
   });
 
   it('shows auth recovery controls when the wrapper hides normal credentials', () => {
+    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
+      useValue: { showCompanySso: true },
+    });
     create('/subscribe?plan=pro&period=monthly');
     fixture.componentRef.setInput('showCredentials', false);
     fixture.detectChanges();
