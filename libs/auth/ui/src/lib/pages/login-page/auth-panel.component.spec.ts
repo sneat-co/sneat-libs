@@ -163,6 +163,24 @@ describe('AuthPanelComponent', () => {
     ).not.toBeNull();
   });
 
+  it('hides the company SSO button when showCompanySso is false', () => {
+    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
+      useValue: { showCompanySso: false },
+    });
+    authStates.next({ status: 'notAuthenticated' });
+    create();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[routerLink="/sso"]'),
+    ).toBeNull();
+    expect(fixture.nativeElement.innerHTML).not.toContain(
+      'Sign in with company SSO',
+    );
+    expect(
+      fixture.nativeElement.querySelector('sneat-email-login-form'),
+    ).not.toBeNull();
+  });
+
   it('hides the quick login card for an empty allowlist', () => {
     TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
       useValue: { quickLoginProviders: [] },
