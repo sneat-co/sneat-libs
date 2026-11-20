@@ -30,7 +30,10 @@ import {
 } from '../sneat-auth-state-service';
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
 import { initUserRecordRequestFromAuthUser } from './init-user-record-request';
-import { UserRecordService } from './user-record.service';
+import {
+  INIT_USER_RECORD_APP_ID,
+  UserRecordService,
+} from './user-record.service';
 
 export interface ISneatUserState extends ISneatAuthState {
   record?: IUserRecord | null; // undefined => not loaded yet, null = does not exists
@@ -40,12 +43,34 @@ export interface ISneatUserState extends ISneatAuthState {
 
 const UsersCollection = 'users';
 
+/**
+ * Registration app IDs whose sign-up creates no default Spaces. Mirrors the
+ * server's `NoDefaultSpaces` catalog policy (sneat-core-modules).
+ */
+export const NO_DEFAULT_SPACES_APP_IDS: readonly string[] = ['askstage'];
+
+const DEFAULT_SPACE_TYPES: readonly string[] = ['family', 'personal'];
+
+/** True when the user record lacks a family or a personal Space. */
+export function lacksDefaultSpace(record: IUserRecord): boolean {
+  const types = new Set<string>(
+    Object.values(record.spaces ?? {}).map((space) => space?.type),
+  );
+  return DEFAULT_SPACE_TYPES.some((type) => !types.has(type));
+}
+
 @Injectable({ providedIn: 'root' }) // TODO: lazy loading
 export class SneatUserService {
   private readonly errorLogger = inject<IErrorLogger>(ErrorLogger);
   private readonly sneatApiService = inject(SneatApiService);
   private readonly userRecordService = inject(UserRecordService);
   private readonly operationBlocker = inject(SneatUrlOperationBlocker);
+  private readonly initAppId = inject(INIT_USER_RECORD_APP_ID, {
+    optional: true,
+  });
+  // User IDs this tab already asked to create missing default Spaces for.
+  // Never cleared: one attempt per user per tab, success or failure.
+  private readonly defaultSpacesRequested = new Set<string>();
 
   // private userDocSubscription?: Subscription;
   private readonly injector = inject(Injector);
@@ -389,6 +414,35 @@ export class SneatUserService {
     ) {
       this.initUserRecordFromAuthUser(authUser);
     }
+    if (authUser && recordExists && userRecord) {
+      this.createMissingDefaultSpaces(authUser.uid, userRecord);
+    }
+  }
+
+  /**
+   * A user who signed up without default Spaces (AskStage) or lacks one gets
+   * the missing family/personal Space when they open any other Sneat app.
+   * The server creates only the missing types (idempotent). The request
+   * carries no names or email, so the existing profile is left as it is.
+   */
+  private createMissingDefaultSpaces(uid: string, record: IUserRecord): void {
+    if (
+      this.defaultSpacesRequested.has(uid) ||
+      (this.initAppId !== null &&
+        NO_DEFAULT_SPACES_APP_IDS.includes(this.initAppId)) ||
+      !lacksDefaultSpace(record)
+    ) {
+      return;
+    }
+    this.defaultSpacesRequested.add(uid);
+    this.userRecordService.initUserRecord({}).subscribe({
+      error: (error) =>
+        this.errorLogger.logError(
+          error,
+          'Failed to create missing default Spaces',
+          { show: false },
+        ),
+    });
   }
 
   private initUserRecordFromAuthUser(authUser: ISneatAuthUser): void {
