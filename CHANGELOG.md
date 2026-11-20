@@ -1,3 +1,13 @@
+## 0.27.53 (2026-11-20)
+
+### 🩹 Fixes
+
+- `@sneat/auth-ui`: the "Sign in with company SSO" button on the shared sign-in panel is now off by default. A website opts in with `showCompanySso: true` in its `AUTH_PANEL_UI_CONFIG`. This is a behaviour change for every app that serves the shared auth routes: an app that wants the button must set the flag when it bumps to this release. The `/sso` routes themselves are unchanged.
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.52 (2026-11-19)
 
 ### 🩹 Fixes
