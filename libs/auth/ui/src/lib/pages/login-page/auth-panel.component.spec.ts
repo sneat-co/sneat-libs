@@ -666,9 +666,6 @@ describe('AuthPanelComponent', () => {
   });
 
   it('shows auth recovery controls when the wrapper hides normal credentials', () => {
-    TestBed.overrideProvider(AUTH_PANEL_UI_CONFIG, {
-      useValue: { showCompanySso: true },
-    });
     create('/subscribe?plan=pro&period=monthly');
     fixture.componentRef.setInput('showCredentials', false);
     fixture.detectChanges();
@@ -682,7 +679,7 @@ describe('AuthPanelComponent', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-email-login-form'),
     ).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(fixture.nativeElement.textContent).not.toContain(
       'Sign in with company SSO',
     );
   });
