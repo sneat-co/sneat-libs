@@ -1,3 +1,4 @@
+import { AUTH_PANEL_UI_CONFIG } from './auth-panel-ui-config';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { NavController, ToastController } from '@ionic/angular';
@@ -51,6 +52,10 @@ describe('LoginPage auth failure recovery integration', () => {
       imports: [LoginPageComponent],
       providers: [
         provideRouter([]),
+        {
+          provide: AUTH_PANEL_UI_CONFIG,
+          useValue: { showCompanySso: true },
+        },
         SneatAuthStateService,
         SneatUserService,
         { provide: Firestore, useValue: {} },
