@@ -4,7 +4,7 @@
  * A referral code is a public Invitus invite ID that grants nothing and has no
  * PIN. The device keeps at most MAX_REFERRAL_CODES of them, each with the
  * channel it came through and when it was opened. The product sends them with
- * its fix-point request (AskStage: create_show, the creator's first "New
+ * its fix-point request (AskMic: create_show, the creator's first "New
  * show"), where the server fixes the last valid one; the caller then clears
  * the list with clearReferralCodes once that request succeeds.
  *
