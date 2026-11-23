@@ -88,13 +88,13 @@ describe('referral codes on the device', () => {
   it('captures ?ref and ?src from a landing URL', () => {
     expect(
       captureReferralFromUrl(
-        `https://askmic.tv/join?ref=${code(1)}&src=x`,
+        `https://amastage.tv/join?ref=${code(1)}&src=x`,
         now,
       ),
     ).toBe(true);
     expect(
       captureReferralFromUrl(
-        new URL(`https://askmic.tv/join?ref=${code(2)}`),
+        new URL(`https://amastage.tv/join?ref=${code(2)}`),
         now,
       ),
     ).toBe(true);
