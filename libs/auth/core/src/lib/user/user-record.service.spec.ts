@@ -172,7 +172,7 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
     return TestBed.inject(UserRecordService);
   };
 
-  it.each(['amastage', 'app-2'])(
+  it.each(['qnastage', 'app-2'])(
     'posts to the host-bound path users/%s/init_user_record with no appId in the body',
     async (appId) => {
       const service = serviceFor(appId);
@@ -196,7 +196,7 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
     { name: 'number', value: 123 },
     { name: 'boolean', value: true },
     { name: 'undefined', value: undefined },
-    { name: 'array', value: ['amastage'] },
+    { name: 'array', value: ['qnastage'] },
   ])('rejects an injected $name without any request', async ({ value }) => {
     const service = serviceFor(value);
     await expect(
@@ -206,7 +206,7 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
   });
 
   it('rejects an injected object without coercion or any request', async () => {
-    const toString = vi.fn(() => 'amastage');
+    const toString = vi.fn(() => 'qnastage');
     const service = serviceFor({ toString });
     await expect(
       firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
@@ -242,7 +242,7 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
   });
 
   it('rejects an object without executing toJSON or making a request', async () => {
-    const toJSON = vi.fn(() => 'amastage');
+    const toJSON = vi.fn(() => 'qnastage');
     const service = serviceFor({ toJSON });
     await expect(
       firstValueFrom(service.initUserRecord({ email: 'test@example.com' })),
@@ -256,7 +256,7 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
   });
 
   it('rejects an object without reading its properties or making a request', async () => {
-    const getter = vi.fn(() => 'amastage');
+    const getter = vi.fn(() => 'qnastage');
     const appId = Object.defineProperty({}, 'value', {
       enumerable: true,
       get: getter,
@@ -273,7 +273,7 @@ describe('UserRecordService with INIT_USER_RECORD_APP_ID', () => {
     expect(post).not.toHaveBeenCalled();
   });
 
-  it.each(['', 'AMAStage', 'ama/stage', '../admin', 'a?b=c', 'ama stage', 'a%2f'])(
+  it.each(['', 'QnAStage', 'qna/stage', '../admin', 'a?b=c', 'qna stage', 'a%2f'])(
     'rejects the invalid app ID %j without any request',
     async (appId) => {
       const service = serviceFor(appId);

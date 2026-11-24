@@ -11,7 +11,7 @@ import { Observable, share, throwError } from 'rxjs';
  * `users/<appId>/init_user_record`, so the app identity comes from the route
  * the host mounted for that app, never from the request body (the unbound
  * route ignores a body `appId`). The host-bound route picks the sign-up policy,
- * e.g. `amastage` creates no default Spaces. When absent, init posts to
+ * e.g. `qnastage` creates no default Spaces. When absent, init posts to
  * `users/init_user_record` exactly as before.
  *
  * The value must be a lowercase catalog ID: `[a-z0-9-]` only.
