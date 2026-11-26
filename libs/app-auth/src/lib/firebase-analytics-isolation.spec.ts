@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 // `firebase/analytics` has load-time side effects, so a bundler keeps it in
 // any chunk that keeps the module importing it. Apps without analytics
-// (AskStage) use provideSneatFirebaseAuth/provideSneatFirestore and
+// (QnAStage) use provideSneatFirebaseAuth/provideSneatFirestore and
 // SneatAuthenticatedLifecycle; those modules must not import it.
 describe('firebase/analytics isolation', () => {
   const dir = __dirname;

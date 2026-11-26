@@ -1,6 +1,6 @@
 {
   "name": "@sneat/components",
-  "version": "0.27.51",
+  "version": "0.27.53",
   "publishConfig": {
     "access": "public"
   },

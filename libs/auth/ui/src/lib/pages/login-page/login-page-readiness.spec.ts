@@ -530,7 +530,7 @@ describe('LoginPageComponent persisted record readiness', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-email-login-form'),
     ).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(fixture.nativeElement.textContent).not.toContain(
       'Sign in with company SSO',
     );
   });

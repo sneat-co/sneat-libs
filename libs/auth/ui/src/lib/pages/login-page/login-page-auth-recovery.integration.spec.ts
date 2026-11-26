@@ -115,7 +115,7 @@ describe('LoginPage auth failure recovery integration', () => {
     expect(
       fixture.nativeElement.querySelector('sneat-email-login-form'),
     ).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain(
+    expect(fixture.nativeElement.textContent).not.toContain(
       'Sign in with company SSO',
     );
     expect(fixture.nativeElement.textContent).not.toContain(

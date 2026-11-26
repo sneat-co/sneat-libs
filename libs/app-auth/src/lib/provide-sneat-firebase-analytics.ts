@@ -2,7 +2,7 @@
 // providers in ./provide-sneat-firebase. `firebase/analytics` registers its
 // component when the module loads, so a bundler keeps it whenever the module
 // that imports it is kept. With the import here, an app that only uses
-// provideSneatFirebaseAuth()/provideSneatFirestore() (AskStage, for one) no
+// provideSneatFirebaseAuth()/provideSneatFirestore() (QnAStage, for one) no
 // longer ships Firebase Analytics in its main bundle; apps that install
 // provideSneatFirebaseAnalytics() or provideSneatFirebase() get it as before.
 // Keep every `firebase/analytics` import of this library in this file.

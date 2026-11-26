@@ -1,3 +1,23 @@
+## 0.27.53 (2026-11-20)
+
+### 🩹 Fixes
+
+- `@sneat/auth-ui`: the "Sign in with company SSO" button on the shared sign-in panel is now off by default. A website opts in with `showCompanySso: true` in its `AUTH_PANEL_UI_CONFIG`. This is a behaviour change for every app that serves the shared auth routes: an app that wants the button must set the flag when it bumps to this release. The `/sso` routes themselves are unchanged.
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
+## 0.27.52 (2026-11-19)
+
+### 🩹 Fixes
+
+- `@sneat/app-auth`: Firebase Analytics now lives in its own module, so an app that composes `provideSneatFirebaseAuth()`/`provideSneatFirestore()` without `provideSneatFirebaseAnalytics()` no longer ships `firebase/analytics` (and `@firebase/installations`) in its bundle. Exports are unchanged; apps using `provideSneatFirebase()`, `provideSneatFirebaseAnalytics()` or `provideSneatAuthenticatedProviders()` keep Firebase Analytics as before. ([c902e97](https://github.com/sneat-co/sneat-libs/commit/c902e97))
+
+### ❤️ Thank You
+
+- Alexander Trakhimenok
+
 ## 0.27.51 (2026-11-05)
 
 ### 🩹 Fixes
