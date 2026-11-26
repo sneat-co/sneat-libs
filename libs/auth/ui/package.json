@@ -19,7 +19,7 @@
     "@sneat/space-services": "^0.27.0"
   },
   "dependencies": {
-    "ionicons": "8.1.0",
+    "ionicons": "8.1.1",
     "tslib": "2.9.1"
   },
   "type": "module"
