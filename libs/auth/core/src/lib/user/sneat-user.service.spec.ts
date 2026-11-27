@@ -27,6 +27,13 @@ vi.mock('firebase/firestore', async () => {
   };
 });
 
+// A persisted record that already has both default Spaces, so the
+// missing-default-Spaces call (sneat-user.default-spaces.spec.ts) stays out.
+const withDefaultSpaces = {
+  f: { title: 'Family', type: 'family', roles: [], userContactID: 'c' },
+  p: { title: 'Personal', type: 'personal', roles: [], userContactID: 'c' },
+};
+
 describe('SneatUserService', () => {
   let service: SneatUserService;
   let authStateSubject: Subject<ISneatAuthState>;
@@ -693,7 +700,10 @@ describe('SneatUserService', () => {
           watchers[1].next({
             ref: { id: 'buyer-b' },
             exists: () => true,
-            data: () => ({ title: 'Persisted buyer B' }),
+            data: () => ({
+              title: 'Persisted buyer B',
+              spaces: withDefaultSpaces,
+            }),
           });
           expect(current).toMatchObject({
             user: { uid: 'buyer-b' },
@@ -754,7 +764,7 @@ describe('SneatUserService', () => {
       watchers[1].next({
         ref: { id: 'buyer-b' },
         exists: () => true,
-        data: () => ({ title: 'Buyer B' }),
+        data: () => ({ title: 'Buyer B', spaces: withDefaultSpaces }),
       });
       authStateSubject.next(account('buyer-a'));
       await vi.advanceTimersByTimeAsync(100);
