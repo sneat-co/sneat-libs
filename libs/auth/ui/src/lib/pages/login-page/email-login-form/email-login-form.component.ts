@@ -336,11 +336,13 @@ export class EmailLoginFormComponent implements OnInit {
 
   public resetPassword(): void {
     if (this.signingWith()) return;
+    // Computed before the form locks, so a failure here cannot leave it locked.
+    const returnUrl = this.passwordResetReturnUrl();
     this.setSigningWith('resetPassword');
     this.sneatApiService
       .postAsAnonymous<void>('auth/request-password-reset', {
         email: this.email(),
-        returnUrl: this.passwordResetReturnUrl(),
+        returnUrl,
       })
       .subscribe({
         next: () => {
