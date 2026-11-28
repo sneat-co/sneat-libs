@@ -164,20 +164,36 @@ writing, all versioned together — see the Packages tables above) shares one ve
 and is bumped, tagged, and published as a unit.
 
 **Version plans are required on PRs.** CI runs `pnpm nx release plan:check` against the
-PR base and fails when a package's files changed and no `.nx/version-plans/*.md` plan
+PR's base and fails when a package's files changed and no `.nx/version-plans/*.md` plan
 covers it (a green release run that publishes nothing is the failure this prevents).
-Add one with `pnpm nx release plan` (or hand-write the file; the bump is `patch`,
-`minor` or `major`; Nx rejects `none`). Changes to `*.spec.ts` / `*.test.ts`, docs and CI
-files need no plan (`release.versionPlans.ignorePatternsForPlanCheck` in `nx.json`); any other
-change to a package, even a non-functional one, needs a `patch` plan.
+Add one with `pnpm nx release plan`, or hand-write `.nx/version-plans/<name>.md`
+exactly like this (flat path, unquoted bump of `patch`, `minor` or `major`, non-empty
+description; Nx rejects `none`):
+
+```markdown
+---
+__default__: patch
+---
+
+One-line description of the change.
+```
+
+Changes to `*.spec.ts`, `*.test.ts`, `*.spec.mjs` and `*.test.mjs` need no plan
+(`release.versionPlans.ignorePatternsForPlanCheck` in `nx.json`), and neither do
+files outside `libs/` (root docs, CI, tooling). Anything else under `libs/`, including a
+package's own README or `package.json` dependency bump, needs a plan (use `patch`).
+The release PR that `release.yml` opens is exempt: it consumes the plans, and CI
+recognises it with `tools/verify-release-candidate.mjs --committed --version`.
 
 ### How it works
 
 **Step 1 — someone runs "Prepare release" (`.github/workflows/release.yml`)**
 
 1. A person with repo access triggers the workflow via `workflow_dispatch`, choosing
-   the required `bump` input — `patch` or `minor` (there is no `major` option, and the
-   bump is **not** inferred from Conventional Commits; it's the value you pass):
+   the required `bump` input (`patch` or `minor`). **Tracked version plans take
+   precedence:** if any `.nx/version-plans/*.md` exists, the bump comes from the plans
+   (so `major` is possible) and `bump` is ignored. It is only the fallback used when
+   no plans exist; the bump is never inferred from Conventional Commits:
 
    ```bash
    gh workflow run release.yml -f bump=patch
@@ -185,13 +201,14 @@ change to a package, even a non-functional one, needs a `patch` plan.
    gh workflow run release.yml -f bump=minor
    ```
 
-2. The workflow checks out `main` and runs `pnpm nx release "${{ inputs.bump }}" --skip-publish`,
-   which bumps `version` in every `libs/*/package.json` and updates `CHANGELOG.md` —
+2. The workflow checks out `main` and runs `pnpm nx release --skip-publish` (with
+   plans) or `pnpm nx release "<bump>" --skip-publish` (without), which bumps `version`
+   in every `libs/*/package.json`, consumes the plans, and updates `CHANGELOG.md` —
    `nx.json`'s `release.git.commit/tag/push` are all `false`, so Nx itself does not
    commit, tag, or push anything.
 3. `tools/verify-release-candidate.mjs --cached --version` validates the staged
-   change: only `CHANGELOG.md`, `pnpm-lock.yaml`, and `libs/**/package.json` may be
-   touched, every changed manifest must land on the same new version, every tracked
+   change: only `CHANGELOG.md`, `pnpm-lock.yaml`, `libs/**/package.json` and the deletion
+   of consumed `.nx/version-plans/*.md` files may be touched, every changed manifest must land on the same new version, every tracked
    package manifest must already be at that version, the `CHANGELOG.md` heading must
    match it, and it must be strictly greater than the latest `vX.Y.Z` tag. Anything
    else aborts the workflow.
@@ -242,9 +259,12 @@ There's no more "just merge a properly-prefixed commit" — releases only happen
 someone deliberately starts step 1:
 
 ```bash
-gh workflow run release.yml -f bump=patch   # release with only fixes
-gh workflow run release.yml -f bump=minor   # release that includes new features
+gh workflow run release.yml -f bump=patch   # fallback bump when no version plans exist
+gh workflow run release.yml -f bump=minor   # same, minor
 ```
+
+With tracked `.nx/version-plans/*.md` the plans decide the bump and `-f bump=...` is
+ignored.
 
 Then:
 

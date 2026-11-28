@@ -21,10 +21,21 @@ jobs:
       # A releasable package changed without a .nx/version-plans/*.md plan
       # would merge green and publish nothing (backstage lesson
       # a-successful-release-run-must-not-hide-a-noop-publication).
-      # Release PRs (release.yml) consume the plans, so they are exempt.
       - name: Version plan check
-        if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release/sneat-libs-')
-        run: pnpm nx release plan:check --base=${{ github.event.pull_request.base.sha }} --head=HEAD
+        if: github.event_name == 'pull_request'
+        run: |
+          # On pull_request the checkout is the synthetic merge commit, so HEAD^1
+          # is the live base tip (the payload's base.sha can be stale).
+          # A genuine release PR (release.yml) consumes the plans and bumps
+          # versions, so it legitimately touches packages with no plan. It is
+          # recognised by the same validator publish.yml uses: non-empty output
+          # means a valid candidate; an invalid one fails the job.
+          candidate="$(node tools/verify-release-candidate.mjs --committed --version)"
+          if [ -n "$candidate" ]; then
+            echo "Release candidate $candidate: exempt from the plan check."
+            exit 0
+          fi
+          pnpm nx release plan:check --base=HEAD^1 --head=HEAD
       - run: node --test tools/verify-release-candidate.test.mjs
       - run: pnpm nx run-many -t build,test,lint --all
       - run: pnpm run verify:bootstrap-boundaries

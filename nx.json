@@ -97,7 +97,9 @@
     "versionPlans": {
       "ignorePatternsForPlanCheck": [
         "**/*.spec.ts",
-        "**/*.test.ts"
+        "**/*.test.ts",
+        "**/*.spec.mjs",
+        "**/*.test.mjs"
       ]
     },
     "git": {
