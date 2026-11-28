@@ -94,7 +94,12 @@
       "!@sneat/structured-data/core"
     ],
     "projectsRelationship": "fixed",
-    "versionPlans": true,
+    "versionPlans": {
+      "ignorePatternsForPlanCheck": [
+        "**/*.spec.ts",
+        "**/*.test.ts"
+      ]
+    },
     "git": {
       "commit": false,
       "tag": false,

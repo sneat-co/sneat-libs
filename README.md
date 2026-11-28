@@ -163,6 +163,14 @@ with a **fixed release group**: every package under `libs/*` (27 packages as of 
 writing, all versioned together — see the Packages tables above) shares one version
 and is bumped, tagged, and published as a unit.
 
+**Version plans are required on PRs.** CI runs `pnpm nx release plan:check` against the
+PR base and fails when a package's files changed and no `.nx/version-plans/*.md` plan
+covers it (a green release run that publishes nothing is the failure this prevents).
+Add one with `pnpm nx release plan` (or hand-write the file; the bump is `patch`,
+`minor` or `major`; Nx rejects `none`). Changes to `*.spec.ts` / `*.test.ts`, docs and CI
+files need no plan (`release.versionPlans.ignorePatternsForPlanCheck` in `nx.json`); any other
+change to a package, even a non-functional one, needs a `patch` plan.
+
 ### How it works
 
 **Step 1 — someone runs "Prepare release" (`.github/workflows/release.yml`)**
